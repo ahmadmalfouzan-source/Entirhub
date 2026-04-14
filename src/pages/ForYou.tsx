@@ -35,20 +35,20 @@ export function ForYou() {
   }, []);
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
-            <Sparkles className="w-8 h-8 text-purple-400" />
+          <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+            <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-purple-400" />
             For You
           </h1>
-          <p className="text-gray-400">Curated recommendations based on your library and preferences.</p>
+          <p className="text-gray-400 text-sm md:text-base">Curated recommendations based on your library and preferences.</p>
         </div>
         <Button 
           onClick={fetchRecommendations} 
           disabled={loading}
           variant="outline" 
-          className="bg-[#1f2937] border-white/10 text-white hover:bg-[#374151] hover:text-white"
+          className="bg-[#1f2937] border-white/10 text-white hover:bg-[#374151] hover:text-white w-full md:w-auto"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -56,13 +56,13 @@ export function ForYou() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
           {recommendations.map(item => (
             <div key={item.external_id} className="relative group">
               <ContentCard item={item} />

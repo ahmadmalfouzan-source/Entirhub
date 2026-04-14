@@ -13,12 +13,15 @@ import {
   ChevronRight,
   Share2,
   Globe,
-  Lock
+  Lock,
+  Award
 } from 'lucide-react';
 import { ContentCard } from '@/components/ContentCard';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Badges } from '@/components/Badges';
+import { useNavigate } from 'react-router-dom';
 
 interface Stats {
   totalMovies: number;
@@ -33,6 +36,7 @@ interface Stats {
 
 export function Profile() {
   const { user, watchlist } = useStore();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
@@ -187,15 +191,15 @@ export function Profile() {
   }
 
   return (
-    <div className="p-8 space-y-12 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12 max-w-7xl mx-auto">
       {/* Profile Header */}
-      <div className="flex flex-col md:flex-row items-center gap-8 bg-gradient-to-br from-blue-600/20 to-purple-600/20 p-8 rounded-3xl border border-white/5">
-        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl font-bold text-white shadow-2xl">
+      <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 bg-gradient-to-br from-blue-600/20 to-purple-600/20 p-6 md:p-8 rounded-2xl md:rounded-3xl border border-white/5">
+        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-3xl md:text-4xl font-bold text-white shadow-2xl">
           {user?.email?.[0].toUpperCase()}
         </div>
-        <div className="text-center md:text-left space-y-2">
-          <h1 className="text-4xl font-bold text-white">{user?.email?.split('@')[0]}</h1>
-          <p className="text-gray-400 flex items-center justify-center md:justify-start gap-2">
+        <div className="text-center md:text-left space-y-2 w-full md:w-auto">
+          <h1 className="text-2xl md:text-4xl font-bold text-white truncate">{user?.email?.split('@')[0]}</h1>
+          <p className="text-gray-400 flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
             <Calendar className="w-4 h-4" />
             Member since {new Date(user?.created_at || '').toLocaleDateString()}
           </p>
@@ -207,11 +211,18 @@ export function Profile() {
             ))}
           </div>
         </div>
-        <div className="md:ml-auto flex flex-col gap-3">
+        <div className="md:ml-auto flex flex-col gap-3 w-full md:w-auto mt-4 md:mt-0">
+          <Button 
+            onClick={() => navigate('/wrapped')}
+            className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white border-0 shadow-lg w-full md:w-auto"
+          >
+            <Star className="w-4 h-4 mr-2" />
+            My Year in Review
+          </Button>
           <Button 
             onClick={handleShare}
             variant={isPublic ? "default" : "outline"}
-            className={isPublic ? "bg-green-600 hover:bg-green-700" : "bg-white/20 text-white border border-white/30 hover:bg-white/30"}
+            className={`w-full md:w-auto ${isPublic ? "bg-green-600 hover:bg-green-700" : "bg-white/20 text-white border border-white/30 hover:bg-white/30"}`}
           >
             {isPublic ? <Globe className="w-4 h-4 mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
             {isPublic ? 'Public Library' : 'Private Library'}
@@ -220,7 +231,7 @@ export function Profile() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white w-full md:w-auto"
               onClick={() => {
                 const displayUsername = username.includes('@') ? username.split('@')[0] : username;
                 const shareUrl = `${window.location.origin}/user/${displayUsername}`;
@@ -235,8 +246,17 @@ export function Profile() {
         </div>
       </div>
 
+      {/* Badges Section */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
+          <Award className="w-5 h-5 text-yellow-500" />
+          <h2 className="text-lg md:text-xl font-bold text-white">Achievements</h2>
+        </div>
+        <Badges />
+      </div>
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard 
           icon={<Film className="w-6 h-6 text-blue-400" />}
           label="Movies Watched"

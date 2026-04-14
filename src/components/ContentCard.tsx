@@ -54,30 +54,30 @@ export function ContentCard({ item, progress }: ContentCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
         
-        <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
-          <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-sm font-medium text-yellow-400">
-            <Star className="w-4 h-4 fill-current" />
+        <div className="absolute top-2 right-2 md:top-3 md:right-3 flex flex-col items-end gap-1 md:gap-2">
+          <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-1 rounded-md text-xs md:text-sm font-medium text-yellow-400">
+            <Star className="w-3 h-3 md:w-4 md:h-4 fill-current" />
             {item.rating?.toFixed(1) || 'N/A'}
           </div>
           {isAiring && (
-            <div className="bg-green-500/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider">
+            <div className="bg-green-500/80 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] md:text-[10px] font-bold text-white uppercase tracking-wider">
               Airing
             </div>
           )}
           {watchlistItem?.platform && (
-            <div className="bg-blue-500/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider">
+            <div className="bg-blue-500/80 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] md:text-[10px] font-bold text-white uppercase tracking-wider">
               {watchlistItem.platform}
             </div>
           )}
           {watchlistItem?.is_completed_100 && (
-            <div className="bg-yellow-500/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
-              <Trophy className="w-3 h-3" />
+            <div className="bg-yellow-500/80 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] md:text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+              <Trophy className="w-2 h-2 md:w-3 md:h-3" />
               100%
             </div>
           )}
           {watchlistItem?.hours_played ? (
-            <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+            <div className="bg-black/60 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] md:text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+              <Clock className="w-2 h-2 md:w-3 md:h-3" />
               {watchlistItem.hours_played}h
             </div>
           ) : null}
@@ -85,15 +85,15 @@ export function ContentCard({ item, progress }: ContentCardProps) {
 
         <button 
           onClick={handleAdd}
-          className={`absolute top-3 left-3 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center text-white transition-colors opacity-0 group-hover:opacity-100 ${isInWatchlist ? 'bg-primary' : 'bg-black/60 hover:bg-primary'}`}
+          className={`absolute top-2 left-2 md:top-3 md:left-3 w-6 h-6 md:w-8 md:h-8 rounded-full backdrop-blur-md flex items-center justify-center text-white transition-colors opacity-0 group-hover:opacity-100 ${isInWatchlist ? 'bg-primary' : 'bg-black/60 hover:bg-primary'}`}
         >
-          {isInWatchlist ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+          {isInWatchlist ? <Check className="w-3 h-3 md:w-5 md:h-5" /> : <Plus className="w-3 h-3 md:w-5 md:h-5" />}
         </button>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-semibold text-foreground truncate mb-1">{item.title}</h3>
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+      <div className="p-2 md:p-4">
+        <h3 className="font-semibold text-foreground truncate mb-1 text-sm md:text-base">{item.title}</h3>
+        <div className="flex items-center justify-between text-[10px] md:text-xs text-muted-foreground mb-2 md:mb-3">
           {item.release_date && !isNaN(new Date(item.release_date).getTime()) ? (
             <span>{new Date(item.release_date).getFullYear()}</span>
           ) : <span />}
@@ -115,9 +115,9 @@ export function ContentCard({ item, progress }: ContentCardProps) {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-1 mt-3">
+        <div className="flex flex-wrap gap-1 mt-2 md:mt-3">
           {item.genres?.slice(0, 2).map((genre) => (
-            <Badge key={genre} variant="secondary" className="bg-white/5 text-gray-300 hover:bg-white/10 text-[10px] px-1.5 py-0">
+            <Badge key={genre} variant="secondary" className="bg-white/5 text-gray-300 hover:bg-white/10 text-[8px] md:text-[10px] px-1 md:px-1.5 py-0">
               {genre}
             </Badge>
           ))}

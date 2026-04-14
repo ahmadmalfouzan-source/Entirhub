@@ -18,7 +18,7 @@ export function Sidebar() {
   const { logout } = useStore();
 
   return (
-    <aside className="w-64 bg-[#0a0f1e] border-r border-white/10 flex flex-col h-screen sticky top-0">
+    <aside className="hidden md:flex w-64 bg-[#0a0f1e] border-r border-white/10 flex-col h-screen sticky top-0">
       <div className="p-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">

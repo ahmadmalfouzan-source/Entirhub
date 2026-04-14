@@ -60,27 +60,27 @@ export function Library() {
   });
 
   return (
-    <div className="p-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-          <LibraryIcon className="w-6 h-6 text-white" />
+    <div className="p-4 md:p-8">
+      <div className="flex items-center gap-3 mb-6 md:mb-8">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+          <LibraryIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
         </div>
-        <h1 className="text-3xl font-bold text-white">My Library</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-white">My Library</h1>
       </div>
 
       <Tabs defaultValue="all" className="w-full" onValueChange={setFilter}>
-        <TabsList className="bg-[#111827] border border-white/10 mb-8">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">All</TabsTrigger>
-          <TabsTrigger value="games" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Games</TabsTrigger>
-          <TabsTrigger value="movies" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Movies</TabsTrigger>
-          <TabsTrigger value="series" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Series</TabsTrigger>
+        <TabsList className="bg-[#111827] border border-white/10 mb-6 md:mb-8 flex flex-wrap h-auto p-1">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">All</TabsTrigger>
+          <TabsTrigger value="games" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">Games</TabsTrigger>
+          <TabsTrigger value="movies" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">Movies</TabsTrigger>
+          <TabsTrigger value="series" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">Series</TabsTrigger>
         </TabsList>
 
         <div className="mt-0">
           {filteredItems.length === 0 ? (
-            <div className="text-center py-20 text-gray-400">Your library is empty. Start adding some content!</div>
+            <div className="text-center py-10 md:py-20 text-gray-400 text-sm md:text-base">Your library is empty. Start adding some content!</div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {filteredItems.map(item => (
                 <ContentCard 
                   key={item.id} 

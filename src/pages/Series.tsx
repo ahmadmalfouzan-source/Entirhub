@@ -49,27 +49,27 @@ export default function Series() {
   }, [selectedGenre]);
 
   return (
-    <div className="p-8 space-y-12">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-            <Tv className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+            <Tv className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white">Series</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Series</h1>
         </div>
       </div>
 
       {/* Genre Filter */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <Filter className="w-5 h-5 text-blue-400" />
-          <h2 className="text-xl font-semibold text-white">Filter by Genre</h2>
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
+          <Filter className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+          <h2 className="text-lg md:text-xl font-semibold text-white">Filter by Genre</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button 
             variant={selectedGenre === null ? "default" : "outline"}
             onClick={() => setSelectedGenre(null)}
-            className={`rounded-full ${
+            className={`rounded-full text-xs md:text-sm h-8 md:h-10 ${
               selectedGenre === null 
                 ? "bg-blue-600 text-white" 
                 : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
@@ -82,7 +82,7 @@ export default function Series() {
               key={genre.id}
               variant={selectedGenre === genre.id ? "default" : "outline"}
               onClick={() => setSelectedGenre(genre.id)}
-              className={`rounded-full ${
+              className={`rounded-full text-xs md:text-sm h-8 md:h-10 ${
                 selectedGenre === genre.id 
                   ? "bg-blue-600 text-white" 
                   : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
@@ -96,17 +96,17 @@ export default function Series() {
 
       {selectedGenre ? (
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
             {SERIES_GENRES.find(g => g.id === selectedGenre)?.name} Series
           </h2>
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {[...Array(10)].map((_, i) => (
                 <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {genreSeries.map(item => (
                 <ContentCard key={item.external_id} item={item} />
               ))}
@@ -116,15 +116,15 @@ export default function Series() {
       ) : (
         <>
           <section>
-            <h2 className="text-2xl font-bold text-white mb-6">Trending Series</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Trending Series</h2>
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {trending.map(item => (
                   <ContentCard key={item.external_id} item={item} />
                 ))}
@@ -133,15 +133,15 @@ export default function Series() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-6">Popular Series</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Popular Series</h2>
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {popular.map(item => (
                   <ContentCard key={item.external_id} item={item} />
                 ))}

@@ -1,7 +1,7 @@
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || '';
+export const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || '';
 const RAWG_API_KEY = import.meta.env.VITE_RAWG_API_KEY || '';
 
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+export const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const RAWG_BASE_URL = 'https://api.rawg.io/api';
 
 export interface MediaItem {
@@ -129,6 +129,21 @@ export const fetchGames = async (search?: string): Promise<MediaItem[]> => {
     }));
   } catch (error) {
     console.error(error);
+    return [];
+  }
+};
+
+export const fetchMediaVideos = async (mediaType: 'movie' | 'series', externalId: string): Promise<any[]> => {
+  if (!TMDB_API_KEY) return [];
+  const tmdbId = externalId.replace('tmdb_series_', '').replace('tmdb_movie_', '').replace('tmdb_', '');
+  const type = mediaType === 'series' ? 'tv' : 'movie';
+  try {
+    const res = await fetch(`${TMDB_BASE_URL}/${type}/${tmdbId}/videos?api_key=${TMDB_API_KEY}`);
+    if (!res.ok) throw new Error('Failed to fetch videos');
+    const data = await res.json();
+    return data.results || [];
+  } catch (error) {
+    console.error('Error fetching videos:', error);
     return [];
   }
 };

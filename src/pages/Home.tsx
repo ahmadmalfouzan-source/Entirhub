@@ -34,25 +34,25 @@ export function Home() {
   const seriesCompleted = watchlist.filter(item => item.media?.media_type === 'series' && item.status === 'completed').length;
 
   return (
-    <div className="p-8 space-y-12">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12">
       {/* Welcome Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-border p-10">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
+      <div className="relative rounded-2xl md:rounded-3xl overflow-hidden bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-border p-6 md:p-10">
+        <div className="hidden md:block absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
         <div className="relative z-10 max-w-2xl">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Welcome back to EntertainHub</h1>
-          <p className="text-lg text-muted-foreground mb-8">Your personalized dashboard for all things gaming, movies, and series. Dive back into your current adventures.</p>
-          <div className="flex gap-4">
-            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-4 border border-border flex-1">
-              <div className="text-muted-foreground text-sm mb-1">Games Tracked</div>
-              <div className="text-2xl font-bold text-foreground">{gamesTracked}</div>
+          <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4">Welcome back to EntertainHub</h1>
+          <p className="text-sm md:text-lg text-muted-foreground mb-6 md:mb-8">Your personalized dashboard for all things gaming, movies, and series. Dive back into your current adventures.</p>
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-border flex-1">
+              <div className="text-muted-foreground text-xs md:text-sm mb-1">Games Tracked</div>
+              <div className="text-xl md:text-2xl font-bold text-foreground">{gamesTracked}</div>
             </div>
-            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-4 border border-border flex-1">
-              <div className="text-muted-foreground text-sm mb-1">Movies Watched</div>
-              <div className="text-2xl font-bold text-foreground">{moviesWatched}</div>
+            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-border flex-1">
+              <div className="text-muted-foreground text-xs md:text-sm mb-1">Movies Watched</div>
+              <div className="text-xl md:text-2xl font-bold text-foreground">{moviesWatched}</div>
             </div>
-            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-4 border border-border flex-1">
-              <div className="text-muted-foreground text-sm mb-1">Series Completed</div>
-              <div className="text-2xl font-bold text-foreground">{seriesCompleted}</div>
+            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-border flex-1">
+              <div className="text-muted-foreground text-xs md:text-sm mb-1">Series Completed</div>
+              <div className="text-xl md:text-2xl font-bold text-foreground">{seriesCompleted}</div>
             </div>
           </div>
         </div>
@@ -60,12 +60,12 @@ export function Home() {
 
       {/* Watch Tonight Section */}
       {watchTonight.length > 0 && (
-        <section className="bg-blue-500/5 border border-blue-500/10 rounded-3xl p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <Moon className="w-6 h-6 text-blue-400" />
-            <h2 className="text-2xl font-bold text-foreground">Watch Tonight</h2>
+        <section className="bg-blue-500/5 border border-blue-500/10 rounded-2xl md:rounded-3xl p-6 md:p-8">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Moon className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">Watch Tonight</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {watchTonight.map(item => (
               <ContentCard 
                 key={item.id} 
@@ -86,18 +86,18 @@ export function Home() {
 
       {/* Trending Section */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="w-6 h-6 text-blue-400" />
-          <h2 className="text-2xl font-bold text-foreground">Trending This Week</h2>
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
+          <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">Trending This Week</h2>
         </div>
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {trending.map(item => (
               <ContentCard key={item.external_id} item={item} />
             ))}
@@ -107,18 +107,18 @@ export function Home() {
 
       {/* Recommended Section */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <Sparkles className="w-6 h-6 text-purple-400" />
-          <h2 className="text-2xl font-bold text-foreground">Recommended For You</h2>
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
+          <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">Recommended For You</h2>
         </div>
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {recommended.map(item => (
               <ContentCard key={item.external_id} item={item} />
             ))}

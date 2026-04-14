@@ -77,28 +77,28 @@ export default function Movies() {
   };
 
   return (
-    <div className="p-8 space-y-12">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-            <Film className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+            <Film className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Movies</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Movies</h1>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {/* Genre Filter */}
         <section>
-          <div className="flex items-center gap-2 mb-6">
-            <Filter className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">Filter by Genre</h2>
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Filter className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">Filter by Genre</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button 
               variant={selectedGenre === null && selectedMood === null ? "default" : "outline"}
               onClick={() => handleGenreSelect(null)}
-              className="rounded-full"
+              className="rounded-full text-xs md:text-sm h-8 md:h-10"
             >
               All
             </Button>
@@ -107,7 +107,7 @@ export default function Movies() {
                 key={genre.id}
                 variant={selectedGenre === genre.id ? "default" : "outline"}
                 onClick={() => handleGenreSelect(genre.id)}
-                className="rounded-full"
+                className="rounded-full text-xs md:text-sm h-8 md:h-10"
               >
                 {genre.name}
               </Button>
@@ -117,9 +117,9 @@ export default function Movies() {
 
         {/* Mood Filter */}
         <section>
-          <div className="flex items-center gap-2 mb-6">
-            <Smile className="w-5 h-5 text-secondary" />
-            <h2 className="text-xl font-semibold text-foreground">What's your mood?</h2>
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Smile className="w-4 h-4 md:w-5 md:h-5 text-secondary" />
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">What's your mood?</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {MOODS.map(mood => (
@@ -127,7 +127,7 @@ export default function Movies() {
                 key={mood.id}
                 variant={selectedMood === mood.id ? "secondary" : "outline"}
                 onClick={() => handleMoodSelect(mood.id)}
-                className="rounded-full"
+                className="rounded-full text-xs md:text-sm h-8 md:h-10"
               >
                 {mood.name}
               </Button>
@@ -138,20 +138,20 @@ export default function Movies() {
 
       {selectedGenre || selectedMood ? (
         <section>
-          <h2 className="text-2xl font-bold text-foreground mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">
             {selectedGenre 
               ? `${MOVIE_GENRES.find(g => g.id === selectedGenre)?.name} Movies`
               : `${MOODS.find(m => m.id === selectedMood)?.name} Mood Recommendations`
             }
           </h2>
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {[...Array(10)].map((_, i) => (
                 <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {genreMovies.map(item => (
                 <ContentCard key={item.external_id} item={item} />
               ))}
@@ -161,15 +161,15 @@ export default function Movies() {
       ) : (
         <>
           <section>
-            <h2 className="text-2xl font-bold text-foreground mb-6">Trending Movies</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">Trending Movies</h2>
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {trending.map(item => (
                   <ContentCard key={item.external_id} item={item} />
                 ))}
@@ -178,15 +178,15 @@ export default function Movies() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-foreground mb-6">Popular Movies</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">Popular Movies</h2>
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {popular.map(item => (
                   <ContentCard key={item.external_id} item={item} />
                 ))}

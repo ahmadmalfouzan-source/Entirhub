@@ -1,0 +1,39 @@
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Gamepad2, Film, Tv, Library, Sparkles, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const navItems = [
+  { icon: Home, label: 'Home', path: '/' },
+  { icon: Film, label: 'Movies', path: '/movies' },
+  { icon: Tv, label: 'Series', path: '/series' },
+  { icon: Gamepad2, label: 'Games', path: '/games' },
+  { icon: Library, label: 'Library', path: '/library' },
+  { icon: Sparkles, label: 'For You', path: '/for-you' },
+  { icon: User, label: 'Profile', path: '/profile' },
+];
+
+export function BottomNav() {
+  const location = useLocation();
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0f1e]/95 backdrop-blur-md border-t border-white/10 z-50 px-2 py-2 flex items-center justify-around">
+      {navItems.map((item) => {
+        const isActive = location.pathname === item.path;
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={cn(
+              "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200",
+              isActive 
+                ? "text-blue-400" 
+                : "text-gray-400 hover:text-white"
+            )}
+          >
+            <item.icon className={cn("w-6 h-6", isActive ? "scale-110" : "")} />
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
