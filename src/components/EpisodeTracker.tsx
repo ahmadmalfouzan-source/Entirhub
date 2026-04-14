@@ -19,13 +19,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { 
-  Accordion, 
-  AccordionContent, 
-  AccordionItem, 
-  AccordionTrigger 
-} from '@/components/ui/accordion';
-import { CheckCircle2, ChevronRight, PlayCircle, Star } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronUp, PlayCircle, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EpisodeTrackerProps {
@@ -40,6 +34,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
   const [seasonEpisodes, setSeasonEpisodes] = useState<Record<number, Episode[]>>({});
   const [loading, setLoading] = useState(true);
   const [loadingEpisodes, setLoadingEpisodes] = useState<Record<number, boolean>>({});
+  const [expandedSeason, setExpandedSeason] = useState<number | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -80,6 +75,15 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
       toast.error(`Failed to load episodes for Season ${seasonNumber}`);
     } finally {
       setLoadingEpisodes(prev => ({ ...prev, [seasonNumber]: false }));
+    }
+  };
+
+  const handleToggleSeason = (seasonNumber: number) => {
+    if (expandedSeason === seasonNumber) {
+      setExpandedSeason(null);
+    } else {
+      setExpandedSeason(seasonNumber);
+      loadSeasonEpisodes(seasonNumber);
     }
   };
 
@@ -184,32 +188,21 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
         </div>
       </div>
 
-      <Accordion 
-        type="single" 
-        collapsible 
-        className="space-y-4"
-        onValueChange={(value) => {
-          console.log('Accordion value changed:', value);
-          const val = value as any;
-          if (typeof val === 'string' && val.startsWith('season-')) {
-            const seasonNumber = parseInt(val.replace('season-', ''));
-            loadSeasonEpisodes(seasonNumber);
-          }
-        }}
-      >
+      <div className="space-y-4">
         {seasons.map((season) => {
           const progress = getSeasonProgress(watched, season.season_number, season.episode_count);
           const isFullyWatched = progress === 100;
           const currentRating = seasonRatings.find(r => r.season_number === season.season_number)?.rating || 0;
+          const isExpanded = expandedSeason === season.season_number;
 
           return (
-            <AccordionItem 
+            <div 
               key={season.id} 
-              value={`season-${season.season_number}`}
-              className="border border-border rounded-xl overflow-hidden bg-white/5 px-4"
+              className="border border-border rounded-xl overflow-hidden bg-white/5"
             >
-              <AccordionTrigger 
-                className="hover:no-underline py-4"
+              <div 
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                onClick={() => handleToggleSeason(season.season_number)}
               >
                 <div className="flex items-center gap-4 flex-1 text-left">
                   <div className="w-10 h-14 rounded bg-white/10 overflow-hidden flex-shrink-0">
@@ -259,68 +252,74 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
                     </div>
                   </div>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-4">
-                <div className="space-y-4 pt-2">
-                  <div className="flex justify-end">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleMarkSeasonWatched(season.season_number, season.episode_count)}
-                      className="text-xs text-primary hover:text-primary/80 hover:bg-primary/10"
-                    >
-                      Mark all as watched
-                    </Button>
-                  </div>
-
-                  {loadingEpisodes[season.season_number] ? (
-                    <div className="flex justify-center py-4">
-                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {console.log(`Rendering episodes for season ${season.season_number}:`, seasonEpisodes[season.season_number])}
-                      {seasonEpisodes[season.season_number] && seasonEpisodes[season.season_number].length > 0 ? (
-                        seasonEpisodes[season.season_number].map((episode) => {
-                          const isWatched = watched.some(w => 
-                            w.season_number === season.season_number && 
-                            w.episode_number === episode.episode_number
-                          );
-
-                          return (
-                            <div 
-                              key={episode.id}
-                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group"
-                            >
-                              <Checkbox 
-                                checked={isWatched}
-                                onCheckedChange={(checked) => handleToggleEpisode(season.season_number, episode.episode_number, !!checked)}
-                                id={`ep-${episode.id}`}
-                                className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                              />
-                              <label 
-                                htmlFor={`ep-${episode.id}`}
-                                className="flex-1 text-sm text-muted-foreground cursor-pointer group-hover:text-foreground transition-colors"
-                              >
-                                <span className="text-muted-foreground/50 mr-2">E{episode.episode_number}</span>
-                                {episode.name}
-                              </label>
-                            </div>
-                          );
-                        })
-                      ) : !loadingEpisodes[season.season_number] && seasonEpisodes[season.season_number] ? (
-                        <div className="col-span-full py-4 text-center text-muted-foreground text-sm">
-                          No episodes found for this season.
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
+                <div className="ml-4 text-muted-foreground">
+                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
+              </div>
+
+              {isExpanded && (
+                <div className="px-4 pb-4 border-t border-border/50">
+                  <div className="space-y-4 pt-4">
+                    <div className="flex justify-end">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleMarkSeasonWatched(season.season_number, season.episode_count)}
+                        className="text-xs text-primary hover:text-primary/80 hover:bg-primary/10"
+                      >
+                        Mark all as watched
+                      </Button>
+                    </div>
+
+                    {loadingEpisodes[season.season_number] ? (
+                      <div className="flex justify-center py-4">
+                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {console.log(`Rendering episodes for season ${season.season_number}:`, seasonEpisodes[season.season_number])}
+                        {seasonEpisodes[season.season_number] && seasonEpisodes[season.season_number].length > 0 ? (
+                          seasonEpisodes[season.season_number].map((episode) => {
+                            const isWatched = watched.some(w => 
+                              w.season_number === season.season_number && 
+                              w.episode_number === episode.episode_number
+                            );
+
+                            return (
+                              <div 
+                                key={episode.id}
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group"
+                              >
+                                <Checkbox 
+                                  checked={isWatched}
+                                  onCheckedChange={(checked) => handleToggleEpisode(season.season_number, episode.episode_number, !!checked)}
+                                  id={`ep-${episode.id}`}
+                                  className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                />
+                                <label 
+                                  htmlFor={`ep-${episode.id}`}
+                                  className="flex-1 text-sm text-muted-foreground cursor-pointer group-hover:text-foreground transition-colors"
+                                >
+                                  <span className="text-muted-foreground/50 mr-2">E{episode.episode_number}</span>
+                                  {episode.name}
+                                </label>
+                              </div>
+                            );
+                          })
+                        ) : !loadingEpisodes[season.season_number] && seasonEpisodes[season.season_number] ? (
+                          <div className="col-span-full py-4 text-center text-muted-foreground text-sm">
+                            No episodes found for this season.
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           );
         })}
-      </Accordion>
+      </div>
     </div>
   );
 }
