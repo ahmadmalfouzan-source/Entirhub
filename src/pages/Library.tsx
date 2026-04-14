@@ -4,6 +4,7 @@ import { ContentCard } from '@/components/ContentCard';
 import { Library as LibraryIcon } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { fetchSeasons, getWatchedEpisodes, getTotalProgress } from '@/services/episodes';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ProgressData {
   watched: number;
@@ -15,6 +16,7 @@ export function Library() {
   const { watchlist } = useStore();
   const [filter, setFilter] = useState('all');
   const [progressMap, setProgressMap] = useState<Record<string, ProgressData>>({});
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchAllProgress = async () => {
@@ -65,20 +67,20 @@ export function Library() {
         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
           <LibraryIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-white">My Library</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-white">{t('myLibrary')}</h1>
       </div>
 
       <Tabs defaultValue="all" className="w-full" onValueChange={setFilter}>
         <TabsList className="bg-[#111827] border border-white/10 mb-6 md:mb-8 flex flex-wrap h-auto p-1">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">All</TabsTrigger>
-          <TabsTrigger value="games" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">Games</TabsTrigger>
-          <TabsTrigger value="movies" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">Movies</TabsTrigger>
-          <TabsTrigger value="series" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">Series</TabsTrigger>
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('all')}</TabsTrigger>
+          <TabsTrigger value="games" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('games')}</TabsTrigger>
+          <TabsTrigger value="movies" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('movies')}</TabsTrigger>
+          <TabsTrigger value="series" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('series')}</TabsTrigger>
         </TabsList>
 
         <div className="mt-0">
           {filteredItems.length === 0 ? (
-            <div className="text-center py-10 md:py-20 text-gray-400 text-sm md:text-base">Your library is empty. Start adding some content!</div>
+            <div className="text-center py-10 md:py-20 text-gray-400 text-sm md:text-base">{t('emptyLibrary')}</div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {filteredItems.map(item => (

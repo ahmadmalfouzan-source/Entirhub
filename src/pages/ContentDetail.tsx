@@ -7,6 +7,8 @@ import { fetchMediaDetails, fetchMediaVideos, MediaItem } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EpisodeTracker } from '@/components/EpisodeTracker';
+import { useTranslation } from '@/hooks/useTranslation';
+import { translations } from '@/i18n/translations';
 
 export function ContentDetail() {
   const { id } = useParams();
@@ -14,6 +16,7 @@ export function ContentDetail() {
   const [loading, setLoading] = useState(true);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
+  const { t } = useTranslation();
   const { 
     watchlist, 
     addToWatchlist, 
@@ -176,21 +179,21 @@ export function ContentDetail() {
             <div className="flex items-center gap-4">
               {!watchlistItem ? (
                 <Button onClick={handleAddToList} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
-                  <Plus className="w-4 h-4 mr-2" /> Add to Library
+                  <Plus className="w-4 h-4 mr-2" /> {t('addToLibrary')}
                 </Button>
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
                   <Select value={watchlistItem.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-[160px] bg-white/10 border-border text-foreground">
-                      <SelectValue placeholder="Status" />
+                      <SelectValue placeholder={t('status')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="planned">Planned</SelectItem>
-                      <SelectItem value="watch_tonight">Watch Tonight</SelectItem>
-                      <SelectItem value="watching">Watching</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="on_hold">On Hold</SelectItem>
-                      <SelectItem value="dropped">Dropped</SelectItem>
+                      <SelectItem value="planned">{t('planned')}</SelectItem>
+                      <SelectItem value="watch_tonight">{t('watchTonight')}</SelectItem>
+                      <SelectItem value="watching">{t('watching')}</SelectItem>
+                      <SelectItem value="completed">{t('completed')}</SelectItem>
+                      <SelectItem value="on_hold">{t('onHold')}</SelectItem>
+                      <SelectItem value="dropped">{t('dropped')}</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -264,7 +267,7 @@ export function ContentDetail() {
       <div className="max-w-7xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
         <div className="lg:col-span-2 space-y-6 md:space-y-8">
           <section>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2 md:mb-4">Overview</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2 md:mb-4">{t('overview')}</h2>
             <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
               {item.description || 'No description available.'}
             </p>
@@ -285,11 +288,11 @@ export function ContentDetail() {
         
         <div className="space-y-6">
           <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="font-semibold text-foreground mb-4">Your Tracking</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t('yourTracking')}</h3>
             <div className="space-y-4 text-sm">
               <div className="flex justify-between text-muted-foreground">
-                <span>Status</span>
-                <span className="text-foreground capitalize">{watchlistItem?.status?.replace('_', ' ') || 'Not Tracked'}</span>
+                <span>{t('status')}</span>
+                <span className="text-foreground capitalize">{watchlistItem?.status ? t(watchlistItem.status.replace('_', '') as keyof typeof translations.en) || watchlistItem.status.replace('_', ' ') : 'Not Tracked'}</span>
               </div>
               {watchlistItem?.rewatch_count ? (
                 <div className="flex justify-between text-muted-foreground">
@@ -304,7 +307,7 @@ export function ContentDetail() {
                 </div>
               )}
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>Your Rating</span>
+                <span>{t('yourRating')}</span>
                 {watchlistItem ? (
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (

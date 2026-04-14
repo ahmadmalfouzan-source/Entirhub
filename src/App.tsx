@@ -22,6 +22,7 @@ import Movies from '@/pages/Movies';
 import Series from '@/pages/Series';
 import Games from '@/pages/Games';
 import { useStore } from '@/store/useStore';
+import { useLanguageStore } from '@/store/useLanguageStore';
 import { Toaster } from '@/components/ui/sonner';
 import { supabase } from '@/lib/supabase';
 
@@ -48,6 +49,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const { session, setSession, fetchWatchlist } = useStore();
+  const { language } = useLanguageStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,25 +74,27 @@ export default function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/onboarding" element={session ? <Navigate to="/" replace /> : <Onboarding />} />
-        <Route path="/" element={<ProtectedLayout><Home /></ProtectedLayout>} />
-        <Route path="/games" element={<ProtectedLayout><Games /></ProtectedLayout>} />
-        <Route path="/movies" element={<ProtectedLayout><Movies /></ProtectedLayout>} />
-        <Route path="/series" element={<ProtectedLayout><Series /></ProtectedLayout>} />
-        <Route path="/content/:id" element={<ProtectedLayout><ContentDetail /></ProtectedLayout>} />
-        <Route path="/wiki/:id" element={<ProtectedLayout><GameWiki /></ProtectedLayout>} />
-        <Route path="/for-you" element={<ProtectedLayout><ForYou /></ProtectedLayout>} />
-        <Route path="/library" element={<ProtectedLayout><Library /></ProtectedLayout>} />
-        <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
-        <Route path="/wrapped" element={<ProtectedLayout><Wrapped /></ProtectedLayout>} />
-        <Route path="/user/:username" element={<PublicProfile />} />
-        <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <Toaster theme="dark" />
-    </Router>
+    <div dir={language === 'ar' ? 'rtl' : 'ltr'} lang={language} className={language === 'ar' ? 'font-tajawal' : ''}>
+      <Router>
+        <Routes>
+          <Route path="/onboarding" element={session ? <Navigate to="/" replace /> : <Onboarding />} />
+          <Route path="/" element={<ProtectedLayout><Home /></ProtectedLayout>} />
+          <Route path="/games" element={<ProtectedLayout><Games /></ProtectedLayout>} />
+          <Route path="/movies" element={<ProtectedLayout><Movies /></ProtectedLayout>} />
+          <Route path="/series" element={<ProtectedLayout><Series /></ProtectedLayout>} />
+          <Route path="/content/:id" element={<ProtectedLayout><ContentDetail /></ProtectedLayout>} />
+          <Route path="/wiki/:id" element={<ProtectedLayout><GameWiki /></ProtectedLayout>} />
+          <Route path="/for-you" element={<ProtectedLayout><ForYou /></ProtectedLayout>} />
+          <Route path="/library" element={<ProtectedLayout><Library /></ProtectedLayout>} />
+          <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
+          <Route path="/wrapped" element={<ProtectedLayout><Wrapped /></ProtectedLayout>} />
+          <Route path="/user/:username" element={<PublicProfile />} />
+          <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Toaster theme="dark" />
+      </Router>
+    </div>
   );
 }
 

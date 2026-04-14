@@ -2,20 +2,22 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Gamepad2, Film, Tv, Library, Sparkles, Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const navItems = [
-  { icon: Home, label: 'Home', path: '/' },
-  { icon: Gamepad2, label: 'Games', path: '/games' },
-  { icon: Film, label: 'Movies', path: '/movies' },
-  { icon: Tv, label: 'Series', path: '/series' },
-  { icon: Library, label: 'My Library', path: '/library' },
-  { icon: Sparkles, label: 'For You', path: '/for-you' },
-  { icon: User, label: 'Profile', path: '/profile' },
-];
+  { icon: Home, labelKey: 'home', path: '/' },
+  { icon: Gamepad2, labelKey: 'games', path: '/games' },
+  { icon: Film, labelKey: 'movies', path: '/movies' },
+  { icon: Tv, labelKey: 'series', path: '/series' },
+  { icon: Library, labelKey: 'myLibrary', path: '/library' },
+  { icon: Sparkles, labelKey: 'forYou', path: '/for-you' },
+  { icon: User, labelKey: 'profile', path: '/profile' },
+] as const;
 
 export function Sidebar() {
   const location = useLocation();
   const { logout } = useStore();
+  const { t } = useTranslation();
 
   return (
     <aside className="hidden md:flex w-64 bg-[#0a0f1e] border-r border-white/10 flex-col h-screen sticky top-0">
@@ -45,7 +47,7 @@ export function Sidebar() {
               )}
             >
               <item.icon className={cn("w-5 h-5", isActive ? "text-blue-400" : "")} />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
@@ -62,14 +64,14 @@ export function Sidebar() {
           )}
         >
           <Settings className="w-5 h-5" />
-          Settings
+          {t('settings')}
         </Link>
         <button
           onClick={() => logout()}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:text-red-400 hover:bg-red-400/10"
         >
           <LogOut className="w-5 h-5" />
-          Logout
+          {t('logout')}
         </button>
       </div>
     </aside>

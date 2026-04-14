@@ -123,6 +123,12 @@
     --ring: #2563eb;
 }
 
+@layer utilities {
+  .font-tajawal {
+    font-family: 'Tajawal', sans-serif;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

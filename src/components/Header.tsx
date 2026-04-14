@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, Bell, Sun, Moon, Check } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useLanguageStore } from '@/store/useLanguageStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Input } from '@/components/ui/input';
 import { searchMedia, searchAnime, MediaItem } from '@/services/api';
 import { Link } from 'react-router-dom';
@@ -9,6 +11,8 @@ import { formatDistanceToNow } from 'date-fns';
 
 export function Header() {
   const { user } = useStore();
+  const { language, setLanguage } = useLanguageStore();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<MediaItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -103,7 +107,7 @@ export function Header() {
       <div className={`flex-1 max-w-xl relative ${isMobileSearchOpen ? 'block absolute inset-x-4 top-2 z-50' : 'hidden md:block'}`}>
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
         <Input 
-          placeholder="Search movies, series, anime..." 
+          placeholder={t('search')} 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="w-full pl-9 pr-9 md:pl-10 md:pr-10 bg-white/5 md:bg-white/5 bg-card border border-border md:border-none text-foreground placeholder:text-muted-foreground rounded-full h-10 md:h-12 focus-visible:ring-1 focus-visible:ring-primary text-sm"
@@ -156,6 +160,13 @@ export function Header() {
       </div>
 
       <div className={`flex items-center gap-2 md:gap-6 ml-2 md:ml-8 ${isMobileSearchOpen ? 'hidden md:flex' : 'flex'}`}>
+        <button
+          onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+          className="bg-white/10 px-3 py-1 rounded-full text-sm font-medium hover:bg-white/20 transition-colors"
+        >
+          {language === 'en' ? 'AR' : 'EN'}
+        </button>
+
         <button 
           onClick={toggleTheme}
           className="p-2 rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
