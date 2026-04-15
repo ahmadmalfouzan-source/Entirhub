@@ -15,7 +15,7 @@ interface ProgressData {
 type SortOption = 'date_added' | 'rating' | 'name' | 'year';
 
 export function Library() {
-  const { watchlist } = useStore();
+  const { watchlist, removeFromWatchlist } = useStore();
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('date_added');
   const [progressMap, setProgressMap] = useState<Record<string, ProgressData>>({});
@@ -143,6 +143,7 @@ export function Library() {
                   <ContentCard 
                     key={item.id} 
                     item={{
+                      id: item.id,
                       external_id: item.media?.external_id || '',
                       media_type: item.media?.media_type || '',
                       title: item.media?.title || 'Unknown Title',
@@ -152,6 +153,7 @@ export function Library() {
                       genres: item.media?.genres || []
                     }} 
                     progress={progressMap[item.media_id]}
+                    onDelete={removeFromWatchlist}
                   />
                 ))}
               </div>

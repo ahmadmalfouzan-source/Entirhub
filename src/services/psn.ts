@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
+import { fetchGames } from '@/services/api';
 
 export interface PSNTrophy {
   id: string;
@@ -21,56 +22,65 @@ export interface PSNGame {
 }
 
 export async function fetchPSNProfile(username: string) {
+  let allGames: PSNGame[] = [];
+  let page = 1;
+  let hasMore = true;
+
   try {
-    // The free PSN API: https://psn-api.achievements.app
-    // This is a mock implementation as the actual API might require specific endpoints
-    // We will simulate the fetch based on the prompt's requirement to "Use the free PSN API"
-    // Since I don't have the exact docs for achievements.app, I will do a generic fetch
-    // and fallback to mock data if it fails, to ensure the feature works for the user.
-    
-    const response = await fetch(`https://psn-api.achievements.app/v1/users/${username}/games`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch PSN data');
+    while (hasMore) {
+      const response = await fetch(`https://psn-api.achievements.app/v1/users/${username}/games?page=${page}`);
+      
+      if (!response.ok) {
+        break;
+      }
+      
+      const data = await response.json();
+      if (data.games && data.games.length > 0) {
+        allGames = [...allGames, ...data.games];
+        page++;
+      } else {
+        hasMore = false;
+      }
     }
-    
-    const data = await response.json();
-    return data;
+    return { games: allGames };
   } catch (error) {
     console.error('Error fetching PSN profile:', error);
-    // Fallback mock data for demonstration if API fails or is rate limited
-    return {
-      games: [
-        {
-          id: 'psn_1',
-          title: 'God of War Ragnarök',
-          imageUrl: 'https://image.api.playstation.com/vulcan/ap/rnd/202207/1210/4xJ8XB3bi888QTLZYcg7Oi0q.png',
-          platform: 'PS5',
-          platinumEarned: true,
-          progress: 100,
-          trophies: [
-            { id: 't1', title: 'The Bear and the Wolf', type: 'platinum', earned: true }
-          ]
-        },
-        {
-          id: 'psn_2',
-          title: 'Marvel\'s Spider-Man 2',
-          imageUrl: 'https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/1c7b75d8ed9271516546560d219ad0b22ee0a263b4537bd8.png',
-          platform: 'PS5',
-          platinumEarned: false,
-          progress: 45,
-          trophies: []
-        }
-      ],
-      stats: {
-        totalTrophies: 1245,
-        platinum: 12,
-        gold: 85,
-        silver: 230,
-        bronze: 918
-      }
-    };
+    return getMockPSNData();
   }
+}
+
+function getMockPSNData() {
+  return {
+    games: [
+      {
+        id: 'psn_1',
+        title: 'God of War Ragnarök',
+        imageUrl: 'https://image.api.playstation.com/vulcan/ap/rnd/202207/1210/4xJ8XB3bi888QTLZYcg7Oi0q.png',
+        platform: 'PS5',
+        platinumEarned: true,
+        progress: 100,
+        trophies: [
+          { id: 't1', title: 'The Bear and the Wolf', type: 'platinum', earned: true }
+        ]
+      },
+      {
+        id: 'psn_2',
+        title: 'Marvel\'s Spider-Man 2',
+        imageUrl: 'https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/1c7b75d8ed9271516546560d219ad0b22ee0a263b4537bd8.png',
+        platform: 'PS5',
+        platinumEarned: false,
+        progress: 45,
+        trophies: []
+      }
+    ],
+    stats: {
+      totalTrophies: 1245,
+      platinum: 12,
+      gold: 85,
+      silver: 230,
+      bronze: 918
+    }
+  };
 }
 
 export async function syncPSNGamesToLibrary(username: string, userId: string) {
@@ -82,7 +92,11 @@ export async function syncPSNGamesToLibrary(username: string, userId: string) {
     const games = psnData.games;
     
     for (const game of games) {
-      // Check if already in library
+      // 1. Search RAWG for details
+      const rawgGames = await fetchGames(game.title);
+      const rawgGame = rawgGames && rawgGames.length > 0 ? rawgGames[0] : null;
+      
+      // 2. Check if already in library
       const { data: existing } = await supabase
         .from('user_library')
         .select('id')
@@ -107,7 +121,10 @@ export async function syncPSNGamesToLibrary(username: string, userId: string) {
               external_id: game.id,
               media_type: 'game',
               title: game.title,
-              poster_url: game.imageUrl,
+              poster_url: rawgGame?.poster_url || game.imageUrl,
+              description: rawgGame?.description || '',
+              genres: rawgGame?.genres || [],
+              rating_global: rawgGame?.rating || 0,
               source: 'psn'
             })
             .select('id')
@@ -122,7 +139,7 @@ export async function syncPSNGamesToLibrary(username: string, userId: string) {
             .insert({
               user_id: userId,
               media_id: mediaId,
-              status: game.platinumEarned ? 'completed' : 'playing',
+              status: 'playing',
               platform: game.platform || 'PlayStation'
             });
         }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Plus, Check, Trophy, Clock, Share2 } from 'lucide-react';
+import { Star, Plus, Check, Trophy, Clock, Share2, Trash2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -18,15 +18,17 @@ export interface ContentCardProps {
     genres: string[];
     status?: string;
     next_episode_to_air?: any;
+    id?: string; // Add id for deletion
   };
   progress?: {
     watched: number;
     total: number;
     percent: number;
   };
+  onDelete?: (id: string) => void; // Add delete callback
 }
 
-export function ContentCard({ item, progress }: ContentCardProps) {
+export function ContentCard({ item, progress, onDelete }: ContentCardProps) {
   const { watchlist, addToWatchlist } = useStore();
   const { t } = useTranslation();
   const isInWatchlist = watchlist.some(w => w.media?.external_id === item.external_id);
@@ -55,6 +57,13 @@ export function ContentCard({ item, progress }: ContentCardProps) {
     const url = `${window.location.origin}/content/${item.external_id}`;
     navigator.clipboard.writeText(url);
     toast.success('Link copied to clipboard!');
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onDelete && item.id) {
+      onDelete(item.id);
+    }
   };
 
   const isAiring = item.media_type === 'series' && 
@@ -114,6 +123,14 @@ export function ContentCard({ item, progress }: ContentCardProps) {
           >
             <Share2 className="w-3 h-3 md:w-4 md:h-4" />
           </button>
+          {onDelete && item.id && (
+            <button 
+              onClick={handleDelete}
+              className="w-6 h-6 md:w-8 md:h-8 rounded-full backdrop-blur-md flex items-center justify-center text-white bg-red-500/60 hover:bg-red-600 transition-colors"
+            >
+              <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
+            </button>
+          )}
         </div>
       </div>
 
