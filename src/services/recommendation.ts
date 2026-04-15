@@ -27,18 +27,41 @@ export async function getRecommendations(): Promise<RecommendationItem[]> {
       fetchTopRatedGames()
     ]);
 
-    const baseRecommendations: RecommendationItem[] = [
-      ...trendingMovies.map(m => ({ ...m, rating_global: m.rating || 0, reason: 'Trending Movie' })),
-      ...trendingSeries.map(s => ({ ...s, rating_global: s.rating || 0, reason: 'Trending Series' })),
-      ...topGames.map(g => ({ ...g, rating_global: g.rating || 0, reason: 'Top Rated Game' }))
-    ].map(item => ({
-      external_id: item.external_id,
-      title: item.title,
-      poster_url: item.poster_url,
-      media_type: item.media_type as any,
-      rating_global: item.rating_global,
-      reason: item.reason
-    }));
+    const baseRecommendations: RecommendationItem[] = [];
+    const maxLength = Math.max(trendingMovies.length, trendingSeries.length, topGames.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (trendingMovies[i]) {
+        baseRecommendations.push({
+          external_id: trendingMovies[i].external_id,
+          title: trendingMovies[i].title,
+          poster_url: trendingMovies[i].poster_url,
+          media_type: 'movie',
+          rating_global: trendingMovies[i].rating || 0,
+          reason: 'Trending Movie'
+        });
+      }
+      if (trendingSeries[i]) {
+        baseRecommendations.push({
+          external_id: trendingSeries[i].external_id,
+          title: trendingSeries[i].title,
+          poster_url: trendingSeries[i].poster_url,
+          media_type: 'series',
+          rating_global: trendingSeries[i].rating || 0,
+          reason: 'Trending Series'
+        });
+      }
+      if (topGames[i]) {
+        baseRecommendations.push({
+          external_id: topGames[i].external_id,
+          title: topGames[i].title,
+          poster_url: topGames[i].poster_url,
+          media_type: 'game',
+          rating_global: topGames[i].rating || 0,
+          reason: 'Top Rated Game'
+        });
+      }
+    }
 
     if (authError || !user) {
       return deduplicate(baseRecommendations).slice(0, 20);
@@ -84,14 +107,22 @@ export async function getRecommendations(): Promise<RecommendationItem[]> {
       .slice(0, 5)
       .map(([genre]) => genre);
 
-    // 4. Call Gemini API
-    const aiRecs = await getAIRecommendations({
-      favoriteGenres,
-      topRated: topRated.slice(0, 10),
-      recentlyWatched: recentlyWatched.slice(0, 10)
-    });
+    // 4. Call Gemini API if we have enough data
+    let aiRecs = { recommendations: [] as any[] };
+    if (favoriteGenres.length > 0 || topRated.length > 0 || recentlyWatched.length > 0) {
+      console.log('Calling Gemini with:', { favoriteGenres, topRated, recentlyWatched });
+      aiRecs = await getAIRecommendations({
+        favoriteGenres,
+        topRated: topRated.slice(0, 10),
+        recentlyWatched: recentlyWatched.slice(0, 10)
+      });
+      console.log('Gemini returned:', aiRecs);
+    } else {
+      console.log('Not enough data to call Gemini');
+    }
 
     if (!aiRecs.recommendations || aiRecs.recommendations.length === 0) {
+      console.log('Falling back to base recommendations');
       return deduplicate(baseRecommendations).filter(item => !userExternalIds.has(item.external_id)).slice(0, 20);
     }
 
@@ -100,6 +131,7 @@ export async function getRecommendations(): Promise<RecommendationItem[]> {
     
     await Promise.all(aiRecs.recommendations.map(async (rec) => {
       try {
+        console.log('Fetching details for:', rec.title, rec.type);
         if (rec.type === 'game') {
           const games = await fetchGames(rec.title);
           if (games && games.length > 0) {
@@ -129,6 +161,17 @@ export async function getRecommendations(): Promise<RecommendationItem[]> {
               reason: rec.reason
             });
             userExternalIds.add(match.external_id);
+          } else if (media.length > 0 && !userExternalIds.has(media[0].external_id)) {
+             // Fallback if type doesn't match exactly but we found something
+             personalizedRecs.push({
+              external_id: media[0].external_id,
+              title: media[0].title,
+              poster_url: media[0].poster_url,
+              media_type: media[0].media_type as 'movie' | 'series',
+              rating_global: media[0].rating || 0,
+              reason: rec.reason
+            });
+            userExternalIds.add(media[0].external_id);
           }
         }
       } catch (err) {
@@ -136,9 +179,12 @@ export async function getRecommendations(): Promise<RecommendationItem[]> {
       }
     }));
 
+    console.log('Personalized recs fetched:', personalizedRecs.length);
+
     // 6. Combine, filter out already in library, and deduplicate
-    const combined = [...personalizedRecs, ...baseRecommendations]
-      .filter(item => !userExternalIds.has(item.external_id));
+    // Note: personalizedRecs were already checked against userExternalIds before being added to the array
+    const filteredBase = baseRecommendations.filter(item => !userExternalIds.has(item.external_id));
+    const combined = [...personalizedRecs, ...filteredBase];
 
     return deduplicate(combined).slice(0, 20);
   } catch (error) {

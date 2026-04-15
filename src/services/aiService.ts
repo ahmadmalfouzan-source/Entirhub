@@ -5,9 +5,9 @@ export const getAIRecommendations = async (userData: {
   topRated: string[];
   recentlyWatched: string[];
 }): Promise<{ recommendations: { title: string; type: 'movie' | 'series' | 'game'; reason: string; genre: string }[] }> => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error('VITE_GEMINI_API_KEY is not defined');
+    console.error('GEMINI_API_KEY is not defined');
     return { recommendations: [] };
   }
 
@@ -56,9 +56,9 @@ export const getAIRecommendations = async (userData: {
 };
 
 export const getGameMissions = async (gameName: string): Promise<any[]> => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error('VITE_GEMINI_API_KEY is not defined');
+    console.error('GEMINI_API_KEY is not defined');
     return [];
   }
 
