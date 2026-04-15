@@ -22,7 +22,8 @@ export function ForYou() {
         poster_url: item.poster_url,
         rating: item.rating_global || 0,
         release_date: '',
-        genres: []
+        genres: [],
+        reason: item.reason
       }));
       setRecommendations(mapped);
     } catch (error) {
@@ -66,8 +67,13 @@ export function ForYou() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
           {recommendations.map(item => (
-            <div key={item.external_id} className="relative group">
+            <div key={item.external_id} className="relative group flex flex-col">
               <ContentCard item={item} />
+              {item.reason && (
+                <div className="mt-2 text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md self-start">
+                  {item.reason}
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -4,7 +4,7 @@ export const getAIRecommendations = async (userData: {
   favoriteGenres: string[];
   topRated: string[];
   recentlyWatched: string[];
-}): Promise<{ recommendations: { title: string; type: 'movie' | 'tv' | 'game'; reason: string; genre: string }[] }> => {
+}): Promise<{ recommendations: { title: string; type: 'movie' | 'series' | 'game'; reason: string; genre: string }[] }> => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     console.error('VITE_GEMINI_API_KEY is not defined');
@@ -19,17 +19,17 @@ export const getAIRecommendations = async (userData: {
     - Top Rated: ${userData.topRated.join(', ')}
     - Recently Watched/Played: ${userData.recentlyWatched.join(', ')}
 
-    Provide 5 highly personalized recommendations that match the user's taste in tone, themes, and storytelling style.
-    Mix popular titles with hidden gems. Avoid generic recommendations.
-    IMPORTANT: Do not recommend anything from the Recently Watched/Played list.
+    Provide 10 highly personalized recommendations that match the user's taste in tone, themes, and storytelling style.
+    Mix movies, series, and games.
+    IMPORTANT: Do not recommend anything from the Recently Watched/Played list or Top Rated list.
 
     Return ONLY valid JSON in this format:
     {
       "recommendations": [
         {
           "title": "string",
-          "type": "movie" | "tv" | "game",
-          "reason": "short explanation",
+          "type": "movie" | "series" | "game",
+          "reason": "short explanation (e.g., 'Because you watched The Boys', 'Based on your Action favorites')",
           "genre": "string"
         }
       ]
