@@ -101,7 +101,7 @@ export async function addToLibrary(media: MediaInput) {
 export async function getUserLibrary() {
   try {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) throw new Error('User not authenticated');
+    if (userError || !user) return [];
 
     const { data, error } = await supabase
       .from('user_library')
@@ -112,7 +112,7 @@ export async function getUserLibrary() {
     return data;
   } catch (error: any) {
     console.error('Error in getUserLibrary:', error.message);
-    throw error;
+    return [];
   }
 }
 

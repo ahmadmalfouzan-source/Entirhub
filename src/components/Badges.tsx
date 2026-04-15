@@ -29,7 +29,10 @@ export function Badges() {
 
   useEffect(() => {
     const checkBadges = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
       const earned = new Set<string>();
 
@@ -43,7 +46,7 @@ export function Badges() {
       // Check Episodes-based badges
       try {
         const { data: episodes } = await supabase
-          .from('watched_episodes')
+          .from('episode_progress')
           .select('created_at')
           .eq('user_id', user.id);
 

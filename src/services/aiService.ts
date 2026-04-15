@@ -1,3 +1,5 @@
+import { GoogleGenAI } from '@google/genai';
+
 export const getAIRecommendations = async (userData: {
   favoriteGenres: string[];
   topRated: string[];
@@ -10,6 +12,7 @@ export const getAIRecommendations = async (userData: {
   }
 
   try {
+    const ai = new GoogleGenAI({ apiKey });
     const prompt = `Act as an expert curator.
     User Profile:
     - Favorite Genres: ${userData.favoriteGenres.join(', ')}
@@ -33,22 +36,13 @@ export const getAIRecommendations = async (userData: {
     }
     No text outside the JSON.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
+    const response = await ai.models.generateContent({
+      model: 'gemini-flash-latest',
+      contents: prompt,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI recommendations API request failed:', response.status, errorText);
-      throw new Error(`API request failed: ${response.status} ${errorText}`);
-    }
-
-    const data = await response.json();
-    const text = data.candidates[0].content.parts[0].text;
+    const text = response.text;
+    if (!text) throw new Error('No text returned from Gemini');
     
     // Safely extract JSON block
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -69,24 +63,16 @@ export const getGameMissions = async (gameName: string): Promise<any[]> => {
   }
 
   try {
+    const ai = new GoogleGenAI({ apiKey });
     const prompt = `List main story missions for "${gameName}". Return ONLY JSON array: [{"id": 1, "title": "Name", "description": "Desc"}]. Include 15-20 missions. No extra text.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
+    const response = await ai.models.generateContent({
+      model: 'gemini-flash-latest',
+      contents: prompt,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Game missions API request failed:', response.status, errorText);
-      throw new Error(`API request failed: ${response.status} ${errorText}`);
-    }
-
-    const data = await response.json();
-    const text = data.candidates[0].content.parts[0].text;
+    const text = response.text;
+    if (!text) throw new Error('No text returned from Gemini');
     
     // Safely extract JSON block
     const jsonMatch = text.match(/\[[\s\S]*\]/);

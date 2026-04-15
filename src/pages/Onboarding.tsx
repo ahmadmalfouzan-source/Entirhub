@@ -19,6 +19,9 @@ export function Onboarding() {
   const [step, setStep] = useState(-1); // -1 is Auth step
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [preferences, setPreferences] = useState<Record<string, string[]>>({ games: [], movies: [], series: [] });
@@ -30,6 +33,22 @@ export function Onboarding() {
       toast.error('Supabase configuration is missing! Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your secrets.');
       return;
     }
+    
+    if (!isLogin) {
+      if (password !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
+      if (!agreeToTerms) {
+        toast.error('You must agree to the Terms of Service');
+        return;
+      }
+      if (!username.trim()) {
+        toast.error('Username is required');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       if (isLogin) {
@@ -39,8 +58,22 @@ export function Onboarding() {
           navigate('/');
         }
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              username: username
+            }
+          }
+        });
         if (error) throw error;
+        
+        // Try to update profile with username immediately if session exists
+        if (data.session && data.user) {
+          await supabase.from('profiles').upsert({ id: data.user.id, username: username });
+        }
+
         if (!data.session) {
           toast.success('Registration successful! Please check your email to confirm your account.');
           setIsLogin(true);
@@ -58,6 +91,22 @@ export function Onboarding() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error('Please enter your email address first');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
+      if (error) throw error;
+      toast.success('Password reset email sent! Please check your inbox.');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset email');
     }
   };
 
@@ -109,6 +158,16 @@ export function Onboarding() {
           <p className="text-gray-400 mb-8">{isLogin ? t('signInToContinue') : 'Create an account to get started'}</p>
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-8">
             <form onSubmit={handleAuth} className="space-y-4">
+              {!isLogin && (
+                <Input
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              )}
               <Input
                 type="email"
                 placeholder={t('email')}
@@ -125,6 +184,41 @@ export function Onboarding() {
                 required
                 className="bg-white/5 border-white/10 text-white"
               />
+              {!isLogin && (
+                <>
+                  <Input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <input 
+                      type="checkbox" 
+                      id="tos" 
+                      checked={agreeToTerms}
+                      onChange={(e) => setAgreeToTerms(e.target.checked)}
+                      className="rounded border-white/10 bg-white/5"
+                    />
+                    <label htmlFor="tos" className="text-sm text-gray-400">
+                      I agree to the <a href="#" className="text-blue-400 hover:underline">Terms of Service</a>
+                    </label>
+                  </div>
+                </>
+              )}
+              {isLogin && (
+                <div className="flex justify-end">
+                  <button 
+                    type="button" 
+                    onClick={handleForgotPassword}
+                    className="text-sm text-blue-400 hover:underline"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
               <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
                 {loading ? t('loading') : isLogin ? t('signIn') : t('signUp')}
               </Button>

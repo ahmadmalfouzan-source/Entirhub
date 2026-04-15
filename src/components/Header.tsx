@@ -4,7 +4,7 @@ import { useStore } from '@/store/useStore';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Input } from '@/components/ui/input';
-import { searchMedia, searchAnime, MediaItem } from '@/services/api';
+import { searchMedia, searchAnime, fetchGames, MediaItem } from '@/services/api';
 import { Link } from 'react-router-dom';
 import { checkAndCreateNotifications, getNotifications, markNotificationAsRead, Notification } from '@/services/notifications';
 import { formatDistanceToNow } from 'date-fns';
@@ -42,11 +42,16 @@ export function Header() {
     const delayDebounceFn = setTimeout(async () => {
       if (query.trim()) {
         setIsSearching(true);
-        const [mediaData, animeData] = await Promise.all([
+        const [mediaData, animeData, gameData] = await Promise.all([
           searchMedia(query),
-          searchAnime(query)
+          searchAnime(query),
+          fetchGames(query)
         ]);
-        setResults([...mediaData.slice(0, 5), ...animeData]);
+        setResults([
+          ...(mediaData || []).slice(0, 8), 
+          ...(animeData || []).slice(0, 4), 
+          ...(gameData || []).slice(0, 6)
+        ]);
         setIsSearching(false);
       } else {
         setResults([]);

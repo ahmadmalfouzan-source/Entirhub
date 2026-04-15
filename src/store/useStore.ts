@@ -47,6 +47,11 @@ export const useStore = create<StoreState>((set, get) => ({
   setSession: (session) => set({ session, user: session?.user || null }),
   fetchWatchlist: async () => {
     try {
+      const user = get().user;
+      if (!user) {
+        set({ watchlist: [] });
+        return;
+      }
       const data = await libraryService.getUserLibrary();
       set({ watchlist: (data as any) || [] });
     } catch (error) {
