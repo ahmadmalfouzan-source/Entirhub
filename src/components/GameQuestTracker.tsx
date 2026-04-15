@@ -1,0 +1,113 @@
+import React, { useEffect, useState } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/lib/supabase';
+import { getGameMissions } from '@/services/aiService';
+import { toast } from 'sonner';
+
+interface Quest {
+  id: number;
+  title: string;
+  description: string;
+  type: string;
+  completed?: boolean;
+}
+
+interface GameQuestTrackerProps {
+  gameName: string;
+  mediaId: string;
+}
+
+export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadQuests = async () => {
+      setLoading(true);
+      try {
+        // 1. Fetch from Gemini
+        const missions = await getGameMissions(gameName);
+        
+        // 2. Fetch completed from Supabase
+        const { data: completedQuests, error } = await supabase
+          .from('game_quests')
+          .select('quest_id')
+          .eq('media_id', mediaId)
+          .eq('completed', true);
+
+        if (error) throw error;
+
+        const completedIds = new Set(completedQuests?.map(q => q.quest_id) || []);
+        
+        setQuests(missions.map(m => ({ ...m, completed: completedIds.has(m.id) })));
+      } catch (error) {
+        console.error('Error loading quests:', error);
+        toast.error('Failed to load quest tracker');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadQuests();
+  }, [gameName, mediaId]);
+
+  const handleToggleQuest = async (questId: number, completed: boolean) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      if (completed) {
+        await supabase.from('game_quests').upsert({
+          user_id: user.id,
+          media_id: mediaId,
+          quest_id: questId,
+          completed: true
+        });
+      } else {
+        await supabase.from('game_quests')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('media_id', mediaId)
+          .eq('quest_id', questId);
+      }
+
+      setQuests(prev => prev.map(q => q.id === questId ? { ...q, completed } : q));
+    } catch (error) {
+      toast.error('Failed to update quest');
+    }
+  };
+
+  const completedCount = quests.filter(q => q.completed).length;
+  const progress = quests.length > 0 ? (completedCount / quests.length) * 100 : 0;
+
+  if (loading) return <div className="animate-pulse p-4 bg-card rounded-xl">Loading quests...</div>;
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+      <h3 className="text-lg font-bold text-foreground">Story Progress</h3>
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{completedCount} / {quests.length} Completed</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <Progress value={progress} />
+      </div>
+      <div className="space-y-2 max-h-96 overflow-y-auto">
+        {quests.map(quest => (
+          <div key={quest.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5">
+            <Checkbox 
+              checked={quest.completed}
+              onCheckedChange={(checked) => handleToggleQuest(quest.id, !!checked)}
+            />
+            <div>
+              <p className={`text-sm font-medium ${quest.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                {quest.title}
+              </p>
+              <p className="text-xs text-muted-foreground">{quest.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

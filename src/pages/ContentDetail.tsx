@@ -7,6 +7,7 @@ import { fetchMediaDetails, fetchMediaVideos, MediaItem } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EpisodeTracker } from '@/components/EpisodeTracker';
+import { GameQuestTracker } from '@/components/GameQuestTracker';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { translations } from '@/i18n/translations';
@@ -285,6 +286,12 @@ export function ContentDetail() {
                   <p className="text-muted-foreground">{t('addToLibraryToTrack')}</p>
                 </div>
               )}
+            </section>
+          )}
+
+          {item.media_type === 'game' && watchlistItem && (
+            <section className="pt-4 md:pt-8">
+              <GameQuestTracker gameName={item.title} mediaId={watchlistItem.media_id} />
             </section>
           )}
         </div>

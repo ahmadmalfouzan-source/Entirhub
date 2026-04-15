@@ -24,13 +24,16 @@ export function BottomNav() {
             key={item.path}
             to={item.path}
             className={cn(
-              "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200",
+              "relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200",
               isActive 
-                ? "text-blue-400" 
+                ? "text-blue-400 bg-blue-500/20" 
                 : "text-gray-400 hover:text-white"
             )}
           >
-            <item.icon className={cn("w-6 h-6", isActive ? "scale-110" : "")} />
+            {isActive && (
+              <div className="absolute -top-1 w-6 h-1 bg-blue-400 rounded-full" />
+            )}
+            <item.icon className={cn("w-6 h-6 transition-all duration-200", isActive ? "scale-110" : "")} />
           </Link>
         );
       })}
