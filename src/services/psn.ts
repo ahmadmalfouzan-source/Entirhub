@@ -87,11 +87,17 @@ export async function syncPSNGamesToLibrary(username: string, userId: string) {
   try {
     const psnData = await fetchPSNProfile(username);
     
-    if (!psnData || !psnData.games) return;
+    if (!psnData || !psnData.games) {
+      console.log('No games found in PSN data:', psnData);
+      return;
+    }
 
+    console.log(`Syncing ${psnData.games.length} games from PSN...`);
+    
     const games = psnData.games;
     
     for (const game of games) {
+      console.log(`Processing game: ${game.title}`);
       // 1. Search RAWG for details
       const rawgGames = await fetchGames(game.title);
       const rawgGame = rawgGames && rawgGames.length > 0 ? rawgGames[0] : null;
