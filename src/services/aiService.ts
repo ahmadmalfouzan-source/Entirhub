@@ -84,3 +84,49 @@ export const getGameMissions = async (gameName: string): Promise<any[]> => {
     return [];
   }
 };
+
+export const extractTitlesFromImage = async (imageFile: File): Promise<string[]> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return [];
+  
+  const ai = new GoogleGenAI({ apiKey });
+  
+  // Convert File to base64
+  const base64Image = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsDataURL(imageFile);
+  });
+  
+  const base64Data = base64Image.split(',')[1];
+  
+  const prompt = `Extract all game, movie, and series titles from this image. 
+  
+  Guidelines:
+  - Return ONLY a JSON array of strings: ['Title 1', 'Title 2', ...].
+  - Remove all UI text, numbers, icons, and words like "Installed", "Play", "Hours", "Update", "Download".
+  - Keep only real, recognizable game, movie, or series titles.
+  - Limit the result to a maximum of 20 titles.
+  - No extra text or explanations.`;
+  
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-flash-latest',
+      contents: [
+        { role: 'user', parts: [{ text: prompt }, { inlineData: { data: base64Data, mimeType: imageFile.type } }] }
+      ],
+    });
+    
+    const text = response.text;
+    if (!text) return [];
+    
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return [];
+    
+    const titles = JSON.parse(jsonMatch[0]);
+    return titles.slice(0, 20); // Ensure limit
+  } catch (error) {
+    console.error('Error extracting titles from image:', error);
+    return [];
+  }
+};

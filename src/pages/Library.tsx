@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContentCard } from '@/components/ContentCard';
-import { Library as LibraryIcon, Search, ListFilter } from 'lucide-react';
+import { Library as LibraryIcon, Search, ListFilter, Upload, RefreshCw } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { fetchSeasons, getWatchedEpisodes, getTotalProgress } from '@/services/episodes';
 import { useTranslation } from '@/hooks/useTranslation';
+import { syncPSNGamesToLibrary } from '@/services/psn';
+import { importTitlesFromImage } from '@/services/importService';
+import { toast } from 'sonner';
 
 interface ProgressData {
   watched: number;
@@ -15,11 +18,61 @@ interface ProgressData {
 type SortOption = 'date_added' | 'rating' | 'name' | 'year';
 
 export function Library() {
-  const { watchlist, removeFromWatchlist } = useStore();
+  const { watchlist, removeFromWatchlist, psnUsername, fetchWatchlist, user } = useStore();
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('date_added');
   const [progressMap, setProgressMap] = useState<Record<string, ProgressData>>({});
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDelete = async () => {
+    if (selectedItems.size === 0) {
+      setIsDeleting(false);
+      return;
+    }
+    
+    try {
+      await Promise.all(Array.from(selectedItems).map(id => removeFromWatchlist(id)));
+      toast.success(`Deleted ${selectedItems.size} items`);
+      setSelectedItems(new Set());
+      setIsDeleting(false);
+    } catch (error) {
+      console.error('Delete failed:', error);
+      toast.error('Delete failed');
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSelection = new Set(selectedItems);
+    if (newSelection.has(id)) {
+      newSelection.delete(id);
+    } else {
+      newSelection.add(id);
+    }
+    setSelectedItems(newSelection);
+  };
+
+  const handleImageImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    
+    setIsSyncing(true);
+    try {
+      await importTitlesFromImage(file, user.id, (status) => {
+        toast.info(status);
+      });
+      await fetchWatchlist();
+      toast.success('Import completed');
+    } catch (error) {
+      console.error('Import failed:', error);
+      toast.error('Import failed');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const fetchAllProgress = async () => {
@@ -98,6 +151,47 @@ export function Library() {
         </div>
         
         <div className="flex items-center gap-2">
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleImageImport} 
+            className="hidden" 
+            accept="image/*"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isSyncing}
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            Import from Image
+          </button>
+          
+          <button
+            onClick={() => {
+              if (isDeleting) {
+                handleDelete();
+              } else {
+                setIsDeleting(true);
+              }
+            }}
+            className={`flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg transition-colors ${
+              isDeleting ? 'bg-red-600 hover:bg-red-700' : 'bg-white/10 hover:bg-white/20'
+            }`}
+          >
+            {isDeleting ? `Delete Selected (${selectedItems.size})` : 'Delete Items'}
+          </button>
+          {isDeleting && (
+            <button
+              onClick={() => {
+                setIsDeleting(false);
+                setSelectedItems(new Set());
+              }}
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm rounded-lg"
+            >
+              Cancel
+            </button>
+          )}
           <div className="relative">
             <select 
               value={sortBy}
@@ -140,21 +234,32 @@ export function Library() {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {visibleItems.map(item => (
-                  <ContentCard 
-                    key={item.id} 
-                    item={{
-                      id: item.id,
-                      external_id: item.media?.external_id || '',
-                      media_type: item.media?.media_type || '',
-                      title: item.media?.title || 'Unknown Title',
-                      poster_url: item.media?.poster_url || '',
-                      rating: item.rating || 0,
-                      release_date: item.media?.release_date || '',
-                      genres: item.media?.genres || []
-                    }} 
-                    progress={progressMap[item.media_id]}
-                    onDelete={removeFromWatchlist}
-                  />
+                  <div key={item.id} className="relative">
+                    <ContentCard 
+                      item={{
+                        id: item.id,
+                        external_id: item.media?.external_id || '',
+                        media_type: item.media?.media_type || '',
+                        title: item.media?.title || 'Unknown Title',
+                        poster_url: item.media?.poster_url || '',
+                        rating: item.rating || 0,
+                        release_date: item.media?.release_date || '',
+                        genres: item.media?.genres || []
+                      }} 
+                      progress={progressMap[item.media_id]}
+                      onDelete={removeFromWatchlist}
+                    />
+                    {isDeleting && (
+                      <div 
+                        className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer ${
+                          selectedItems.has(item.id) ? 'bg-red-500 border-red-500' : 'bg-black/50 border-white'
+                        }`}
+                        onClick={() => toggleSelection(item.id)}
+                      >
+                        {selectedItems.has(item.id) && <span className="text-white text-xs">✓</span>}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
               {visibleCount < filteredItems.length && (
