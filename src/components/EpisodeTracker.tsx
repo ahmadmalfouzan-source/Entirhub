@@ -21,6 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ChevronDown, ChevronUp, PlayCircle, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface EpisodeTrackerProps {
   mediaId: string;
@@ -28,6 +29,7 @@ interface EpisodeTrackerProps {
 }
 
 export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
+  const { t } = useTranslation();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [watched, setWatched] = useState<WatchedEpisode[]>([]);
   const [seasonRatings, setSeasonRatings] = useState<SeasonRating[]>([]);
@@ -167,12 +169,12 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
           <div className="space-y-1">
             <p className="text-xs md:text-sm text-muted-foreground">
               {lastWatched 
-                ? `Last watched: Season ${lastWatched.season_number} Episode ${lastWatched.episode_number}`
+                ? `${t('lastWatched')}: Season ${lastWatched.season_number} Episode ${lastWatched.episode_number}`
                 : 'No episodes watched yet'}
             </p>
             {mostRecentWatched && (
               <p className="text-[10px] md:text-xs text-muted-foreground italic">
-                Last watched: {formatDate(mostRecentWatched.created_at)}
+                {t('lastWatched')}: {formatDate(mostRecentWatched.created_at)}
               </p>
             )}
           </div>
@@ -180,7 +182,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
         <div className="flex items-center gap-4 w-full md:w-auto md:min-w-[200px]">
           <div className="flex-1 space-y-1">
             <div className="flex justify-between text-[10px] md:text-xs font-medium">
-              <span className="text-muted-foreground">Overall Progress</span>
+              <span className="text-muted-foreground">{t('overallProgress')}</span>
               <span className="text-primary">{Math.round(totalProgress)}%</span>
             </div>
             <Progress value={totalProgress} className="h-1.5 md:h-2" />
@@ -267,7 +269,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
                         onClick={() => handleMarkSeasonWatched(season.season_number, season.episode_count)}
                         className="text-[10px] md:text-xs text-primary hover:text-primary/80 hover:bg-primary/10 h-7 md:h-8"
                       >
-                        Mark all as watched
+                        {t('markAllAsWatched')}
                       </Button>
                     </div>
 
@@ -308,7 +310,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
                           })
                         ) : !loadingEpisodes[season.season_number] && seasonEpisodes[season.season_number] ? (
                           <div className="col-span-full py-4 text-center text-muted-foreground text-xs md:text-sm">
-                            No episodes found for this season.
+                            {t('noEpisodesFound')}
                           </div>
                         ) : null}
                       </div>

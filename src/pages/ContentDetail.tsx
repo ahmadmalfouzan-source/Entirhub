@@ -172,7 +172,7 @@ export function ContentDetail() {
                   onClick={() => setShowTrailer(true)} 
                   className="bg-red-600 hover:bg-red-700 text-white border-0"
                 >
-                  <Play className="w-4 h-4 mr-2" /> Watch Trailer
+                  <Play className="w-4 h-4 mr-2" /> {t('watchTrailer')}
                 </Button>
               )}
             </div>
@@ -279,7 +279,7 @@ export function ContentDetail() {
                 <EpisodeTracker mediaId={watchlistItem.media_id} externalId={item.external_id} />
               ) : (
                 <div className="bg-card border border-border rounded-xl md:rounded-2xl p-6 md:p-8 text-center">
-                  <p className="text-muted-foreground">Add to library to track episodes</p>
+                  <p className="text-muted-foreground">{t('addToLibraryToTrack')}</p>
                 </div>
               )}
             </section>
@@ -292,7 +292,7 @@ export function ContentDetail() {
             <div className="space-y-4 text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>{t('status')}</span>
-                <span className="text-foreground capitalize">{watchlistItem?.status ? t(watchlistItem.status.replace('_', '') as keyof typeof translations.en) || watchlistItem.status.replace('_', ' ') : 'Not Tracked'}</span>
+                <span className="text-foreground capitalize">{watchlistItem?.status ? t(watchlistItem.status.replace('_', '') as keyof typeof translations.en) || watchlistItem.status.replace('_', ' ') : t('notTracked')}</span>
               </div>
               {watchlistItem?.rewatch_count ? (
                 <div className="flex justify-between text-muted-foreground">

@@ -5,8 +5,10 @@ import { fetchGames, fetchTopRatedGames, MediaItem } from '@/services/api';
 import { Input } from '@/components/ui/input';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Games() {
+  const { t } = useTranslation();
   const [topRated, setTopRated] = useState<MediaItem[]>([]);
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,13 +56,13 @@ export default function Games() {
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
             <Gamepad2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Games</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('games')}</h1>
         </div>
 
         <div className="relative max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
           <Input 
-            placeholder="Search games..." 
+            placeholder={t('searchGames')} 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 md:pl-10 bg-white/5 border-border text-foreground rounded-full h-10 md:h-12 focus-visible:ring-primary text-sm md:text-base"
@@ -70,7 +72,7 @@ export default function Games() {
 
       {searchQuery ? (
         <section>
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">Search Results</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">{t('searchResults')}</h2>
           {isSearching ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {[...Array(10)].map((_, i) => (
@@ -84,7 +86,7 @@ export default function Games() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-10 md:py-20 text-muted-foreground text-sm md:text-base">No games found for "{searchQuery}"</div>
+            <div className="text-center py-10 md:py-20 text-muted-foreground text-sm md:text-base">{t('noGamesFound')} "{searchQuery}"</div>
           )}
         </section>
       ) : (
@@ -94,7 +96,7 @@ export default function Games() {
               <div className="flex items-center justify-between mb-4 md:mb-6">
                 <div className="flex items-center gap-2">
                   <Bookmark className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-                  <h2 className="text-xl md:text-2xl font-bold text-foreground">My Backlog</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('myBacklog')}</h2>
                   <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs md:text-sm ml-2">{backlog.length}</span>
                 </div>
               </div>
@@ -119,7 +121,7 @@ export default function Games() {
                         size="sm"
                       >
                         <Play className="w-3 h-3 mr-1 md:mr-2 fill-current" />
-                        Start Playing
+                        {t('startPlaying')}
                       </Button>
                     </div>
                   </div>
@@ -131,7 +133,7 @@ export default function Games() {
           <section>
             <div className="flex items-center gap-2 mb-4 md:mb-6">
               <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
-              <h2 className="text-xl md:text-2xl font-bold text-foreground">Top Rated Games</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('topRatedGames')}</h2>
             </div>
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">

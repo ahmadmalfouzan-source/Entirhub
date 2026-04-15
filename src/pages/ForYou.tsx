@@ -3,8 +3,10 @@ import { ContentCard } from '@/components/ContentCard';
 import { Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getRecommendations } from '@/services/recommendation';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function ForYou() {
+  const { t } = useTranslation();
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,9 +42,9 @@ export function ForYou() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
             <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-purple-400" />
-            For You
+            {t('forYou')}
           </h1>
-          <p className="text-gray-400 text-sm md:text-base">Curated recommendations based on your library and preferences.</p>
+          <p className="text-gray-400 text-sm md:text-base">{t('forYouSubtitle')}</p>
         </div>
         <Button 
           onClick={fetchRecommendations} 
@@ -51,7 +53,7 @@ export function ForYou() {
           className="bg-[#1f2937] border-white/10 text-white hover:bg-[#374151] hover:text-white w-full md:w-auto"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('refresh')}
         </Button>
       </div>
 

@@ -3,27 +3,29 @@ import { ContentCard } from '@/components/ContentCard';
 import { Film, Filter, Smile } from 'lucide-react';
 import { fetchTrendingMovies, fetchPopularMovies, fetchMoviesByGenre, MediaItem } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const MOVIE_GENRES = [
-  { id: '28', name: 'Action' },
-  { id: '35', name: 'Comedy' },
-  { id: '18', name: 'Drama' },
-  { id: '27', name: 'Horror' },
-  { id: '878', name: 'Sci-Fi' },
-  { id: '10749', name: 'Romance' },
-  { id: '53', name: 'Thriller' },
-  { id: '16', name: 'Animation' },
+  { id: '28', nameKey: 'action' },
+  { id: '35', nameKey: 'comedy' },
+  { id: '18', nameKey: 'drama' },
+  { id: '27', nameKey: 'horror' },
+  { id: '878', nameKey: 'sciFi' },
+  { id: '10749', nameKey: 'romance' },
+  { id: '53', nameKey: 'thriller' },
+  { id: '16', nameKey: 'animation' },
 ];
 
 const MOODS = [
-  { id: 'happy', name: 'Happy', genres: ['35', '16', '10751'] }, // Comedy, Animation, Family
-  { id: 'sad', name: 'Sad', genres: ['18', '10749'] }, // Drama, Romance
-  { id: 'excited', name: 'Excited', genres: ['28', '12', '878'] }, // Action, Adventure, Sci-Fi
-  { id: 'scared', name: 'Scared', genres: ['27', '53'] }, // Horror, Thriller
-  { id: 'relaxed', name: 'Relaxed', genres: ['99', '36', '10402'] }, // Documentary, History, Music
+  { id: 'happy', nameKey: 'happy', genres: ['35', '16', '10751'] }, // Comedy, Animation, Family
+  { id: 'sad', nameKey: 'sad', genres: ['18', '10749'] }, // Drama, Romance
+  { id: 'excited', nameKey: 'excited', genres: ['28', '12', '878'] }, // Action, Adventure, Sci-Fi
+  { id: 'scared', nameKey: 'scared', genres: ['27', '53'] }, // Horror, Thriller
+  { id: 'relaxed', nameKey: 'relaxed', genres: ['99', '36', '10402'] }, // Documentary, History, Music
 ];
 
 export default function Movies() {
+  const { t } = useTranslation();
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [popular, setPopular] = useState<MediaItem[]>([]);
   const [genreMovies, setGenreMovies] = useState<MediaItem[]>([]);
@@ -83,7 +85,7 @@ export default function Movies() {
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
             <Film className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Movies</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('movies')}</h1>
         </div>
       </div>
 
@@ -92,7 +94,7 @@ export default function Movies() {
         <section>
           <div className="flex items-center gap-2 mb-4 md:mb-6">
             <Filter className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">Filter by Genre</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('browseByGenre')}</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button 
@@ -100,7 +102,7 @@ export default function Movies() {
               onClick={() => handleGenreSelect(null)}
               className="rounded-full text-xs md:text-sm h-8 md:h-10"
             >
-              All
+              {t('all')}
             </Button>
             {MOVIE_GENRES.map(genre => (
               <Button 
@@ -109,7 +111,7 @@ export default function Movies() {
                 onClick={() => handleGenreSelect(genre.id)}
                 className="rounded-full text-xs md:text-sm h-8 md:h-10"
               >
-                {genre.name}
+                {t(genre.nameKey as any)}
               </Button>
             ))}
           </div>
@@ -119,7 +121,7 @@ export default function Movies() {
         <section>
           <div className="flex items-center gap-2 mb-4 md:mb-6">
             <Smile className="w-4 h-4 md:w-5 md:h-5 text-secondary" />
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">What's your mood?</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('whatsYourMood')}</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {MOODS.map(mood => (
@@ -129,7 +131,7 @@ export default function Movies() {
                 onClick={() => handleMoodSelect(mood.id)}
                 className="rounded-full text-xs md:text-sm h-8 md:h-10"
               >
-                {mood.name}
+                {t(mood.nameKey as any)}
               </Button>
             ))}
           </div>
@@ -140,8 +142,8 @@ export default function Movies() {
         <section>
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">
             {selectedGenre 
-              ? `${MOVIE_GENRES.find(g => g.id === selectedGenre)?.name} Movies`
-              : `${MOODS.find(m => m.id === selectedMood)?.name} Mood Recommendations`
+              ? `${t(MOVIE_GENRES.find(g => g.id === selectedGenre)?.nameKey as any)} ${t('movies')}`
+              : `${t(MOODS.find(m => m.id === selectedMood)?.nameKey as any)} ${t('moodRecommendations')}`
             }
           </h2>
           {loading ? (
@@ -161,7 +163,7 @@ export default function Movies() {
       ) : (
         <>
           <section>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">Trending Movies</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">{t('trending')}</h2>
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
@@ -178,7 +180,7 @@ export default function Movies() {
           </section>
 
           <section>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">Popular Movies</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">{t('popularMovies')}</h2>
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (

@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Badges } from '@/components/Badges';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Stats {
   totalMovies: number;
@@ -35,6 +36,7 @@ interface Stats {
 }
 
 export function Profile() {
+  const { t } = useTranslation();
   const { user, watchlist } = useStore();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -201,7 +203,7 @@ export function Profile() {
           <h1 className="text-2xl md:text-4xl font-bold text-white truncate">{user?.email?.split('@')[0]}</h1>
           <p className="text-gray-400 flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
             <Calendar className="w-4 h-4" />
-            Member since {new Date(user?.created_at || '').toLocaleDateString()}
+            {t('memberSince')} {new Date(user?.created_at || '').toLocaleDateString()}
           </p>
           <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
             {stats.topGenres.map(genre => (
@@ -217,7 +219,7 @@ export function Profile() {
             className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white border-0 shadow-lg w-full md:w-auto"
           >
             <Star className="w-4 h-4 mr-2" />
-            My Year in Review
+            {t('myYearInReview')}
           </Button>
           <Button 
             onClick={handleShare}
@@ -225,7 +227,7 @@ export function Profile() {
             className={`w-full md:w-auto ${isPublic ? "bg-green-600 hover:bg-green-700" : "bg-white/20 text-white border border-white/30 hover:bg-white/30"}`}
           >
             {isPublic ? <Globe className="w-4 h-4 mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
-            {isPublic ? 'Public Library' : 'Private Library'}
+            {isPublic ? t('publicLibrary') : t('privateLibrary')}
           </Button>
           {isPublic && (
             <Button 
@@ -240,7 +242,7 @@ export function Profile() {
               }}
             >
               <Share2 className="w-4 h-4 mr-2" />
-              Copy Share Link
+              {t('copyShareLink')}
             </Button>
           )}
         </div>
@@ -250,7 +252,7 @@ export function Profile() {
       <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6">
         <div className="flex items-center gap-2 mb-4 md:mb-6">
           <Award className="w-5 h-5 text-yellow-500" />
-          <h2 className="text-lg md:text-xl font-bold text-white">Achievements</h2>
+          <h2 className="text-lg md:text-xl font-bold text-white">{t('achievements')}</h2>
         </div>
         <Badges />
       </div>
@@ -259,27 +261,27 @@ export function Profile() {
       <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard 
           icon={<Film className="w-6 h-6 text-blue-400" />}
-          label="Movies Watched"
+          label={t('moviesWatched')}
           value={stats.totalMovies}
-          subtext="Completed"
+          subtext={t('completedSubtext')}
         />
         <StatCard 
           icon={<Tv className="w-6 h-6 text-purple-400" />}
-          label="Series Completed"
+          label={t('seriesCompleted')}
           value={stats.totalSeries}
-          subtext={`${stats.totalEpisodes} Episodes`}
+          subtext={`${stats.totalEpisodes} ${t('episodes')}`}
         />
         <StatCard 
           icon={<Gamepad2 className="w-6 h-6 text-green-400" />}
-          label="Games Tracked"
+          label={t('gamesTracked')}
           value={stats.totalGames}
-          subtext="In Library"
+          subtext={t('inLibrary')}
         />
         <StatCard 
           icon={<Clock className="w-6 h-6 text-orange-400" />}
-          label="Time Spent"
+          label={t('timeSpent')}
           value={`${stats.estimatedHours}h`}
-          subtext="Estimated"
+          subtext={t('estimated')}
         />
       </div>
 
@@ -289,7 +291,7 @@ export function Profile() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <TrendingUp className="w-6 h-6 text-blue-400" />
-              Recent Activity
+              {t('recentActivity')}
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -307,7 +309,7 @@ export function Profile() {
                       item.status === 'watching' ? 'bg-blue-500/20 text-blue-400' :
                       'bg-gray-500/20 text-gray-400'
                     }`}>
-                      {item.status}
+                      {t(item.status as any)}
                     </span>
                   </div>
                 </div>
@@ -321,24 +323,24 @@ export function Profile() {
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
             <Star className="w-6 h-6 text-yellow-400" />
-            Insights
+            {t('insights')}
           </h2>
           <div className="bg-[#111827] border border-white/5 rounded-3xl p-8 space-y-8">
             <div className="space-y-4">
               <div className="flex justify-between items-end">
-                <span className="text-gray-400 text-sm">Favorite Rating</span>
+                <span className="text-gray-400 text-sm">{t('favoriteRating')}</span>
                 <span className="text-3xl font-bold text-white flex items-center gap-2">
                   {stats.favoriteRating}
                   <Star className="w-6 h-6 text-yellow-400 fill-current" />
                 </span>
               </div>
               <p className="text-xs text-gray-500 italic">
-                This is the rating you give most frequently to content in your library.
+                {t('favoriteRatingDesc')}
               </p>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-gray-300">Genre Distribution</h4>
+              <h4 className="text-sm font-medium text-gray-300">{t('genreDistribution')}</h4>
               <div className="space-y-3">
                 {stats.topGenres.map((genre, i) => (
                   <div key={genre} className="space-y-1">

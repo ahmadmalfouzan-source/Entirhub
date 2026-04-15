@@ -191,7 +191,7 @@ export function Header() {
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-72 md:w-80 max-h-96 overflow-y-auto bg-card border border-border rounded-xl shadow-2xl z-50">
               <div className="p-3 md:p-4 border-b border-border flex items-center justify-between sticky top-0 bg-card/95 backdrop-blur-sm">
-                <h3 className="font-semibold text-foreground text-sm md:text-base">Notifications</h3>
+                <h3 className="font-semibold text-foreground text-sm md:text-base">{t('notifications')}</h3>
                 {unreadCount > 0 && (
                   <span className="text-[10px] md:text-xs text-muted-foreground">{unreadCount} unread</span>
                 )}
@@ -226,7 +226,7 @@ export function Header() {
                   ))
                 ) : (
                   <div className="p-6 md:p-8 text-center text-muted-foreground text-xs md:text-sm">
-                    No new notifications
+                    {t('noNewNotifications')}
                   </div>
                 )}
               </div>

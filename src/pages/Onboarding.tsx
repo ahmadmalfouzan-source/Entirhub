@@ -6,14 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Sparkles, Gamepad2, Film, Tv } from 'lucide-react';
 import { supabase, hasSupabaseConfig } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const GENRES = {
-  games: ['RPG', 'Action', 'Strategy', 'Shooter', 'Puzzle', 'Sports'],
-  movies: ['Action', 'Sci-Fi', 'Drama', 'Comedy', 'Horror', 'Romance'],
-  series: ['Drama', 'Comedy', 'Sci-Fi', 'Documentary', 'Animation', 'Crime']
+  games: ['RPG', 'action', 'Strategy', 'Shooter', 'Puzzle', 'Sports'],
+  movies: ['action', 'sciFi', 'drama', 'comedy', 'horror', 'romance'],
+  series: ['drama', 'comedy', 'sciFi', 'Documentary', 'animation', 'crime']
 };
 
 export function Onboarding() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(-1); // -1 is Auth step
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -103,13 +105,13 @@ export function Onboarding() {
           <Sparkles className="w-8 h-8 text-white" />
         </div>
         <div className="max-w-md w-full text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">Welcome to EntertainHub</h1>
-          <p className="text-gray-400 mb-8">{isLogin ? 'Sign in to continue' : 'Create an account to get started'}</p>
+          <h1 className="text-4xl font-bold text-white mb-2">{t('welcomeTo')}</h1>
+          <p className="text-gray-400 mb-8">{isLogin ? t('signInToContinue') : 'Create an account to get started'}</p>
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-8">
             <form onSubmit={handleAuth} className="space-y-4">
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder={t('email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -117,20 +119,20 @@ export function Onboarding() {
               />
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder={t('password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="bg-white/5 border-white/10 text-white"
               />
               <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
-                {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
+                {loading ? t('loading') : isLogin ? t('signIn') : t('signUp')}
               </Button>
             </form>
             <div className="mt-6 text-sm text-gray-400">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button onClick={() => setIsLogin(!isLogin)} className="text-blue-400 hover:underline">
-                {isLogin ? 'Sign Up' : 'Sign In'}
+                {isLogin ? t('signUp') : t('signIn')}
               </button>
             </div>
           </div>
@@ -170,7 +172,7 @@ export function Onboarding() {
                       : 'bg-white/5 text-gray-300 hover:bg-white/10'
                   }`}
                 >
-                  {genre}
+                  {t(genre as any) || genre}
                 </button>
               );
             })}

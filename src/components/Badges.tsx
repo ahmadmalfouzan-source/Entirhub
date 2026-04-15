@@ -2,25 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
 import { Film, Tv, Gamepad2, Trophy, Library, Star, Flame } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BadgeDef {
   id: string;
-  name: string;
-  description: string;
+  nameKey: string;
+  descKey: string;
   icon: React.ElementType;
 }
 
 const BADGES: BadgeDef[] = [
-  { id: 'first_watch', name: 'First Watch', description: 'Add your first movie to library', icon: Film },
-  { id: 'binge_starter', name: 'Binge Starter', description: 'Watch 10 episodes total', icon: Tv },
-  { id: 'gamer', name: 'Gamer', description: 'Add your first game to library', icon: Gamepad2 },
-  { id: 'completionist', name: 'Completionist', description: 'Complete a game 100%', icon: Trophy },
-  { id: 'librarian', name: 'Librarian', description: 'Add 20 items to library', icon: Library },
-  { id: 'critic', name: 'Critic', description: 'Rate 10 items', icon: Star },
-  { id: 'on_fire', name: 'On Fire', description: 'Watch 5 episodes in one day', icon: Flame },
+  { id: 'first_watch', nameKey: 'badgeFirstWatch', descKey: 'descFirstWatch', icon: Film },
+  { id: 'binge_starter', nameKey: 'badgeBingeStarter', descKey: 'descBingeStarter', icon: Tv },
+  { id: 'gamer', nameKey: 'badgeGamer', descKey: 'descGamer', icon: Gamepad2 },
+  { id: 'completionist', nameKey: 'badgeCompletionist', descKey: 'descCompletionist', icon: Trophy },
+  { id: 'librarian', nameKey: 'badgeLibrarian', descKey: 'descLibrarian', icon: Library },
+  { id: 'critic', nameKey: 'badgeCritic', descKey: 'descCritic', icon: Star },
+  { id: 'on_fire', nameKey: 'badgeOnFire', descKey: 'descOnFire', icon: Flame },
 ];
 
 export function Badges() {
+  const { t } = useTranslation();
   const { user, watchlist } = useStore();
   const [earnedBadges, setEarnedBadges] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -92,10 +94,10 @@ export function Badges() {
               <Icon className="w-6 h-6" />
             </div>
             <h4 className={`font-semibold text-sm mb-1 ${isEarned ? 'text-yellow-500' : 'text-foreground'}`}>
-              {badge.name}
+              {t(badge.nameKey as any)}
             </h4>
             <p className="text-[10px] leading-tight">
-              {badge.description}
+              {t(badge.descKey as any)}
             </p>
           </div>
         );

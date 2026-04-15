@@ -3,19 +3,21 @@ import { ContentCard } from '@/components/ContentCard';
 import { Tv, Filter } from 'lucide-react';
 import { fetchTrendingSeries, fetchPopularSeries, fetchSeriesByGenre, MediaItem } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const SERIES_GENRES = [
-  { id: '10759', name: 'Action & Adventure' },
-  { id: '16', name: 'Animation' },
-  { id: '35', name: 'Comedy' },
-  { id: '80', name: 'Crime' },
-  { id: '18', name: 'Drama' },
-  { id: '10765', name: 'Sci-Fi & Fantasy' },
-  { id: '9648', name: 'Mystery' },
-  { id: '10764', name: 'Reality' },
+  { id: '10759', nameKey: 'actionAdventure' },
+  { id: '16', nameKey: 'animation' },
+  { id: '35', nameKey: 'comedy' },
+  { id: '80', nameKey: 'crime' },
+  { id: '18', nameKey: 'drama' },
+  { id: '10765', nameKey: 'sciFiFantasy' },
+  { id: '9648', nameKey: 'mystery' },
+  { id: '10764', nameKey: 'reality' },
 ];
 
 export default function Series() {
+  const { t } = useTranslation();
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [popular, setPopular] = useState<MediaItem[]>([]);
   const [genreSeries, setGenreSeries] = useState<MediaItem[]>([]);
@@ -55,7 +57,7 @@ export default function Series() {
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
             <Tv className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Series</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">{t('series')}</h1>
         </div>
       </div>
 
@@ -63,7 +65,7 @@ export default function Series() {
       <section>
         <div className="flex items-center gap-2 mb-4 md:mb-6">
           <Filter className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
-          <h2 className="text-lg md:text-xl font-semibold text-white">Filter by Genre</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-white">{t('browseByGenre')}</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button 
@@ -75,7 +77,7 @@ export default function Series() {
                 : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
             }`}
           >
-            All
+            {t('all')}
           </Button>
           {SERIES_GENRES.map(genre => (
             <Button 
@@ -88,7 +90,7 @@ export default function Series() {
                   : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
               }`}
             >
-              {genre.name}
+              {t(genre.nameKey as any)}
             </Button>
           ))}
         </div>
@@ -97,7 +99,7 @@ export default function Series() {
       {selectedGenre ? (
         <section>
           <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
-            {SERIES_GENRES.find(g => g.id === selectedGenre)?.name} Series
+            {t(SERIES_GENRES.find(g => g.id === selectedGenre)?.nameKey as any)} {t('series')}
           </h2>
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
@@ -116,7 +118,7 @@ export default function Series() {
       ) : (
         <>
           <section>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Trending Series</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{t('trending')}</h2>
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
@@ -133,7 +135,7 @@ export default function Series() {
           </section>
 
           <section>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Popular Series</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{t('popularSeries')}</h2>
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
