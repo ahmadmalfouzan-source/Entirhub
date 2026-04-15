@@ -155,7 +155,7 @@ export function ContentDetail() {
               </Badge>
               <div className="flex items-center gap-1 text-yellow-400 font-medium text-sm md:text-base">
                 <Star className="w-4 h-4 fill-current" />
-                {item.rating?.toFixed(1)}
+                {item.rating > 0 ? item.rating.toFixed(1) : 'N/A'}
               </div>
               <div className="text-muted-foreground flex items-center gap-1 text-sm md:text-base">
                 <Calendar className="w-4 h-4" />
