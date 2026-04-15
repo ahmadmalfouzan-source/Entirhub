@@ -21,10 +21,12 @@ import { Wrapped } from '@/pages/Wrapped';
 import Movies from '@/pages/Movies';
 import Series from '@/pages/Series';
 import Games from '@/pages/Games';
+import { Admin } from '@/pages/Admin';
 import { useStore } from '@/store/useStore';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { Toaster } from '@/components/ui/sonner';
 import { supabase } from '@/lib/supabase';
+import { Footer } from '@/components/Footer';
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { session } = useStore();
@@ -38,8 +40,11 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <main className="flex-1 flex flex-col min-w-0">
         <Header />
-        <div className="flex-1 overflow-auto">
-          {children}
+        <div className="flex-1 overflow-auto flex flex-col">
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
         </div>
       </main>
       <BottomNav />
@@ -88,6 +93,7 @@ export default function App() {
           <Route path="/library" element={<ProtectedLayout><Library /></ProtectedLayout>} />
           <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
           <Route path="/wrapped" element={<ProtectedLayout><Wrapped /></ProtectedLayout>} />
+          <Route path="/admin" element={<ProtectedLayout><Admin /></ProtectedLayout>} />
           <Route path="/user/:username" element={<PublicProfile />} />
           <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
           <Route path="*" element={<Navigate to="/" replace />} />

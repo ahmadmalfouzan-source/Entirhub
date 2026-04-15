@@ -3,17 +3,20 @@ import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, User, Shield, AlertTriangle } from 'lucide-react';
+import { Settings as SettingsIcon, User, Shield, AlertTriangle, Gamepad2 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { syncPSNGamesToLibrary } from '@/services/psn';
 
 export function Settings() {
-  const { user, logout } = useStore();
+  const { user, logout, psnUsername, fetchProfile, fetchWatchlist } = useStore();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'integrations'>('profile');
   const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Guest';
   const [password, setPassword] = useState('');
+  const [psnInput, setPsnInput] = useState(psnUsername || '');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +27,36 @@ export function Settings() {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) toast.error(error.message);
     else toast.success('Password updated successfully');
+  };
+
+  const handleConnectPSN = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!psnInput) return;
+    
+    setIsSyncing(true);
+    try {
+      // Save to profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({ psn_username: psnInput })
+        .eq('id', user?.id);
+        
+      if (error) throw error;
+      
+      toast.success('PSN connected! Syncing games...');
+      
+      // Sync games
+      if (user?.id) {
+        await syncPSNGamesToLibrary(psnInput, user.id);
+        await fetchProfile();
+        await fetchWatchlist();
+        toast.success('PSN games synced to your library!');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to connect PSN');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   return (
@@ -48,6 +81,12 @@ export function Settings() {
             className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'security' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
             <Shield className="w-5 h-5" /> {t('security')}
+          </button>
+          <button 
+            onClick={() => setActiveTab('integrations')}
+            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'integrations' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
+          >
+            <Gamepad2 className="w-5 h-5" /> Integrations
           </button>
         </div>
 
@@ -106,6 +145,34 @@ export function Settings() {
                   Delete Account
                 </Button>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'integrations' && (
+            <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
+              <h2 className="text-2xl font-bold text-white mb-2">PlayStation Network</h2>
+              <p className="text-gray-400 mb-8">Connect your PSN account to automatically sync your games and trophies.</p>
+              
+              <form onSubmit={handleConnectPSN} className="space-y-6 max-w-md">
+                <div className="space-y-2">
+                  <Label htmlFor="psn" className="text-gray-300">PSN Username</Label>
+                  <Input 
+                    id="psn" 
+                    value={psnInput} 
+                    onChange={(e) => setPsnInput(e.target.value)} 
+                    className="bg-white/5 border-white/10 text-white h-12 rounded-xl" 
+                    placeholder="e.g. Kratos123" 
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={isSyncing || !psnInput}
+                  className="bg-[#00439C] hover:bg-[#003070] text-white h-12 px-8 rounded-xl w-full sm:w-auto flex items-center gap-2"
+                >
+                  <Gamepad2 className="w-5 h-5" />
+                  {isSyncing ? 'Syncing...' : (psnUsername ? 'Update & Sync' : 'Connect PlayStation')}
+                </Button>
+              </form>
             </div>
           )}
         </div>

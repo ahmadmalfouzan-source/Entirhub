@@ -14,7 +14,8 @@ import {
   Share2,
   Globe,
   Lock,
-  Award
+  Award,
+  Trophy
 } from 'lucide-react';
 import { ContentCard } from '@/components/ContentCard';
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +24,7 @@ import { toast } from 'sonner';
 import { Badges } from '@/components/Badges';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
+import { fetchPSNProfile } from '@/services/psn';
 
 interface Stats {
   totalMovies: number;
@@ -35,11 +37,17 @@ interface Stats {
   favoriteRating: number;
 }
 
+interface PSNStats {
+  totalTrophies: number;
+  platinum: number;
+}
+
 export function Profile() {
   const { t } = useTranslation();
-  const { user, watchlist } = useStore();
+  const { user, watchlist, psnUsername } = useStore();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [psnStats, setPsnStats] = useState<PSNStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
   const [username, setUsername] = useState('');
@@ -63,6 +71,24 @@ export function Profile() {
     };
     fetchProfile();
   }, [user]);
+
+  useEffect(() => {
+    const fetchPSN = async () => {
+      if (!psnUsername) return;
+      try {
+        const data = await fetchPSNProfile(psnUsername);
+        if (data && data.stats) {
+          setPsnStats({
+            totalTrophies: data.stats.totalTrophies || 0,
+            platinum: data.stats.platinum || 0
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching PSN stats:', err);
+      }
+    };
+    fetchPSN();
+  }, [psnUsername]);
 
   const handleShare = async () => {
     if (!user) return;
@@ -283,6 +309,23 @@ export function Profile() {
           value={`${stats.estimatedHours}h`}
           subtext={t('estimated')}
         />
+        
+        {psnStats && (
+          <>
+            <StatCard 
+              icon={<Trophy className="w-6 h-6 text-blue-400" />}
+              label="PSN Trophies"
+              value={psnStats.totalTrophies}
+              subtext="Total Earned"
+            />
+            <StatCard 
+              icon={<Trophy className="w-6 h-6 text-cyan-400" />}
+              label="Platinum Trophies"
+              value={psnStats.platinum}
+              subtext="100% Completed"
+            />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

@@ -27,9 +27,12 @@ export interface WatchlistItem {
 interface StoreState {
   session: Session | null;
   user: User | null;
+  isAdmin: boolean;
+  psnUsername: string | null;
   watchlist: WatchlistItem[];
   setSession: (session: Session | null) => void;
   fetchWatchlist: () => Promise<void>;
+  fetchProfile: () => Promise<void>;
   addToWatchlist: (media: any) => Promise<void>;
   updateWatchlistItem: (id: string, updates: any) => Promise<void>;
   incrementRewatch: (id: string, currentCount: number) => Promise<void>;
@@ -43,8 +46,38 @@ interface StoreState {
 export const useStore = create<StoreState>((set, get) => ({
   session: null,
   user: null,
+  isAdmin: false,
+  psnUsername: null,
   watchlist: [],
-  setSession: (session) => set({ session, user: session?.user || null }),
+  setSession: (session) => {
+    set({ session, user: session?.user || null });
+    if (session?.user) {
+      get().fetchProfile();
+    } else {
+      set({ isAdmin: false, psnUsername: null });
+    }
+  },
+  fetchProfile: async () => {
+    try {
+      const user = get().user;
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin, psn_username')
+        .eq('id', user.id)
+        .single();
+        
+      if (!error && data) {
+        set({ 
+          isAdmin: !!data.is_admin,
+          psnUsername: data.psn_username || null
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  },
   fetchWatchlist: async () => {
     try {
       const user = get().user;

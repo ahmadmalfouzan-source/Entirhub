@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Gamepad2, Film, Tv, Library, Sparkles, Settings, LogOut, User } from 'lucide-react';
+import { Home, Gamepad2, Film, Tv, Library, Sparkles, Settings, LogOut, User, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -16,7 +16,7 @@ const navItems = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { logout } = useStore();
+  const { logout, isAdmin } = useStore();
   const { t } = useTranslation();
 
   return (
@@ -51,6 +51,20 @@ export function Sidebar() {
             </Link>
           );
         })}
+        {isAdmin && (
+          <Link
+            to="/admin"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+              location.pathname === '/admin'
+                ? "bg-yellow-500/10 text-yellow-500 font-medium"
+                : "text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/5"
+            )}
+          >
+            <Crown className={cn("w-5 h-5", location.pathname === '/admin' ? "text-yellow-500" : "")} />
+            Admin Panel
+          </Link>
+        )}
       </nav>
 
       <div className="p-4 space-y-2">
