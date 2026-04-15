@@ -13,15 +13,18 @@ export interface MediaItem {
   release_date: string;
   genres: string[];
   description?: string;
+  number_of_episodes?: number;
+  status?: string;
+  next_episode_to_air?: any;
 }
 
 const getTmdbImageUrl = (path: string | null) => 
   path ? `https://image.tmdb.org/t/p/w500${path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80';
 
-export const fetchTrendingMovies = async (): Promise<MediaItem[]> => {
+export const fetchTrendingMovies = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}`);
+    const res = await fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=${lang}`);
     if (!res.ok) throw new Error('Failed to fetch movies');
     const data = await res.json();
     return data.results.map((item: any) => ({
@@ -40,10 +43,10 @@ export const fetchTrendingMovies = async (): Promise<MediaItem[]> => {
   }
 };
 
-export const fetchTrendingSeries = async (): Promise<MediaItem[]> => {
+export const fetchTrendingSeries = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}`);
+    const res = await fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&language=${lang}`);
     if (!res.ok) throw new Error('Failed to fetch series');
     const data = await res.json();
     return data.results.map((item: any) => ({
@@ -79,6 +82,8 @@ export const searchMedia = async (query: string): Promise<MediaItem[]> => {
         release_date: item.release_date || item.first_air_date,
         genres: [item.media_type === 'tv' ? 'Series' : 'Movie'],
         description: item.overview,
+        status: item.status,
+        next_episode_to_air: item.next_episode_to_air,
       }));
   } catch (error) {
     console.error(error);
@@ -148,10 +153,10 @@ export const fetchMediaVideos = async (mediaType: 'movie' | 'series', externalId
   }
 };
 
-export const fetchPopularMovies = async (): Promise<MediaItem[]> => {
+export const fetchPopularMovies = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}`);
+    const res = await fetch(`${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=${lang}`);
     if (!res.ok) throw new Error('Failed to fetch popular movies');
     const data = await res.json();
     return data.results.map((item: any) => ({
@@ -170,10 +175,10 @@ export const fetchPopularMovies = async (): Promise<MediaItem[]> => {
   }
 };
 
-export const fetchMoviesByGenre = async (genreId: string): Promise<MediaItem[]> => {
+export const fetchMoviesByGenre = async (genreId: string, lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}`);
+    const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`);
     if (!res.ok) throw new Error('Failed to fetch movies by genre');
     const data = await res.json();
     return data.results.map((item: any) => ({
@@ -192,10 +197,10 @@ export const fetchMoviesByGenre = async (genreId: string): Promise<MediaItem[]> 
   }
 };
 
-export const fetchPopularSeries = async (): Promise<MediaItem[]> => {
+export const fetchPopularSeries = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}`);
+    const res = await fetch(`${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}&language=${lang}`);
     if (!res.ok) throw new Error('Failed to fetch popular series');
     const data = await res.json();
     return data.results.map((item: any) => ({
@@ -214,10 +219,10 @@ export const fetchPopularSeries = async (): Promise<MediaItem[]> => {
   }
 };
 
-export const fetchSeriesByGenre = async (genreId: string): Promise<MediaItem[]> => {
+export const fetchSeriesByGenre = async (genreId: string, lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}`);
+    const res = await fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`);
     if (!res.ok) throw new Error('Failed to fetch series by genre');
     const data = await res.json();
     return data.results.map((item: any) => ({
@@ -258,7 +263,7 @@ export const fetchTopRatedGames = async (): Promise<MediaItem[]> => {
   }
 };
 
-export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | 'game'): Promise<MediaItem | null> => {
+export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | 'game', lang = 'en-US'): Promise<MediaItem | null> => {
   try {
     if (type === 'game' && RAWG_API_KEY) {
       const rawgId = id.replace('rawg_game_', '').replace('rawg_', '');
@@ -278,7 +283,7 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
     } else if (TMDB_API_KEY) {
       const tmdbId = id.replace('tmdb_movie_', '').replace('tmdb_series_', '').replace('tmdb_', '');
       const endpoint = type === 'movie' ? 'movie' : 'tv';
-      const res = await fetch(`${TMDB_BASE_URL}/${endpoint}/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits,similar`);
+      const res = await fetch(`${TMDB_BASE_URL}/${endpoint}/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits,similar&language=${lang}`);
       if (!res.ok) return null;
       const item = await res.json();
       return {
@@ -290,6 +295,9 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
         release_date: item.release_date || item.first_air_date,
         genres: item.genres?.map((g: any) => g.name) || [],
         description: item.overview,
+        number_of_episodes: item.number_of_episodes,
+        status: item.status,
+        next_episode_to_air: item.next_episode_to_air,
       };
     }
     return null;

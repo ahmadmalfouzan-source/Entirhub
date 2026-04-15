@@ -26,13 +26,13 @@ export function Library() {
         if (progressMap[item.media_id]) continue;
 
         try {
-          const [seasons, watched] = await Promise.all([
+          const [{ seasons, number_of_episodes }, watched] = await Promise.all([
             fetchSeasons(item.media.external_id),
             getWatchedEpisodes(item.media_id)
           ]);
 
-          const totalEpisodes = seasons.reduce((acc, s) => acc + s.episode_count, 0);
-          const percent = getTotalProgress(watched, seasons);
+          const totalEpisodes = number_of_episodes || seasons.reduce((acc, s) => acc + s.episode_count, 0);
+          const percent = totalEpisodes > 0 ? (watched.length / totalEpisodes) * 100 : 0;
 
           setProgressMap(prev => ({
             ...prev,

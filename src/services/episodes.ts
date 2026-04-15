@@ -97,18 +97,20 @@ export async function saveSeasonRating(mediaId: string, seasonNumber: number, ra
 /**
  * Fetches all seasons for a TV series from TMDB.
  */
-export async function fetchSeasons(externalId: string): Promise<Season[]> {
-  if (!TMDB_API_KEY) return [];
+export async function fetchSeasons(externalId: string): Promise<{ seasons: Season[], number_of_episodes: number }> {
+  if (!TMDB_API_KEY) return { seasons: [], number_of_episodes: 0 };
   const tmdbId = externalId.replace('tmdb_series_', '').replace('tmdb_movie_', '').replace('tmdb_', '');
   try {
     const res = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
     if (!res.ok) throw new Error('Failed to fetch series info');
     const data = await res.json();
-    // Filter out Specials (season 0) if desired, or keep them. Usually kept.
-    return data.seasons || [];
+    return {
+      seasons: data.seasons || [],
+      number_of_episodes: data.number_of_episodes || 0
+    };
   } catch (error) {
     console.error('Error fetching seasons:', error);
-    return [];
+    return { seasons: [], number_of_episodes: 0 };
   }
 }
 

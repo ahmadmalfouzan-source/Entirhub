@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Star, Plus, Check, Trophy, Clock } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface ContentCardProps {
   key?: React.Key;
@@ -14,6 +15,8 @@ export interface ContentCardProps {
     rating: number;
     release_date: string;
     genres: string[];
+    status?: string;
+    next_episode_to_air?: any;
   };
   progress?: {
     watched: number;
@@ -24,6 +27,7 @@ export interface ContentCardProps {
 
 export function ContentCard({ item, progress }: ContentCardProps) {
   const { watchlist, addToWatchlist } = useStore();
+  const { t } = useTranslation();
   const isInWatchlist = watchlist.some(w => w.media?.external_id === item.external_id);
   const watchlistItem = watchlist.find(w => w.media?.external_id === item.external_id);
 
@@ -41,8 +45,7 @@ export function ContentCard({ item, progress }: ContentCardProps) {
   };
 
   const isAiring = item.media_type === 'series' && 
-    item.release_date && 
-    (new Date().getFullYear() - new Date(item.release_date).getFullYear()) <= 2;
+    (item.status === 'Returning Series' || item.next_episode_to_air !== null);
 
   return (
     <Link to={`/content/${item.external_id}`} className="group relative rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1">
@@ -60,8 +63,8 @@ export function ContentCard({ item, progress }: ContentCardProps) {
             {item.rating?.toFixed(1) || 'N/A'}
           </div>
           {isAiring && (
-            <div className="bg-green-500/80 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] md:text-[10px] font-bold text-white uppercase tracking-wider">
-              Airing
+            <div className="bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded-full uppercase tracking-wider">
+              {t('airing')}
             </div>
           )}
           {watchlistItem?.platform && (

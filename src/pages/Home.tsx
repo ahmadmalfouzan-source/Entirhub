@@ -4,6 +4,7 @@ import { Sparkles, TrendingUp, Moon } from 'lucide-react';
 import { fetchTrendingMovies, fetchTrendingSeries, MediaItem } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguageStore } from '@/store/useLanguageStore';
 
 export function Home() {
   const [trending, setTrending] = useState<MediaItem[]>([]);
@@ -11,13 +12,15 @@ export function Home() {
   const [loading, setLoading] = useState(true);
   const { watchlist } = useStore();
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
+      const lang = language === 'ar' ? 'ar-SA' : 'en-US';
       const [movies, series] = await Promise.all([
-        fetchTrendingMovies(),
-        fetchTrendingSeries()
+        fetchTrendingMovies(lang),
+        fetchTrendingSeries(lang)
       ]);
       
       // Mix them up for trending
@@ -28,7 +31,7 @@ export function Home() {
     };
     
     loadData();
-  }, []);
+  }, [language]);
 
   const watchTonight = watchlist.filter(item => item.status === 'watch_tonight');
   const gamesTracked = watchlist.filter(item => item.media?.media_type === 'game').length;

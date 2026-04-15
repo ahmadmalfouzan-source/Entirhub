@@ -4,6 +4,7 @@ import { Tv, Filter } from 'lucide-react';
 import { fetchTrendingSeries, fetchPopularSeries, fetchSeriesByGenre, MediaItem } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguageStore } from '@/store/useLanguageStore';
 
 const SERIES_GENRES = [
   { id: '10759', nameKey: 'actionAdventure' },
@@ -18,6 +19,7 @@ const SERIES_GENRES = [
 
 export default function Series() {
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [popular, setPopular] = useState<MediaItem[]>([]);
   const [genreSeries, setGenreSeries] = useState<MediaItem[]>([]);
@@ -27,28 +29,29 @@ export default function Series() {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
+      const lang = language === 'ar' ? 'ar-SA' : 'en-US';
       const [trendingData, popularData] = await Promise.all([
-        fetchTrendingSeries(),
-        fetchPopularSeries()
+        fetchTrendingSeries(lang),
+        fetchPopularSeries(lang)
       ]);
       setTrending(trendingData);
       setPopular(popularData);
       setLoading(false);
     };
     loadInitialData();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     const loadGenreData = async () => {
       if (selectedGenre) {
         setLoading(true);
-        const data = await fetchSeriesByGenre(selectedGenre);
+        const data = await fetchSeriesByGenre(selectedGenre, language === 'ar' ? 'ar-SA' : 'en-US');
         setGenreSeries(data);
         setLoading(false);
       }
     };
     loadGenreData();
-  }, [selectedGenre]);
+  }, [selectedGenre, language]);
 
   return (
     <div className="p-4 md:p-8 space-y-8 md:space-y-12">

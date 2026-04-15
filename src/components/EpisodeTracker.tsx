@@ -51,7 +51,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
           getSeasonRatings(mediaId)
         ]);
         console.log('Fetched ratings:', ratingsData);
-        setSeasons(seasonsData.filter(s => s.season_number > 0));
+        setSeasons(seasonsData.seasons.filter(s => s.season_number > 0));
         setWatched(watchedData);
         setSeasonRatings(ratingsData);
       } catch (error) {
@@ -278,7 +278,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
                         <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                         {console.log(`Rendering episodes for season ${season.season_number}:`, seasonEpisodes[season.season_number])}
                         {seasonEpisodes[season.season_number] && seasonEpisodes[season.season_number].length > 0 ? (
                           seasonEpisodes[season.season_number].map((episode) => {
@@ -290,21 +290,48 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
                             return (
                               <div 
                                 key={episode.id}
-                                className="flex items-center gap-2 md:gap-3 p-1.5 md:p-2 rounded-lg hover:bg-white/5 transition-colors group"
+                                onClick={() => handleToggleEpisode(season.season_number, episode.episode_number, !isWatched)}
+                                className="cursor-pointer flex flex-col gap-2"
                               >
-                                <Checkbox 
-                                  checked={isWatched}
-                                  onCheckedChange={(checked) => handleToggleEpisode(season.season_number, episode.episode_number, !!checked)}
-                                  id={`ep-${episode.id}`}
-                                  className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary w-3.5 h-3.5 md:w-4 md:h-4"
-                                />
-                                <label 
-                                  htmlFor={`ep-${episode.id}`}
-                                  className="flex-1 text-xs md:text-sm text-muted-foreground cursor-pointer group-hover:text-foreground transition-colors truncate"
-                                >
-                                  <span className="text-muted-foreground/50 mr-1.5 md:mr-2">E{episode.episode_number}</span>
-                                  {episode.name}
-                                </label>
+                                <div className={`relative aspect-video rounded-lg overflow-hidden border ${isWatched ? 'border-green-500/50' : 'border-border'}`}>
+                                  {episode.still_path ? (
+                                    <img 
+                                      src={`https://image.tmdb.org/t/p/w300${episode.still_path}`} 
+                                      alt={episode.name}
+                                      className={`w-full h-full object-cover ${isWatched ? 'opacity-50' : ''}`}
+                                    />
+                                  ) : (
+                                    <div className={`w-full h-full bg-card flex items-center justify-center ${isWatched ? 'opacity-50' : ''}`}>
+                                      <PlayCircle className="w-8 h-8 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  
+                                  {isWatched && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                      <CheckCircle2 className="w-8 h-8 text-green-500" />
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="p-2 bg-[#111827] rounded-lg">
+                                  <p className="text-sm font-medium text-white truncate">
+                                    E{episode.episode_number} - {episode.name}
+                                  </p>
+                                  {episode.air_date && (() => {
+                                    const airDate = new Date(episode.air_date);
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+                                    const isPast = airDate < today;
+                                    const isUpcoming = airDate >= today;
+                                    return (
+                                      <p className={`text-xs ${isPast ? 'text-gray-500' : 'text-green-500'}`}>
+                                        {isUpcoming && '📅 '}
+                                        {airDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        {isUpcoming && ' - Upcoming'}
+                                      </p>
+                                    );
+                                  })()}
+                                </div>
                               </div>
                             );
                           })

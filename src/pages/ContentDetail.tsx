@@ -8,6 +8,7 @@ import { useStore } from '@/store/useStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EpisodeTracker } from '@/components/EpisodeTracker';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguageStore } from '@/store/useLanguageStore';
 import { translations } from '@/i18n/translations';
 
 export function ContentDetail() {
@@ -17,6 +18,7 @@ export function ContentDetail() {
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const { 
     watchlist, 
     addToWatchlist, 
@@ -46,12 +48,13 @@ export function ContentDetail() {
         else if (id.includes('tv')) fetchedType = 'series';
       }
 
-      let data = await fetchMediaDetails(id, fetchedType);
+      const lang = language === 'ar' ? 'ar-SA' : 'en-US';
+      let data = await fetchMediaDetails(id, fetchedType, lang);
       
       // If failed and was tmdb, try the other type as fallback
       if (!data && id.startsWith('tmdb_')) {
         const otherType = fetchedType === 'movie' ? 'series' : 'movie';
-        data = await fetchMediaDetails(id, otherType);
+        data = await fetchMediaDetails(id, otherType, lang);
       }
       
       setItem(data);

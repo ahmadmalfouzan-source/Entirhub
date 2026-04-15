@@ -4,6 +4,7 @@ import { Film, Filter, Smile } from 'lucide-react';
 import { fetchTrendingMovies, fetchPopularMovies, fetchMoviesByGenre, MediaItem } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguageStore } from '@/store/useLanguageStore';
 
 const MOVIE_GENRES = [
   { id: '28', nameKey: 'action' },
@@ -26,6 +27,7 @@ const MOODS = [
 
 export default function Movies() {
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [popular, setPopular] = useState<MediaItem[]>([]);
   const [genreMovies, setGenreMovies] = useState<MediaItem[]>([]);
@@ -36,16 +38,17 @@ export default function Movies() {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
+      const lang = language === 'ar' ? 'ar-SA' : 'en-US';
       const [trendingData, popularData] = await Promise.all([
-        fetchTrendingMovies(),
-        fetchPopularMovies()
+        fetchTrendingMovies(lang),
+        fetchPopularMovies(lang)
       ]);
       setTrending(trendingData);
       setPopular(popularData);
       setLoading(false);
     };
     loadInitialData();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     const loadGenreData = async () => {
@@ -60,13 +63,13 @@ export default function Movies() {
           }
         }
 
-        const data = await fetchMoviesByGenre(genresToFetch || '');
+        const data = await fetchMoviesByGenre(genresToFetch || '', language === 'ar' ? 'ar-SA' : 'en-US');
         setGenreMovies(data);
         setLoading(false);
       }
     };
     loadGenreData();
-  }, [selectedGenre, selectedMood]);
+  }, [selectedGenre, selectedMood, language]);
 
   const handleGenreSelect = (genreId: string | null) => {
     setSelectedGenre(genreId);

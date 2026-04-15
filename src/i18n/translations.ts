@@ -53,7 +53,8 @@ export const translations = {
     descOnFire: 'Watch 5 episodes in one day',
     security: 'Security', emailNotifications: 'Email Notifications',
     newEpisodeAlerts: 'New Episode Alerts', seasonPremiereAlerts: 'Season Premiere Alerts',
-    changePassword: 'Change Password', newPassword: 'New Password', saveChanges: 'Save Changes'
+    changePassword: 'Change Password', newPassword: 'New Password', saveChanges: 'Save Changes',
+    airing: 'Airing'
   },
   ar: {
     home: 'الرئيسية', games: 'الألعاب', movies: 'الأفلام', series: 'المسلسلات',
@@ -109,6 +110,7 @@ export const translations = {
     descOnFire: 'شاهد 5 حلقات في يوم واحد',
     security: 'الأمان', emailNotifications: 'تنبيهات البريد الإلكتروني',
     newEpisodeAlerts: 'تنبيهات الحلقات الجديدة', seasonPremiereAlerts: 'تنبيهات مواسم العرض الأول',
-    changePassword: 'تغيير كلمة المرور', newPassword: 'كلمة مرور جديدة', saveChanges: 'حفظ التغييرات'
+    changePassword: 'تغيير كلمة المرور', newPassword: 'كلمة مرور جديدة', saveChanges: 'حفظ التغييرات',
+    airing: 'يعرض'
   }
 };
