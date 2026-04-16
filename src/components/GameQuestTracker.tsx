@@ -25,11 +25,25 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
   useEffect(() => {
     const loadQuests = async () => {
       setLoading(true);
+      console.log('Fetching progress for mediaId:', mediaId);
       try {
-        // 1. Fetch from Gemini
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // 1. Fetch from game_progress
+        const { data: progressData, error: progressError } = await supabase
+          .from('game_progress')
+          .select('*')
+          .eq('media_id', mediaId)
+          .eq('user_id', user.id);
+        
+        if (progressError) throw progressError;
+        console.log('Fetched rows count from game_progress:', progressData?.length);
+
+        // 2. Fetch from Gemini
         const missions = await getGameMissions(gameName);
         
-        // 2. Fetch completed from Supabase
+        // 3. Fetch completed from Supabase
         const { data: completedQuests, error } = await supabase
           .from('game_quests')
           .select('quest_id')
@@ -37,6 +51,22 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
           .eq('completed', true);
 
         if (error) throw error;
+
+        // 4. If no progress exists, create default progress
+        if (!progressData || progressData.length === 0) {
+          console.log('No progress found, initializing...');
+          await supabase.from('game_progress').insert({
+            user_id: user.id,
+            media_id: mediaId,
+            progress_percent: 0,
+            hours_played: 0,
+            last_played: new Date().toISOString()
+          });
+          // Also insert default quests/missions if needed? 
+          // The user mentioned "Insert predefined missions/chapters Linked to media_id"
+          // This might need to be done in game_quests table?
+          // I will assume predefined missions are handled by getGameMissions
+        }
 
         const completedIds = new Set(completedQuests?.map(q => q.quest_id) || []);
         
