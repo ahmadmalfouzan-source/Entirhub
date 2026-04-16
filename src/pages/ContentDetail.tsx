@@ -11,6 +11,7 @@ import { GameQuestTracker } from '@/components/GameQuestTracker';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { translations } from '@/i18n/translations';
+import { supabase } from '@/lib/supabase';
 
 export function ContentDetail() {
   const { id } = useParams();
@@ -73,10 +74,35 @@ export function ContentDetail() {
     loadData();
   }, [id]);
 
+  const watchlistItem = watchlist.find(w => w.media?.external_id === item?.external_id);
+
+  useEffect(() => {
+    const fetchGameProgress = async () => {
+      if (item?.media_type === 'game' && watchlistItem) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const mediaId = watchlistItem.media_id;
+        console.log('media_id:', mediaId);
+        
+        const { data, error } = await supabase
+          .from('game_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('media_id', mediaId);
+          
+        if (error) {
+          console.error('Error fetching game progress:', error);
+        } else {
+          console.log('number of rows fetched:', data?.length);
+        }
+      }
+    };
+    fetchGameProgress();
+  }, [item, watchlistItem]);
+
   if (loading) return <div className="p-8 text-foreground">Loading...</div>;
   if (!item) return <div className="p-8 text-foreground">Content not found.</div>;
-
-  const watchlistItem = watchlist.find(w => w.media?.external_id === item.external_id);
 
   const handleAddToList = () => {
     addToWatchlist({

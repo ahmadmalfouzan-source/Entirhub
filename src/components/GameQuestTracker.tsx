@@ -62,10 +62,21 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
             hours_played: 0,
             last_played: new Date().toISOString()
           });
-          // Also insert default quests/missions if needed? 
-          // The user mentioned "Insert predefined missions/chapters Linked to media_id"
-          // This might need to be done in game_quests table?
-          // I will assume predefined missions are handled by getGameMissions
+          
+          // Insert default missions
+          const defaultMissions = ['Prologue', 'Franklin and Lamar', 'Complications'];
+          const missionsToInsert = defaultMissions.map(title => ({
+            user_id: user.id,
+            media_id: mediaId,
+            title: title,
+            status: 'pending'
+          }));
+          
+          await supabase.from('game_quests').insert(missionsToInsert);
+          
+          // Refetch progress
+          loadQuests();
+          return;
         }
 
         const completedIds = new Set(completedQuests?.map(q => q.quest_id) || []);
@@ -110,34 +121,42 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
   const completedCount = quests.filter(q => q.completed).length;
   const progress = quests.length > 0 ? (completedCount / quests.length) * 100 : 0;
 
-  if (loading) return <div className="animate-pulse p-4 bg-card rounded-xl">Loading quests...</div>;
-
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-4">
       <h3 className="text-lg font-bold text-foreground">Story Progress</h3>
-      <div className="space-y-1">
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{completedCount} / {quests.length} Completed</span>
-          <span>{Math.round(progress)}%</span>
-        </div>
-        <Progress value={progress} />
-      </div>
-      <div className="space-y-2 max-h-96 overflow-y-auto">
-        {quests.map(quest => (
-          <div key={quest.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5">
-            <Checkbox 
-              checked={quest.completed}
-              onCheckedChange={(checked) => handleToggleQuest(quest.id, !!checked)}
-            />
-            <div>
-              <p className={`text-sm font-medium ${quest.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                {quest.title}
-              </p>
-              <p className="text-xs text-muted-foreground">{quest.description}</p>
+      {loading ? (
+        <div className="animate-pulse p-4 bg-card rounded-xl">Loading quests...</div>
+      ) : (
+        <>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{completedCount} / {quests.length} Completed</span>
+              <span>{Math.round(progress)}%</span>
             </div>
+            <Progress value={progress} />
           </div>
-        ))}
-      </div>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {quests.length > 0 ? (
+              quests.map(quest => (
+                <div key={quest.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5">
+                  <Checkbox 
+                    checked={quest.completed}
+                    onCheckedChange={(checked) => handleToggleQuest(quest.id, !!checked)}
+                  />
+                  <div>
+                    <p className={`text-sm font-medium ${quest.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                      {quest.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{quest.description}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No missions found.</p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
