@@ -79,7 +79,7 @@ export function Settings() {
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
           <SettingsIcon className="w-6 h-6 text-white" />
         </div>
-        <h1 className="text-3xl font-bold text-white">Settings</h1>
+        <h1 className="text-3xl font-bold text-white">{t('settings')}</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -100,20 +100,20 @@ export function Settings() {
             onClick={() => setActiveTab('integrations')}
             className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'integrations' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
-            <Gamepad2 className="w-5 h-5" /> Integrations
+            <Gamepad2 className="w-5 h-5" /> {t('integrations')}
           </button>
           <button 
             onClick={() => setActiveTab('app')}
             className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'app' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
-            <Smartphone className="w-5 h-5" /> App Settings
+            <Smartphone className="w-5 h-5" /> {t('appSettings')}
           </button>
         </div>
 
         <div className="md:col-span-3 space-y-8">
           {activeTab === 'profile' && (
             <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
-              <h2 className="text-2xl font-bold text-white mb-8">Profile Information</h2>
+              <h2 className="text-2xl font-bold text-white mb-8">{t('profileInformation')}</h2>
               
               <div className="flex items-center gap-6 mb-10">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl text-white font-bold shadow-lg">
@@ -127,13 +127,13 @@ export function Settings() {
 
               <div className="space-y-6 max-w-md">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-gray-300">Username</Label>
+                  <Label htmlFor="username" className="text-gray-300">{t('username')}</Label>
                   <Input id="username" defaultValue={username} className="bg-white/5 border-white/10 text-white h-12 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-300">Email</Label>
+                  <Label htmlFor="email" className="text-gray-300">{t('email')}</Label>
                   <Input id="email" type="email" defaultValue={user?.email || 'guest@example.com'} disabled className="bg-white/5 border-white/10 text-gray-500 h-12 rounded-xl cursor-not-allowed" />
-                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed.</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('emailCannotBeChanged')}</p>
                 </div>
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 rounded-xl w-full sm:w-auto mt-4">{t('saveChanges')}</Button>
               </div>
@@ -144,7 +144,7 @@ export function Settings() {
             <div className="space-y-8">
               <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
                 <h2 className="text-2xl font-bold text-white mb-2">{t('changePassword')}</h2>
-                <p className="text-gray-400 mb-8">Ensure your account is using a long, random password to stay secure.</p>
+                <p className="text-gray-400 mb-8">{t('ensureLongPassword')}</p>
                 
                 <form onSubmit={handlePasswordChange} className="space-y-6 max-w-md">
                   <div className="space-y-2">
@@ -158,11 +158,11 @@ export function Settings() {
               <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-8">
                 <div className="flex items-center gap-3 mb-2">
                   <AlertTriangle className="w-6 h-6 text-red-500" />
-                  <h2 className="text-xl font-bold text-red-500">Danger Zone</h2>
+                  <h2 className="text-xl font-bold text-red-500">{t('dangerZone')}</h2>
                 </div>
-                <p className="text-gray-400 text-sm mb-6">Once you delete your account, there is no going back. Please be certain.</p>
+                <p className="text-gray-400 text-sm mb-6">{t('deleteAccountWarning')}</p>
                 <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white rounded-xl">
-                  Delete Account
+                  {t('deleteAccount')}
                 </Button>
               </div>
             </div>
@@ -170,12 +170,12 @@ export function Settings() {
 
           {activeTab === 'integrations' && (
             <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
-              <h2 className="text-2xl font-bold text-white mb-2">PlayStation Network</h2>
-              <p className="text-gray-400 mb-8">Connect your PSN account to automatically sync your games and trophies.</p>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('playstationNetwork')}</h2>
+              <p className="text-gray-400 mb-8">{t('connectPSN')}</p>
               
               <form onSubmit={handleConnectPSN} className="space-y-6 max-w-md">
                 <div className="space-y-2">
-                  <Label htmlFor="psn" className="text-gray-300">PSN Username</Label>
+                  <Label htmlFor="psn" className="text-gray-300">{t('psnUsername')}</Label>
                   <Input 
                     id="psn" 
                     value={psnInput} 
@@ -190,23 +190,23 @@ export function Settings() {
                   className="bg-[#00439C] hover:bg-[#003070] text-white h-12 px-8 rounded-xl w-full sm:w-auto flex items-center gap-2"
                 >
                   <Gamepad2 className="w-5 h-5" />
-                  {isSyncing ? 'Syncing...' : (psnUsername ? 'Update & Sync' : 'Connect PlayStation')}
+                  {isSyncing ? t('syncing') : (psnUsername ? t('updateAndSync') : t('connectPlayStation'))}
                 </Button>
               </form>
             </div>
           )}
           {activeTab === 'app' && (
             <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
-              <h2 className="text-2xl font-bold text-white mb-2">App Settings</h2>
-              <p className="text-gray-400 mb-8">Manage your application experience.</p>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('appSettings')}</h2>
+              <p className="text-gray-400 mb-8">{t('manageAppExperience')}</p>
               
               <div className="space-y-6 max-w-md">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <Smartphone className="w-8 h-8 text-blue-400" />
                     <div>
-                      <h3 className="text-lg font-medium text-white">Install App</h3>
-                      <p className="text-sm text-gray-400">Install EntertainHub on your device for a better experience.</p>
+                      <h3 className="text-lg font-medium text-white">{t('installApp')}</h3>
+                      <p className="text-sm text-gray-400">{t('installAppDesc')}</p>
                     </div>
                   </div>
                   <Button 
@@ -214,7 +214,7 @@ export function Settings() {
                     disabled={!isInstallable}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl"
                   >
-                    {isInstallable ? 'Install App' : 'App Already Installed or Not Supported'}
+                    {isInstallable ? t('installApp') : t('appAlreadyInstalled')}
                   </Button>
                 </div>
               </div>

@@ -45,9 +45,9 @@ export function ContentCard({ item, progress, onDelete }: ContentCardProps) {
           title: item.title,
           cover_url: item.poster_url,
         });
-        toast.success(`${item.title} added to library`);
+        toast.success(t('addedToLibrary', { title: item.title }));
       } catch (error) {
-        toast.error('Failed to add to library');
+        toast.error(t('failedToAdd'));
       }
     }
   };
@@ -56,7 +56,7 @@ export function ContentCard({ item, progress, onDelete }: ContentCardProps) {
     e.preventDefault();
     const url = `${window.location.origin}/content/${item.external_id}`;
     navigator.clipboard.writeText(url);
-    toast.success('Link copied to clipboard!');
+    toast.success(t('linkCopied'));
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -136,7 +136,7 @@ export function ContentCard({ item, progress, onDelete }: ContentCardProps) {
       </div>
 
       <div className="p-3 md:p-4 flex-1 min-w-0 flex flex-col justify-center sm:justify-start relative">
-        <h3 className="font-semibold text-foreground truncate mb-1 text-base md:text-lg pr-8 sm:pr-0">{item.title}</h3>
+        <h3 className="font-semibold text-foreground truncate mb-1 text-base md:text-lg pr-8 sm:pr-0">{item.title || t('unknownTitle')}</h3>
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 md:mb-3">
           {item.release_date && !isNaN(new Date(item.release_date).getTime()) ? (
             <span>{new Date(item.release_date).getFullYear()}</span>
@@ -147,7 +147,7 @@ export function ContentCard({ item, progress, onDelete }: ContentCardProps) {
         {progress && (
           <div className="mt-auto sm:mt-2 space-y-1.5">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-blue-400">{progress.watched}/{progress.total} eps</span>
+              <span className="text-blue-400">{t('episodeCount', { watched: progress.watched, total: progress.total })}</span>
               <span className="text-gray-400">{Math.round(progress.percent)}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">

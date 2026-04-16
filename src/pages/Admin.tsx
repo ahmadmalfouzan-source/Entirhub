@@ -3,9 +3,11 @@ import { useStore } from '@/store/useStore';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Users, Film, Library, TrendingUp } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function Admin() {
   const { isAdmin } = useStore();
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalMedia: 0,
@@ -88,14 +90,14 @@ export function Admin() {
   }
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-400">Loading admin dashboard...</div>;
+    return <div className="p-8 text-center text-gray-400">{t('loading')}</div>;
   }
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
-        <p className="text-gray-400">Overview of platform statistics and users.</p>
+        <h1 className="text-3xl font-bold text-white mb-2">{t('adminDashboard')}</h1>
+        <p className="text-gray-400">{t('adminOverview')}</p>
       </div>
 
       {/* Stats Grid */}
@@ -105,7 +107,7 @@ export function Admin() {
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-sm text-gray-400">Total Users</div>
+            <div className="text-sm text-gray-400">{t('totalUsers')}</div>
             <div className="text-2xl font-bold text-white">{stats.totalUsers}</div>
           </div>
         </div>
@@ -114,7 +116,7 @@ export function Admin() {
             <Film className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-sm text-gray-400">Total Media</div>
+            <div className="text-sm text-gray-400">{t('totalMedia')}</div>
             <div className="text-2xl font-bold text-white">{stats.totalMedia}</div>
           </div>
         </div>
@@ -123,7 +125,7 @@ export function Admin() {
             <Library className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-sm text-gray-400">Library Entries</div>
+            <div className="text-sm text-gray-400">{t('libraryEntries')}</div>
             <div className="text-2xl font-bold text-white">{stats.totalLibraryEntries}</div>
           </div>
         </div>
@@ -132,28 +134,28 @@ export function Admin() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Users List */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Recent Users</h2>
+          <h2 className="text-xl font-bold text-white mb-4">{t('recentUsers')}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="text-gray-400 border-b border-white/10">
                 <tr>
-                  <th className="pb-3 font-medium">Username</th>
-                  <th className="pb-3 font-medium">Joined</th>
-                  <th className="pb-3 font-medium">Library Items</th>
-                  <th className="pb-3 font-medium">Role</th>
+                  <th className="pb-3 font-medium">{t('username')}</th>
+                  <th className="pb-3 font-medium">{t('joined')}</th>
+                  <th className="pb-3 font-medium">{t('libraryItems')}</th>
+                  <th className="pb-3 font-medium">{t('role')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {users.map((u) => (
                   <tr key={u.id}>
-                    <td className="py-3 text-white">{u.username || 'Unknown'}</td>
+                    <td className="py-3 text-white">{u.username || t('unknown')}</td>
                     <td className="py-3 text-gray-400">{new Date(u.created_at).toLocaleDateString()}</td>
                     <td className="py-3 text-gray-400">{u.libraryCount}</td>
                     <td className="py-3">
                       {u.is_admin ? (
-                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded text-xs">Admin</span>
+                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded text-xs">{t('admin')}</span>
                       ) : (
-                        <span className="bg-white/10 text-gray-300 px-2 py-1 rounded text-xs">User</span>
+                        <span className="bg-white/10 text-gray-300 px-2 py-1 rounded text-xs">{t('user')}</span>
                       )}
                     </td>
                   </tr>
@@ -167,7 +169,7 @@ export function Admin() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-purple-400" />
-            Top Rated Media
+            {t('topRatedMedia')}
           </h2>
           <div className="space-y-4">
             {popularContent.map((item, index) => (

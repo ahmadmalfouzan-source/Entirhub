@@ -164,7 +164,7 @@ export function Library() {
             className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
           >
             <Upload className="w-4 h-4" />
-            Import from Image
+            {t('importFromImage')}
           </button>
           
           <button
@@ -179,7 +179,7 @@ export function Library() {
               isDeleting ? 'bg-red-600 hover:bg-red-700' : 'bg-white/10 hover:bg-white/20'
             }`}
           >
-            {isDeleting ? `Delete Selected (${selectedItems.size})` : 'Delete Items'}
+            {isDeleting ? t('deleteSelected', { count: selectedItems.size }) : t('deleteItems')}
           </button>
           {isDeleting && (
             <button
@@ -189,7 +189,7 @@ export function Library() {
               }}
               className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm rounded-lg"
             >
-              Cancel
+              {t('cancel')}
             </button>
           )}
           <div className="relative">
@@ -198,10 +198,10 @@ export function Library() {
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               className="appearance-none bg-[#111827] border border-white/10 text-white text-sm rounded-lg pl-10 pr-8 py-2 focus:outline-none focus:border-blue-500"
             >
-              <option value="date_added">Recently Added</option>
-              <option value="rating">Highest Rated</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="year">Release Year</option>
+              <option value="date_added">{t('recentlyAdded')}</option>
+              <option value="rating">{t('highestRated')}</option>
+              <option value="name">{t('nameAZ')}</option>
+              <option value="year">{t('releaseYear')}</option>
             </select>
             <ListFilter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           </div>
@@ -211,7 +211,7 @@ export function Library() {
       <Tabs defaultValue="all" className="w-full" onValueChange={setFilter}>
         <TabsList className="bg-[#111827] border border-white/10 mb-6 md:mb-8 flex flex-wrap h-auto p-1">
           <TabsTrigger value="all" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('all')}</TabsTrigger>
-          <TabsTrigger value="planned" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">Want to Watch</TabsTrigger>
+          <TabsTrigger value="planned" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('wantToWatch')}</TabsTrigger>
           <TabsTrigger value="games" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('games')}</TabsTrigger>
           <TabsTrigger value="movies" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('movies')}</TabsTrigger>
           <TabsTrigger value="series" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('series')}</TabsTrigger>
@@ -223,11 +223,11 @@ export function Library() {
               <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
                 <Search className="w-8 h-8 text-gray-500" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Nothing here yet</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">{t('nothingHereYet')}</h3>
               <p className="text-gray-400 max-w-md">
                 {filter === 'planned' 
-                  ? "You haven't added anything to your 'Want to Watch' list yet."
-                  : "Your library is empty. Start exploring and add some movies, series, or games!"}
+                  ? t('emptyWantToWatch')
+                  : t('emptyLibraryDesc')}
               </p>
             </div>
           ) : (
@@ -268,7 +268,7 @@ export function Library() {
                     onClick={() => setVisibleCount(prev => prev + 20)}
                     className="px-6 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white text-sm font-medium transition-colors"
                   >
-                    Load More
+                    {t('loadMore')}
                   </button>
                 </div>
               )}

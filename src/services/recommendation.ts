@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { fetchTrendingMovies, fetchTrendingSeries, fetchTopRatedGames, searchMedia, fetchGames } from './api';
 import { getAIRecommendations } from './aiService';
+import { useLanguageStore } from '@/store/useLanguageStore';
 
 export interface RecommendationItem {
   id?: string;
@@ -110,11 +111,13 @@ export async function getRecommendations(): Promise<RecommendationItem[]> {
     // 4. Call Gemini API if we have enough data
     let aiRecs = { recommendations: [] as any[] };
     if (favoriteGenres.length > 0 || topRated.length > 0 || recentlyWatched.length > 0) {
-      console.log('Calling Gemini with:', { favoriteGenres, topRated, recentlyWatched });
+      const lang = useLanguageStore.getState().language;
+      console.log('Calling Gemini with:', { favoriteGenres, topRated, recentlyWatched, lang });
       aiRecs = await getAIRecommendations({
         favoriteGenres,
         topRated: topRated.slice(0, 10),
-        recentlyWatched: recentlyWatched.slice(0, 10)
+        recentlyWatched: recentlyWatched.slice(0, 10),
+        language: lang
       });
       console.log('Gemini returned:', aiRecs);
     } else {

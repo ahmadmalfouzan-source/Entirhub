@@ -29,7 +29,7 @@ export default function Series() {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
-      const lang = language === 'ar' ? 'ar-SA' : 'en-US';
+      const lang = language === 'ar' ? 'ar' : 'en-US';
       const [trendingData, popularData] = await Promise.all([
         fetchTrendingSeries(lang),
         fetchPopularSeries(lang)

@@ -4,6 +4,7 @@ export const getAIRecommendations = async (userData: {
   favoriteGenres: string[];
   topRated: string[];
   recentlyWatched: string[];
+  language: 'en' | 'ar';
 }): Promise<{ recommendations: { title: string; type: 'movie' | 'series' | 'game'; reason: string; genre: string }[] }> => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -14,7 +15,7 @@ export const getAIRecommendations = async (userData: {
   try {
     const ai = new GoogleGenAI({ apiKey });
     const prompt = `You are a high-end personalized recommendation engine specializing in movies, TV shows, and games.
-Your goal is to generate deeply personalized and intelligent recommendations that reflect a strong understanding of the user's taste.
+Your goal is to generate deeply personalized and intelligent recommendations in ${userData.language === 'ar' ? 'Arabic' : 'English'} that reflect a strong understanding of the user's taste.
 
 ========================
 INPUT
@@ -51,7 +52,7 @@ STRICT RULES FOR "reason" FIELD
 * No emojis.
 
 EXAMPLE REASON STYLE:
-"Drawn from your interest in The Boys and Breaking Bad, where morally compromised characters and the consequences of power take center stage, this recommendation leans into a similarly dark and character-driven narrative. It explores corruption and control with a grounded, often brutal tone, prioritizing flawed individuals over traditional hero archetypes."
+${userData.language === 'ar' ? 'مستوحى من اهتمامك بـ The Boys و Breaking Bad، حيث تحتل الشخصيات ذات الأخلاق المشكوك فيها وعواقب القوة مركز الصدارة، يميل هذا الاقتراح إلى سرد قصصي مظلم ومدفوع بالشخصيات. يستكشف الفساد والسيطرة بنبرة واقعية وقاسية غالباً، مقدماً الأفراد المعيبين على نماذج الأبطال التقليدية.' : 'Drawn from your interest in The Boys and Breaking Bad, where morally compromised characters and the consequences of power take center stage, this recommendation leans into a similarly dark and character-driven narrative. It explores corruption and control with a grounded, often brutal tone, prioritizing flawed individuals over traditional hero archetypes.'}
 
 ========================
 OUTPUT FORMAT

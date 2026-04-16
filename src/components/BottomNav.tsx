@@ -2,21 +2,23 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Gamepad2, Film, Tv, Library, Sparkles, User, Settings, Crown, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
-
-const navItems = [
-  { icon: Home, label: 'Home', path: '/' },
-  { icon: Gamepad2, label: 'Games', path: '/games' },
-  { icon: Film, label: 'Movies', path: '/movies' },
-  { icon: Tv, label: 'Series', path: '/series' },
-  { icon: Library, label: 'Library', path: '/library' },
-  { icon: Sparkles, label: 'For You', path: '/for-you' },
-  { icon: User, label: 'Profile', path: '/profile' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function BottomNav() {
   const location = useLocation();
   const { isAdmin, logout } = useStore();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { icon: Home, label: t('home'), path: '/' },
+    { icon: Gamepad2, label: t('games'), path: '/games' },
+    { icon: Film, label: t('movies'), path: '/movies' },
+    { icon: Tv, label: t('series'), path: '/series' },
+    { icon: Library, label: t('myLibrary'), path: '/library' },
+    { icon: Sparkles, label: t('forYou'), path: '/for-you' },
+    { icon: User, label: t('profile'), path: '/profile' },
+    { icon: Settings, label: t('settings'), path: '/settings' },
+  ];
 
   return (
     <>
@@ -53,7 +55,7 @@ export function BottomNav() {
             )}
           >
             <Crown className={cn("w-6 h-6 transition-all duration-200", location.pathname === '/admin' ? "scale-110" : "")} />
-            <span className="text-[10px] mt-1 font-medium">Admin</span>
+            <span className="text-[10px] mt-1 font-medium">{t('admin')}</span>
           </Link>
         )}
         <button
@@ -61,7 +63,7 @@ export function BottomNav() {
           className="relative flex flex-col items-center justify-center p-3 min-w-[64px] min-h-[44px] rounded-xl transition-all duration-200 active:scale-95 shrink-0 text-gray-400 hover:text-red-400"
         >
           <LogOut className="w-6 h-6 transition-all duration-200" />
-          <span className="text-[10px] mt-1 font-medium">Logout</span>
+          <span className="text-[10px] mt-1 font-medium">{t('logout')}</span>
         </button>
         
         {/* Spacer to ensure the last item is fully visible when scrolled */}

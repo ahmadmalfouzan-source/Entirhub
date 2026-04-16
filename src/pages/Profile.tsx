@@ -111,11 +111,11 @@ export function Profile() {
         const displayUsername = username.includes('@') ? username.split('@')[0] : username;
         const shareUrl = `${window.location.origin}/user/${displayUsername}`;
         await navigator.clipboard.writeText(shareUrl);
-        toast.success('Library is now public!', {
-          description: 'Share link copied to clipboard'
+        toast.success(t('libraryNowPublic'), {
+          description: t('shareLinkCopied')
         });
       } else {
-        toast.info('Library is now private');
+        toast.info(t('libraryNowPrivate'));
       }
     } catch (error: any) {
       console.error('Error sharing library:', error);
@@ -264,7 +264,7 @@ export function Profile() {
                 const displayUsername = username.includes('@') ? username.split('@')[0] : username;
                 const shareUrl = `${window.location.origin}/user/${displayUsername}`;
                 navigator.clipboard.writeText(shareUrl);
-                toast.success('Link copied!');
+                toast.success(t('linkCopied'));
               }}
             >
               <Share2 className="w-4 h-4 mr-2" />
@@ -314,15 +314,15 @@ export function Profile() {
           <>
             <StatCard 
               icon={<Trophy className="w-6 h-6 text-blue-400" />}
-              label="PSN Trophies"
+              label={t('psnTrophies')}
               value={psnStats.totalTrophies}
-              subtext="Total Earned"
+              subtext={t('totalEarned')}
             />
             <StatCard 
               icon={<Trophy className="w-6 h-6 text-cyan-400" />}
-              label="Platinum Trophies"
+              label={t('platinumTrophies')}
               value={psnStats.platinum}
-              subtext="100% Completed"
+              subtext={t('hundredPercentCompleted')}
             />
           </>
         )}

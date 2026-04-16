@@ -38,7 +38,7 @@ export default function Movies() {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
-      const lang = language === 'ar' ? 'ar-SA' : 'en-US';
+      const lang = language === 'ar' ? 'ar' : 'en-US';
       const [trendingData, popularData] = await Promise.all([
         fetchTrendingMovies(lang),
         fetchPopularMovies(lang)

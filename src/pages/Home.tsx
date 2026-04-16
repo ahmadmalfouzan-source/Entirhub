@@ -17,7 +17,7 @@ export function Home() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const lang = language === 'ar' ? 'ar-SA' : 'en-US';
+      const lang = language === 'ar' ? 'ar' : 'en-US';
       const [movies, series] = await Promise.all([
         fetchTrendingMovies(lang),
         fetchTrendingSeries(lang)
