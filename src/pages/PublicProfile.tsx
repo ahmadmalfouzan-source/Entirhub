@@ -108,7 +108,7 @@ export function PublicProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <div className="min-h-screen bg-[#0a0f1e] text-white animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="p-8 space-y-12 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center gap-8 bg-white/5 p-8 rounded-3xl border border-white/5">
         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
@@ -123,7 +123,7 @@ export function PublicProfile() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
         {watchlist.map(item => (
           <div key={item.id} className="pointer-events-none">
             <ContentCard 

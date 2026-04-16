@@ -39,7 +39,7 @@ export function Home() {
   const seriesCompleted = watchlist.filter(item => item.media?.media_type === 'series' && item.status === 'completed').length;
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       {/* Welcome Banner */}
       <div className="relative rounded-2xl md:rounded-3xl overflow-hidden bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-border p-6 md:p-10">
         <div className="hidden md:block absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
@@ -70,7 +70,7 @@ export function Home() {
             <Moon className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
             <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('watchTonight')}</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {watchTonight.map(item => (
               <ContentCard 
                 key={item.id} 
@@ -96,13 +96,13 @@ export function Home() {
           <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('trending')}</h2>
         </div>
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
+              <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {trending.map(item => (
               <ContentCard key={item.external_id} item={item} />
             ))}
@@ -117,13 +117,13 @@ export function Home() {
           <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('recommended')}</h2>
         </div>
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
+              <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {recommended.map(item => (
               <ContentCard key={item.external_id} item={item} />
             ))}

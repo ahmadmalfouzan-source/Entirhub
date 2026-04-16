@@ -50,7 +50,7 @@ export default function Games() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
@@ -74,13 +74,13 @@ export default function Games() {
         <section>
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">{t('searchResults')}</h2>
           {isSearching ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {[...Array(10)].map((_, i) => (
-                <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
+                <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
               ))}
             </div>
           ) : searchResults.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {searchResults.map(item => (
                 <ContentCard key={item.external_id} item={item} />
               ))}
@@ -100,7 +100,7 @@ export default function Games() {
                   <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs md:text-sm ml-2">{backlog.length}</span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {backlog.map(item => (
                   <div key={item.id} className="relative group">
                     <ContentCard 
@@ -136,13 +136,13 @@ export default function Games() {
               <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('topRatedGames')}</h2>
             </div>
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(10)].map((_, i) => (
-                  <div key={i} className="aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
+                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {topRated.map(item => (
                   <ContentCard key={item.external_id} item={item} />
                 ))}

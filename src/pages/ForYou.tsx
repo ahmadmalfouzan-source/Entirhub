@@ -38,7 +38,7 @@ export function ForYou() {
   }, []);
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
@@ -59,13 +59,13 @@ export function ForYou() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+            <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
           {recommendations.map(item => (
             <div key={item.external_id} className="relative group flex flex-col">
               <ContentCard item={item} />

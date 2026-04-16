@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContentCard } from '@/components/ContentCard';
 import { Library as LibraryIcon, Search, ListFilter, Upload, RefreshCw } from 'lucide-react';
@@ -35,7 +35,7 @@ export function Library() {
     }
     
     try {
-      await Promise.all(Array.from(selectedItems).map(id => removeFromWatchlist(id)));
+      await Promise.all(Array.from(selectedItems).map((id: string) => removeFromWatchlist(id)));
       toast.success(`Deleted ${selectedItems.size} items`);
       setSelectedItems(new Set());
       setIsDeleting(false);
@@ -61,7 +61,7 @@ export function Library() {
     
     setIsSyncing(true);
     try {
-      await importTitlesFromImage(file, user.id, (status) => {
+      await importTitlesFromImage(file, user.id, (status: string) => {
         toast.info(status);
       });
       await fetchWatchlist();
@@ -141,7 +141,7 @@ export function Library() {
   const visibleItems = filteredItems.slice(0, visibleCount);
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
@@ -232,7 +232,7 @@ export function Library() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {visibleItems.map(item => (
                   <div key={item.id} className="relative">
                     <ContentCard 

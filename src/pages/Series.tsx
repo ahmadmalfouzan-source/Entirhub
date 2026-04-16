@@ -54,7 +54,7 @@ export default function Series() {
   }, [selectedGenre, language]);
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
@@ -105,13 +105,13 @@ export default function Series() {
             {t(SERIES_GENRES.find(g => g.id === selectedGenre)?.nameKey as any)} {t('series')}
           </h2>
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {[...Array(10)].map((_, i) => (
-                <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+                <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {genreSeries.map(item => (
                 <ContentCard key={item.external_id} item={item} />
               ))}
@@ -123,13 +123,13 @@ export default function Series() {
           <section>
             <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{t('trending')}</h2>
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {trending.map(item => (
                   <ContentCard key={item.external_id} item={item} />
                 ))}
@@ -140,13 +140,13 @@ export default function Series() {
           <section>
             <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{t('popularSeries')}</h2>
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {popular.map(item => (
                   <ContentCard key={item.external_id} item={item} />
                 ))}

@@ -77,10 +77,10 @@ export function Profile() {
       if (!psnUsername) return;
       try {
         const data = await fetchPSNProfile(psnUsername);
-        if (data && data.stats) {
+        if (data && (data as any).stats) {
           setPsnStats({
-            totalTrophies: data.stats.totalTrophies || 0,
-            platinum: data.stats.platinum || 0
+            totalTrophies: (data as any).stats.totalTrophies || 0,
+            platinum: (data as any).stats.platinum || 0
           });
         }
       } catch (err) {
@@ -219,7 +219,7 @@ export function Profile() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 space-y-8 md:space-y-12 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       {/* Profile Header */}
       <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 bg-gradient-to-br from-blue-600/20 to-purple-600/20 p-6 md:p-8 rounded-2xl md:rounded-3xl border border-white/5">
         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-3xl md:text-4xl font-bold text-white shadow-2xl">

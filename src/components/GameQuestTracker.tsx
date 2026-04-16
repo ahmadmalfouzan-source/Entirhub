@@ -21,13 +21,16 @@ interface GameQuestTrackerProps {
 export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadQuests = async () => {
       setLoading(true);
+      setError(null);
       console.log('Fetching progress for mediaId:', mediaId);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
         if (!user) return;
 
         // 1. Fetch from game_progress
@@ -93,8 +96,13 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
         const completedIds = new Set(completedQuests?.map(q => q.quest_id) || []);
         
         setQuests(missions.map(m => ({ ...m, completed: completedIds.has(m.id) })));
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading quests:', error);
+        if (error.message && error.message.includes('Invalid Refresh Token')) {
+          await supabase.auth.signOut();
+          window.location.reload();
+        }
+        setError(error.message || 'Failed to load quest tracker');
         toast.error('Failed to load quest tracker');
       } finally {
         setLoading(false);
@@ -137,6 +145,10 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
       <h3 className="text-lg font-bold text-foreground">Story Progress</h3>
       {loading ? (
         <div className="animate-pulse p-4 bg-card rounded-xl">Loading quests...</div>
+      ) : error ? (
+        <div className="p-4 bg-destructive/10 text-destructive rounded-xl text-sm">
+          Error: {error}
+        </div>
       ) : (
         <>
           <div className="space-y-1">

@@ -278,7 +278,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
                         <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                         {console.log(`Rendering episodes for season ${season.season_number}:`, seasonEpisodes[season.season_number])}
                         {seasonEpisodes[season.season_number] && seasonEpisodes[season.season_number].length > 0 ? (
                           seasonEpisodes[season.season_number].map((episode) => {

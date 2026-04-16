@@ -13,28 +13,61 @@ export const getAIRecommendations = async (userData: {
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `Act as an expert curator.
-    User Profile:
-    - Favorite Genres: ${userData.favoriteGenres.join(', ')}
-    - Top Rated: ${userData.topRated.join(', ')}
-    - Recently Watched/Played: ${userData.recentlyWatched.join(', ')}
+    const prompt = `You are a high-end personalized recommendation engine specializing in movies, TV shows, and games.
+Your goal is to generate deeply personalized and intelligent recommendations that reflect a strong understanding of the user's taste.
 
-    Provide 10 highly personalized recommendations that match the user's taste in tone, themes, and storytelling style.
-    Mix movies, series, and games.
-    IMPORTANT: Do not recommend anything from the Recently Watched/Played list or Top Rated list.
+========================
+INPUT
+=====
+User History:
+- Favorite Genres: ${userData.favoriteGenres.join(', ')}
+- Top Rated: ${userData.topRated.join(', ')}
+- Recently Watched/Played: ${userData.recentlyWatched.join(', ')}
 
-    Return ONLY valid JSON in this format:
+========================
+TASK
+====
+Provide 10 highly personalized recommendations (mix of movies, series, and games) that match the user's taste.
+IMPORTANT: Do not recommend anything from the Recently Watched/Played list or Top Rated list.
+
+For EACH recommendation's "reason" field:
+1. Infer the user's taste profile from their history (Tone, Themes, Character types, Narrative style).
+2. Select 1-2 MOST relevant titles from the user's Top Rated or Recently Watched history.
+3. Explain WHY the user likely enjoyed those titles (be specific).
+4. Connect those insights directly to the recommended title (highlight shared tone, themes, or character depth).
+
+========================
+STRICT RULES FOR "reason" FIELD
+===============================
+* DO NOT be generic.
+* DO NOT say "because you liked X" without explanation.
+* DO NOT use vague adjectives like "great", "amazing", or "exciting".
+* Focus on psychological depth, tone, and character complexity.
+* Make the system feel like it truly understands the user.
+* 2 to 3 sentences ONLY per reason.
+* Natural, human-like tone.
+* Insightful and precise.
+* No bullet points.
+* No emojis.
+
+EXAMPLE REASON STYLE:
+"Drawn from your interest in The Boys and Breaking Bad, where morally compromised characters and the consequences of power take center stage, this recommendation leans into a similarly dark and character-driven narrative. It explores corruption and control with a grounded, often brutal tone, prioritizing flawed individuals over traditional hero archetypes."
+
+========================
+OUTPUT FORMAT
+=============
+Return ONLY valid JSON in this format:
+{
+  "recommendations": [
     {
-      "recommendations": [
-        {
-          "title": "string",
-          "type": "movie" | "series" | "game",
-          "reason": "short explanation (e.g., 'Because you watched The Boys', 'Based on your Action favorites')",
-          "genre": "string"
-        }
-      ]
+      "title": "string",
+      "type": "movie" | "series" | "game",
+      "reason": "string (following the strict rules above)",
+      "genre": "string"
     }
-    No text outside the JSON.`;
+  ]
+}
+No text outside the JSON.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-flash-latest',

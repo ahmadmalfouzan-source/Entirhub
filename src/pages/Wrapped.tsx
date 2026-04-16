@@ -94,7 +94,7 @@ export function Wrapped() {
   if (!stats) return <div className="p-8 text-white">No data available for this year.</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white p-4 md:p-8 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white p-4 md:p-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
         
         <div className="text-center space-y-2 md:space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">

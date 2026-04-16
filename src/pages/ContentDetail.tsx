@@ -158,7 +158,7 @@ export function ContentDetail() {
   };
 
   return (
-    <div className="pb-20">
+    <div className="pb-20 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       {/* Hero Banner */}
       <div className="h-[40vh] md:h-[60vh] relative">
         <img 
@@ -206,15 +206,15 @@ export function ContentDetail() {
                 </Button>
               )}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
               {!watchlistItem ? (
-                <Button onClick={handleAddToList} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
-                  <Plus className="w-4 h-4 mr-2" /> {t('addToLibrary')}
+                <Button onClick={handleAddToList} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm">
+                  <Plus className="w-5 h-5 sm:w-4 sm:h-4 mr-2" /> {t('addToLibrary')}
                 </Button>
               ) : (
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
                   <Select value={watchlistItem.status} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-[160px] bg-white/10 border-border text-foreground">
+                    <SelectTrigger className="w-full sm:w-[160px] h-12 sm:h-10 bg-white/10 border-border text-foreground">
                       <SelectValue placeholder={t('status')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -231,18 +231,18 @@ export function ContentDetail() {
                     <Button 
                       onClick={handleRewatch}
                       variant="outline" 
-                      className="bg-white/10 border-border text-foreground hover:bg-white/20"
+                      className="bg-white/10 border-border text-foreground hover:bg-white/20 h-12 sm:h-10 w-full sm:w-auto"
                     >
-                      <RotateCcw className="w-4 h-4 mr-2" />
+                      <RotateCcw className="w-5 h-5 sm:w-4 sm:h-4 mr-2" />
                       Rewatch {watchlistItem.rewatch_count ? `(${watchlistItem.rewatch_count}x)` : ''}
                     </Button>
                   )}
 
                   {item.media_type === 'game' && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                       <Select value={watchlistItem.platform || ''} onValueChange={handlePlatformChange}>
-                        <SelectTrigger className="w-[160px] bg-white/10 border-border text-foreground">
-                          <Monitor className="w-4 h-4 mr-2" />
+                        <SelectTrigger className="w-full sm:w-[160px] h-12 sm:h-10 bg-white/10 border-border text-foreground">
+                          <Monitor className="w-5 h-5 sm:w-4 sm:h-4 mr-2" />
                           <SelectValue placeholder="Platform" />
                         </SelectTrigger>
                         <SelectContent>
@@ -255,36 +255,39 @@ export function ContentDetail() {
                         </SelectContent>
                       </Select>
                       
-                      <div className="flex items-center gap-2 bg-white/10 border border-border rounded-md px-3 h-10">
-                        <span className="text-xs text-muted-foreground">Hours</span>
+                      <div className="flex items-center justify-between sm:justify-start gap-2 bg-white/10 border border-border rounded-md px-4 sm:px-3 h-12 sm:h-10">
+                        <span className="text-sm sm:text-xs text-muted-foreground">Hours</span>
                         <input 
                           type="number" 
                           value={watchlistItem.hours_played || 0} 
                           onChange={handleHoursChange}
-                          className="bg-transparent border-none text-foreground w-12 text-sm focus:outline-none"
+                          className="bg-transparent border-none text-foreground w-16 sm:w-12 text-base sm:text-sm focus:outline-none text-right sm:text-left"
                         />
                       </div>
 
                       <Button 
                         onClick={handleToggle100}
                         variant="outline" 
-                        className={`border-border ${watchlistItem.is_completed_100 ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500/50' : 'bg-white/10 text-foreground'}`}
+                        className={`border-border h-12 sm:h-10 w-full sm:w-auto ${watchlistItem.is_completed_100 ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500/50' : 'bg-white/10 text-foreground'}`}
                       >
-                        <Heart className={`w-4 h-4 mr-2 ${watchlistItem.is_completed_100 ? 'fill-current' : ''}`} />
+                        <Heart className={`w-5 h-5 sm:w-4 sm:h-4 mr-2 ${watchlistItem.is_completed_100 ? 'fill-current' : ''}`} />
                         100%
                       </Button>
                     </div>
                   )}
 
-                  <Button variant="destructive" onClick={handleRemove} size="icon">
-                    <Trash2 className="w-4 h-4" />
+                  <Button variant="destructive" onClick={handleRemove} size="icon" className="h-12 w-12 sm:h-10 sm:w-10 hidden sm:flex">
+                    <Trash2 className="w-5 h-5 sm:w-4 sm:h-4" />
+                  </Button>
+                  <Button variant="destructive" onClick={handleRemove} className="h-12 w-full sm:hidden flex items-center justify-center">
+                    <Trash2 className="w-5 h-5 mr-2" /> Remove from Library
                   </Button>
                 </div>
               )}
               {item.media_type === 'game' && (
-                <Link to={`/wiki/${item.external_id}`}>
-                  <Button variant="secondary" className="bg-white/10 text-foreground hover:bg-white/20 border-0">
-                    <BookOpen className="w-4 h-4 mr-2" /> Open Wiki
+                <Link to={`/wiki/${item.external_id}`} className="w-full sm:w-auto">
+                  <Button variant="secondary" className="bg-white/10 text-foreground hover:bg-white/20 border-0 w-full sm:w-auto h-12 sm:h-10">
+                    <BookOpen className="w-5 h-5 sm:w-4 sm:h-4 mr-2" /> Open Wiki
                   </Button>
                 </Link>
               )}

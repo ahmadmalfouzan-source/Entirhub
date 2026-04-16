@@ -60,7 +60,7 @@ export function Settings() {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
           <SettingsIcon className="w-6 h-6 text-white" />

@@ -149,7 +149,7 @@ export function Onboarding() {
 
   if (step === -1) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-8">
           <Sparkles className="w-8 h-8 text-white" />
         </div>
@@ -238,7 +238,7 @@ export function Onboarding() {
   const currentStep = steps[step];
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-8">
         <Sparkles className="w-8 h-8 text-white" />
       </div>
