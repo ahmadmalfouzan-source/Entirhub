@@ -31,26 +31,37 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
         if (!user) return;
 
         // 1. Fetch from game_progress
+        console.log('Fetching game_progress...');
         const { data: progressData, error: progressError } = await supabase
           .from('game_progress')
           .select('*')
           .eq('media_id', mediaId)
           .eq('user_id', user.id);
         
-        if (progressError) throw progressError;
+        if (progressError) {
+          console.error('Error fetching game_progress:', progressError);
+          throw progressError;
+        }
         console.log('Fetched rows count from game_progress:', progressData?.length);
 
         // 2. Fetch from Gemini
+        console.log('Fetching missions from Gemini...');
         const missions = await getGameMissions(gameName);
+        console.log('Fetched missions:', missions);
         
         // 3. Fetch completed from Supabase
-        const { data: completedQuests, error } = await supabase
+        console.log('Fetching game_quests...');
+        const { data: completedQuests, error: questsError } = await supabase
           .from('game_quests')
           .select('quest_id')
           .eq('media_id', mediaId)
           .eq('completed', true);
 
-        if (error) throw error;
+        if (questsError) {
+          console.error('Error fetching game_quests:', questsError);
+          throw questsError;
+        }
+        console.log('Fetched completed quests:', completedQuests?.length);
 
         // 4. If no progress exists, create default progress
         if (!progressData || progressData.length === 0) {
