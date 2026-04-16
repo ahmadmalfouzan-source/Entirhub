@@ -24,6 +24,7 @@ import Games from '@/pages/Games';
 import { Admin } from '@/pages/Admin';
 import { useStore } from '@/store/useStore';
 import { useLanguageStore } from '@/store/useLanguageStore';
+import { usePWAStore } from '@/store/usePWAStore';
 import { Toaster } from '@/components/ui/sonner';
 import { supabase } from '@/lib/supabase';
 import { Footer } from '@/components/Footer';
@@ -55,7 +56,27 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const { session, setSession, fetchWatchlist } = useStore();
   const { language } = useLanguageStore();
+  const { setDeferredPrompt, clearDeferredPrompt } = usePWAStore();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      clearDeferredPrompt();
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, [setDeferredPrompt, clearDeferredPrompt]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

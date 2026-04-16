@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
+import { usePWAStore } from '@/store/usePWAStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, User, Shield, AlertTriangle, Gamepad2 } from 'lucide-react';
+import { Settings as SettingsIcon, User, Shield, AlertTriangle, Gamepad2, Smartphone } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -11,8 +12,9 @@ import { syncPSNGamesToLibrary } from '@/services/psn';
 
 export function Settings() {
   const { user, logout, psnUsername, fetchProfile, fetchWatchlist } = useStore();
+  const { deferredPrompt, isInstallable, clearDeferredPrompt } = usePWAStore();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'integrations'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'integrations' | 'app'>('profile');
   const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Guest';
   const [password, setPassword] = useState('');
   const [psnInput, setPsnInput] = useState(psnUsername || '');
@@ -59,6 +61,18 @@ export function Settings() {
     }
   };
 
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      clearDeferredPrompt();
+      toast.success('App installation started!');
+    }
+  };
+
   return (
     <div className="p-8 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex items-center gap-3 mb-8">
@@ -87,6 +101,12 @@ export function Settings() {
             className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'integrations' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
             <Gamepad2 className="w-5 h-5" /> Integrations
+          </button>
+          <button 
+            onClick={() => setActiveTab('app')}
+            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'app' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
+          >
+            <Smartphone className="w-5 h-5" /> App Settings
           </button>
         </div>
 
@@ -173,6 +193,31 @@ export function Settings() {
                   {isSyncing ? 'Syncing...' : (psnUsername ? 'Update & Sync' : 'Connect PlayStation')}
                 </Button>
               </form>
+            </div>
+          )}
+          {activeTab === 'app' && (
+            <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
+              <h2 className="text-2xl font-bold text-white mb-2">App Settings</h2>
+              <p className="text-gray-400 mb-8">Manage your application experience.</p>
+              
+              <div className="space-y-6 max-w-md">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <Smartphone className="w-8 h-8 text-blue-400" />
+                    <div>
+                      <h3 className="text-lg font-medium text-white">Install App</h3>
+                      <p className="text-sm text-gray-400">Install EntertainHub on your device for a better experience.</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleInstallApp}
+                    disabled={!isInstallable}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl"
+                  >
+                    {isInstallable ? 'Install App' : 'App Already Installed or Not Supported'}
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>
