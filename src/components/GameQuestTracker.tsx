@@ -74,8 +74,8 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
           
           await supabase.from('game_quests').insert(missionsToInsert);
           
-          // Refetch progress
-          loadQuests();
+          // Update state directly
+          setQuests(missionsToInsert.map(m => ({ ...m, id: Math.random(), completed: false })));
           return;
         }
 
