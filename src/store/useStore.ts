@@ -81,13 +81,15 @@ export const useStore = create<StoreState>((set, get) => ({
   },
   fetchWatchlist: async () => {
     try {
-      const user = get().user;
-      if (!user) {
-        set({ watchlist: [] });
-        return;
-      }
-      const data = await libraryService.getUserLibrary(user.id);
-      set({ watchlist: (data as any) || [] });
+      console.log('[Store Debug] Fetching watchlist...');
+      const response = await libraryService.getUserLibrary();
+      console.log('[Store Debug] Raw watchlist response:', response);
+      
+      if (response.error) throw response.error;
+      
+      const data = response.data || [];
+      set({ watchlist: data as any });
+      console.log('[Store Debug] Watchlist state updated with', data.length, 'items');
     } catch (error) {
       console.error('Error fetching watchlist:', error);
     }

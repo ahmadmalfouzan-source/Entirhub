@@ -100,30 +100,14 @@ export async function addToLibrary(media: MediaInput) {
 
 /**
  * Fetches the current user's library with joined media details.
- * @param userId Optional userId to skip auth check and avoid lock contention
  */
-export async function getUserLibrary(userId?: string) {
-  try {
-    let finalUserId = userId;
-    
-    if (!finalUserId) {
-      const { data: { session } } = await supabase.auth.getSession();
-      finalUserId = session?.user?.id;
-    }
-    
-    if (!finalUserId) return [];
-
-    const { data, error } = await supabase
-      .from('user_library')
-      .select('*, media(*), media_id')
-      .eq('user_id', finalUserId);
-
-    if (error) throw error;
-    return data;
-  } catch (error: any) {
-    console.error('Error in getUserLibrary:', error.message);
-    return [];
-  }
+export async function getUserLibrary() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { data: [], error: null };
+  return await supabase
+    .from('user_library')
+    .select('*, media(*)')
+    .eq('user_id', session.user.id);
 }
 
 /**

@@ -8,6 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { syncPSNGamesToLibrary } from '@/services/psn';
 import { importTitlesFromImage } from '@/services/importService';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 interface ProgressData {
   watched: number;
@@ -24,9 +25,25 @@ export function Library() {
   const [progressMap, setProgressMap] = useState<Record<string, ProgressData>>({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      console.log('[Library Debug] Raw watchlist data from store:', watchlist);
+      setIsLoading(true);
+      try {
+        await fetchWatchlist();
+      } catch (err) {
+        console.error('[Library Debug] Fetch failed:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    init();
+  }, [fetchWatchlist]);
 
   const handleDelete = async () => {
     if (selectedItems.size === 0) {
@@ -118,9 +135,13 @@ export function Library() {
   const filteredItems = watchlist.filter(item => {
     if (filter === 'all') return true;
     if (filter === 'planned') return item.status === 'planned';
-    if (filter === 'games' && item.media?.media_type === 'game') return true;
-    if (filter === 'movies' && item.media?.media_type === 'movie') return true;
-    if (filter === 'series' && item.media?.media_type === 'series') return true;
+    
+    // Normalize media_type checks
+    const mediaType = item.media?.media_type?.toLowerCase();
+    
+    if (filter === 'games' && mediaType === 'game') return true;
+    if (filter === 'movies' && mediaType === 'movie') return true;
+    if (filter === 'series' && mediaType === 'series') return true;
     return false;
   }).sort((a, b) => {
     if (sortBy === 'rating') {
@@ -137,6 +158,13 @@ export function Library() {
     // default: date_added
     return new Date(b.added_at || 0).getTime() - new Date(a.added_at || 0).getTime();
   });
+
+  useEffect(() => {
+    console.log(`[Library Debug] Filter: ${filter}, Found: ${filteredItems.length} items`);
+    if (filteredItems.length > 0) {
+      console.log('[Library Debug] Sample Item:', filteredItems[0]);
+    }
+  }, [filter, filteredItems.length]);
 
   const visibleItems = filteredItems.slice(0, visibleCount);
 
@@ -160,8 +188,8 @@ export function Library() {
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={isSyncing}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
+            disabled={isSyncing || isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors disabled:opacity-50"
           >
             <Upload className="w-4 h-4" />
             {t('importFromImage')}
@@ -175,11 +203,24 @@ export function Library() {
                 setIsDeleting(true);
               }
             }}
-            className={`flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg transition-colors ${
+            disabled={isLoading}
+            className={`flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg transition-colors disabled:opacity-50 ${
               isDeleting ? 'bg-red-600 hover:bg-red-700' : 'bg-white/10 hover:bg-white/20'
             }`}
           >
             {isDeleting ? t('deleteSelected', { count: selectedItems.size }) : t('deleteItems')}
+          </button>
+          <button 
+            onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              console.log('Session:', session);
+              const { data, error } = await supabase.from('user_library').select('*, media(*)').eq('user_id', session?.user?.id);
+              console.log('Library data:', data);
+              console.log('Library error:', error);
+            }} 
+            className='bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-white text-sm transition-colors'
+          >
+            Debug Library
           </button>
           {isDeleting && (
             <button
@@ -196,7 +237,8 @@ export function Library() {
             <select 
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="appearance-none bg-[#111827] border border-white/10 text-white text-sm rounded-lg pl-10 pr-8 py-2 focus:outline-none focus:border-blue-500"
+              disabled={isLoading}
+              className="appearance-none bg-[#111827] border border-white/10 text-white text-sm rounded-lg pl-10 pr-8 py-2 focus:outline-none focus:border-blue-500 disabled:opacity-50"
             >
               <option value="date_added">{t('recentlyAdded')}</option>
               <option value="rating">{t('highestRated')}</option>
@@ -218,7 +260,19 @@ export function Library() {
         </TabsList>
 
         <div className="mt-0">
-          {filteredItems.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              {[...Array(10)].map((_, i) => (
+                <div key={i} className="flex flex-row sm:flex-col h-36 sm:h-auto rounded-xl overflow-hidden bg-card/50 border border-border/50 animate-pulse">
+                  <div className="aspect-[2/3] h-full sm:h-auto sm:w-full bg-white/5" />
+                  <div className="p-3 md:p-4 flex-1 space-y-2">
+                    <div className="h-4 bg-white/10 rounded w-3/4" />
+                    <div className="h-3 bg-white/5 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
                 <Search className="w-8 h-8 text-gray-500" />
