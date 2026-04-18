@@ -92,37 +92,28 @@ export function Settings() {
       return;
     }
 
-    // Local preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setLocalPreview(event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-
+    // Convert to base64 and update profile
     setIsUploading(true);
     try {
       if (!user) throw new Error('Not authenticated');
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const reader = new FileReader();
+      
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
+      const base64String = await base64Promise;
+      
+      // Update preview immediately
+      setLocalPreview(base64String);
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // Update profile
+      // Store base64 directly in avatar_url column
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update({ avatar_url: base64String })
         .eq('id', user.id);
 
       if (profileError) throw profileError;
