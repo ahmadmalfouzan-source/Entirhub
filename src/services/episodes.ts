@@ -101,8 +101,8 @@ export async function fetchSeasons(externalId: string): Promise<{ seasons: Seaso
   if (!TMDB_API_KEY) return { seasons: [], number_of_episodes: 0 };
   const tmdbId = externalId.replace('tmdb_series_', '').replace('tmdb_movie_', '').replace('tmdb_', '');
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) throw new Error('Failed to fetch series info');
+    const res = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}?api_key=${TMDB_API_KEY}`).catch(() => null);
+    if (!res || !res.ok) return { seasons: [], number_of_episodes: 0 };
     const data = await res.json();
     return {
       seasons: data.seasons || [],
@@ -114,15 +114,12 @@ export async function fetchSeasons(externalId: string): Promise<{ seasons: Seaso
   }
 }
 
-/**
- * Fetches episodes for a specific season from TMDB.
- */
 export async function fetchSeasonEpisodes(externalId: string, seasonNumber: number): Promise<Episode[]> {
   if (!TMDB_API_KEY) return [];
   const tmdbId = externalId.replace('tmdb_series_', '').replace('tmdb_movie_', '').replace('tmdb_', '');
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) throw new Error('Failed to fetch season episodes');
+    const res = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`).catch(() => null);
+    if (!res || !res.ok) return [];
     const data = await res.json();
     console.log(`TMDB Season ${seasonNumber} data:`, data);
     return data.episodes || [];

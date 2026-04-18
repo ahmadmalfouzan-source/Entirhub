@@ -33,8 +33,8 @@ export const checkAndCreateNotifications = async (userId: string) => {
       const tmdbId = item.media.external_id.replace('tmdb_series_', '');
       
       // Fetch TMDB details
-      const res = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
-      if (!res.ok) continue;
+      const res = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}?api_key=${TMDB_API_KEY}`).catch(() => null);
+      if (!res || !res.ok) continue;
       const tvData = await res.json();
 
       const now = new Date();

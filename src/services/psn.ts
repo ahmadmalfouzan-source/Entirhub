@@ -26,9 +26,9 @@ export async function fetchPSNProfile(username: string) {
   try {
     const url = `https://psn-api.achievements.app/v1/users/${username}/trophyTitles`;
     console.log(`Fetching PSN trophy titles from: ${url}`);
-    const response = await fetch(url);
+    const response = await fetch(url).catch(() => null);
     
-    if (response.ok) {
+    if (response && response.ok) {
       const data = await response.json();
       const titles = data.trophyTitles || data.titles || data.data || [];
       if (titles.length > 0) {

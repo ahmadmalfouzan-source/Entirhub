@@ -26,20 +26,17 @@ export function Library() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [debugError, setDebugError] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const init = async () => {
-      console.log('[Library Debug] Raw watchlist data from store:', watchlist);
       setIsLoading(true);
       try {
         await fetchWatchlist();
       } catch (err: any) {
-        console.error('[Library Debug] Fetch failed:', err);
-        setDebugError(err.message || String(err));
+        console.error('Library fetch failed:', err);
       } finally {
         setIsLoading(false);
       }
@@ -161,33 +158,10 @@ export function Library() {
     return new Date(b.added_at || 0).getTime() - new Date(a.added_at || 0).getTime();
   });
 
-  useEffect(() => {
-    console.log(`[Library Debug] Filter: ${filter}, Found: ${filteredItems.length} items`);
-    if (filteredItems.length > 0) {
-      console.log('[Library Debug] Sample Item:', filteredItems[0]);
-    }
-  }, [filter, filteredItems.length]);
-
   const visibleItems = filteredItems.slice(0, visibleCount);
 
   return (
     <div className="p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
-      {/* On-screen Debug Info Panel */}
-      <div className="mb-6 p-4 bg-black/80 border border-red-500/50 rounded-xl text-[10px] font-mono whitespace-pre-wrap overflow-auto max-h-60">
-        <div className="text-red-400 font-bold mb-2 uppercase tracking-widest">Mobile Debug Panel</div>
-        <div>User ID: {user?.id || 'Not found'}</div>
-        <div>Watchlist Size: {watchlist.length}</div>
-        <div className="mt-2 text-yellow-400">First Item:</div>
-        <div className="bg-white/5 p-2 rounded mt-1">
-          {watchlist.length > 0 ? JSON.stringify(watchlist[0], null, 2) : 'No items'}
-        </div>
-        {debugError && (
-          <div className="mt-2 text-red-500">
-            Error: {debugError}
-          </div>
-        )}
-      </div>
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
@@ -248,21 +222,6 @@ export function Library() {
             {t('refresh') || 'Refresh'}
           </button>
 
-          <button 
-            onClick={async () => {
-              setDebugError(null);
-              const { data: { session } } = await supabase.auth.getSession();
-              console.log('Session:', session);
-              const { data, error } = await supabase.from('user_library').select('*, media(*)').eq('user_id', session?.user?.id);
-              console.log('Library data:', data);
-              console.log('Library error:', error);
-              if (error) setDebugError(error.message);
-              if (data && data.length === 0) setDebugError('Query returned 0 rows for user ' + session?.user?.id);
-            }} 
-            className='bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-white text-sm transition-colors'
-          >
-            Debug Library
-          </button>
           {isDeleting && (
             <button
               onClick={() => {

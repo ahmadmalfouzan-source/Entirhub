@@ -13,26 +13,35 @@ serve(async (req) => {
 
   try {
     const steamKey = Deno.env.get('STEAM_API_KEY')
-    if (!steamKey) throw new Error('STEAM_API_KEY secret not found in Supabase')
-
     const url = new URL(req.url)
     const appid = url.searchParams.get('appid')
+    const query = url.searchParams.get('q')
     
-    if (!appid) {
-      return new Response(JSON.stringify({ error: 'appid parameter is required' }), {
+    let steamUrl = ''
+    
+    if (appid) {
+      if (!steamKey) throw new Error('STEAM_API_KEY secret not found in Supabase')
+      steamUrl = `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${steamKey}&appid=${appid}`
+      console.log(`Proxying Schema request for AppID: ${appid}`)
+    } else if (query) {
+      steamUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(query)}&l=english&cc=US`
+      console.log(`Proxying Search request for query: ${query}`)
+    } else {
+      return new Response(JSON.stringify({ error: 'appid or q parameter is required' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       })
     }
-
-    // Call Steam API GetSchemaForGame
-    const steamUrl = `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${steamKey}&appid=${appid}`
-    console.log(`Proxying request for AppID: ${appid}`)
     
     const response = await fetch(steamUrl)
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Steam API responded with ${response.status}: ${errorText}`)
+      console.error(`Steam API error: ${response.status} ${errorText}`)
+      // Return a 200 with empty data to avoid crashing the frontend
+      return new Response(JSON.stringify({ error: `Steam API responded with ${response.status}`, items: [], game: { availableGameStats: { achievements: [] } } }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
     }
     
     const data = await response.json()
