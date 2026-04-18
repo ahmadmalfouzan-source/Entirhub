@@ -14,6 +14,7 @@ import { useLanguageStore } from '@/store/useLanguageStore';
 import { translations } from '@/i18n/translations';
 import { ReviewSection } from '@/components/ReviewSection';
 import { supabase } from '@/lib/supabase';
+import { SteamPriceTracker } from '@/components/SteamPriceTracker';
 
 export function ContentDetail() {
   const { id } = useParams();
@@ -315,6 +316,12 @@ export function ContentDetail() {
               {item.description || 'No description available.'}
             </p>
           </section>
+
+          {item.media_type === 'game' && (
+            <section className="pt-2">
+              <SteamPriceTracker gameName={item.title} />
+            </section>
+          )}
 
           {/* Cast Section */}
           {item.credits && item.credits.cast && item.credits.cast.length > 0 && (
