@@ -1,24 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 import { usePWAStore } from '@/store/usePWAStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, User, Shield, AlertTriangle, Gamepad2, Smartphone } from 'lucide-react';
+import { Settings as SettingsIcon, User, Shield, AlertTriangle, Gamepad2, Smartphone, Loader2, Camera } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { syncPSNGamesToLibrary } from '@/services/psn';
 
 export function Settings() {
-  const { user, logout, psnUsername, fetchProfile, fetchWatchlist } = useStore();
+  const { user, logout, psnUsername, avatarUrl, fetchProfile, fetchWatchlist } = useStore();
   const { deferredPrompt, isInstallable, clearDeferredPrompt } = usePWAStore();
   const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'integrations' | 'app'>('profile');
   const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Guest';
   const [password, setPassword] = useState('');
   const [psnInput, setPsnInput] = useState(psnUsername || '');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +77,67 @@ export function Settings() {
     }
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+       e.target.value = '';
+      return;
+    }
+
+    // Local preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setLocalPreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    setIsUploading(true);
+    try {
+      if (!user) throw new Error('Not authenticated');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      await fetchProfile();
+      toast.success('Avatar updated successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Error uploading avatar');
+      setLocalPreview(null); // Revert preview on error
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="p-8 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex items-center gap-3 mb-8">
@@ -116,12 +181,54 @@ export function Settings() {
               <h2 className="text-2xl font-bold text-white mb-8">{t('profileInformation')}</h2>
               
               <div className="flex items-center gap-6 mb-10">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl text-white font-bold shadow-lg">
-                  {username[0]?.toUpperCase()}
+                <div 
+                  onClick={handleAvatarClick}
+                  className="relative group cursor-pointer"
+                >
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl text-white font-bold shadow-lg">
+                    {localPreview || avatarUrl ? (
+                      <img 
+                        src={localPreview || avatarUrl || ''} 
+                        alt={username} 
+                        className={`w-full h-full object-cover transition-opacity duration-300 ${isUploading ? 'opacity-50' : 'opacity-100'}`}
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      username[0]?.toUpperCase()
+                    )}
+                    
+                    {isUploading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full">
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      </div>
+                    ) }
+                    
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                      <Camera className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
                 </div>
+
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium text-white">{username}</h3>
                   <p className="text-sm text-gray-400">{user?.email}</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 text-xs border-white/10 hover:bg-white/5"
+                    onClick={handleAvatarClick}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : null}
+                    {t('changeAvatar')}
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
                 </div>
               </div>
 

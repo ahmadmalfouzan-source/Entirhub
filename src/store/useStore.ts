@@ -30,6 +30,7 @@ interface StoreState {
   user: User | null;
   isAdmin: boolean;
   psnUsername: string | null;
+  avatarUrl: string | null;
   watchlist: WatchlistItem[];
   setSession: (session: Session | null) => void;
   fetchWatchlist: () => Promise<void>;
@@ -49,13 +50,14 @@ export const useStore = create<StoreState>((set, get) => ({
   user: null,
   isAdmin: false,
   psnUsername: null,
+  avatarUrl: null,
   watchlist: [],
   setSession: (session) => {
     set({ session, user: session?.user || null });
     if (session?.user) {
       get().fetchProfile();
     } else {
-      set({ isAdmin: false, psnUsername: null });
+      set({ isAdmin: false, psnUsername: null, avatarUrl: null });
     }
   },
   fetchProfile: async () => {
@@ -65,14 +67,15 @@ export const useStore = create<StoreState>((set, get) => ({
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('is_admin, psn_username')
+        .select('is_admin, psn_username, avatar_url')
         .eq('id', user.id)
         .single();
         
       if (!error && data) {
         set({ 
           isAdmin: !!data.is_admin,
-          psnUsername: data.psn_username || null
+          psnUsername: data.psn_username || null,
+          avatarUrl: data.avatar_url || null
         });
       }
     } catch (error) {

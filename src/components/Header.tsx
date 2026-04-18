@@ -10,7 +10,7 @@ import { checkAndCreateNotifications, getNotifications, markNotificationAsRead, 
 import { formatDistanceToNow } from 'date-fns';
 
 export function Header() {
-  const { user } = useStore();
+  const { user, avatarUrl } = useStore();
   const { language, setLanguage } = useLanguageStore();
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
@@ -250,8 +250,12 @@ export function Header() {
             <div className="text-sm font-medium text-foreground">{user?.email?.split('@')[0] || 'Guest'}</div>
             <div className="text-xs text-muted-foreground">Free Plan</div>
           </div>
-          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold uppercase text-sm md:text-base">
-            {user?.email?.[0] || 'G'}
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold uppercase text-sm md:text-base">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              user?.email?.[0] || 'G'
+            )}
           </div>
         </div>
       </div>
