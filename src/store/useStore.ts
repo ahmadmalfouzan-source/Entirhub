@@ -112,7 +112,7 @@ export const useStore = create<StoreState>((set, get) => ({
   },
   addToWatchlist: async (media) => {
     try {
-      await libraryService.addToLibrary({
+      const result = await libraryService.addToLibrary({
         external_id: media.external_id || media.id,
         media_type: media.media_type || media.type,
         title: media.title,
@@ -122,7 +122,10 @@ export const useStore = create<StoreState>((set, get) => ({
         genres: media.genres,
         source: media.source || (media.id?.startsWith('rawg_') ? 'rawg' : 'tmdb')
       });
-      await logActivity('added', media.id);
+      
+      if (result && (result as any).media_id) {
+        await logActivity('added', (result as any).media_id);
+      }
       await get().fetchWatchlist();
     } catch (error) {
       console.error('Error adding to library:', error);
@@ -130,6 +133,9 @@ export const useStore = create<StoreState>((set, get) => ({
   },
   updateWatchlistItem: async (id, updates) => {
     try {
+      const watchlistItem = get().watchlist.find(w => w.id === id);
+      if (!watchlistItem) return;
+
       if (updates.status) {
         await libraryService.updateStatus(id, updates.status);
         const activityTypeMap: Record<string, string> = {
@@ -138,12 +144,12 @@ export const useStore = create<StoreState>((set, get) => ({
           'dropped': 'dropped'
         };
         if (activityTypeMap[updates.status]) {
-          await logActivity(activityTypeMap[updates.status] as any, id);
+          await logActivity(activityTypeMap[updates.status] as any, watchlistItem.media_id);
         }
       }
       if (updates.rating !== undefined) {
         await libraryService.rateMedia(id, updates.rating);
-        await logActivity('rated', id, { rating: updates.rating });
+        await logActivity('rated', watchlistItem.media_id, { rating: updates.rating });
       }
       await get().fetchWatchlist();
     } catch (error) {

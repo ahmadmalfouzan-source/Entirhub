@@ -35,6 +35,30 @@ async function ensureProfileExists(userId: string, email?: string) {
 }
 
 /**
+ * Adds a media item to the global media table if it doesn't exist.
+ */
+export async function ensureMediaExists(media: MediaInput): Promise<string> {
+  const { data: existingMedia, error: fetchError } = await supabase
+    .from('media')
+    .select('id')
+    .eq('external_id', media.external_id)
+    .maybeSingle();
+
+  if (fetchError) throw fetchError;
+
+  if (existingMedia?.id) return existingMedia.id;
+
+  const { data: newMedia, error: insertError } = await supabase
+    .from('media')
+    .insert([media])
+    .select('id')
+    .single();
+
+  if (insertError) throw insertError;
+  return newMedia.id;
+}
+
+/**
  * Adds a media item to the global media table if it doesn't exist,
  * then adds it to the current user's library.
  */
@@ -49,30 +73,10 @@ export async function addToLibrary(media: MediaInput) {
     // Ensure profile exists to avoid foreign key violations
     await ensureProfileExists(user.id, user.email);
 
-    // 1. Check if media already exists in "media" table using external_id
-    let { data: existingMedia, error: fetchError } = await supabase
-      .from('media')
-      .select('id')
-      .eq('external_id', media.external_id)
-      .maybeSingle();
+    // 1. Ensure media exists and get its UUID
+    const mediaId = await ensureMediaExists(media);
 
-    if (fetchError) throw fetchError;
-
-    let mediaId = existingMedia?.id;
-
-    // 2. If not exists, insert it
-    if (!mediaId) {
-      const { data: newMedia, error: insertError } = await supabase
-        .from('media')
-        .insert([media])
-        .select('id')
-        .single();
-      
-      if (insertError) throw insertError;
-      mediaId = newMedia.id;
-    }
-
-    // 3. Then insert into "user_library"
+    // 2. Then insert into "user_library"
     const { data, error } = await supabase
       .from('user_library')
       .insert([{

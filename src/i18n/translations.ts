@@ -194,7 +194,8 @@ export const translations = {
     loadMore: 'Load More',
     failedToAdd: 'Failed to add to library',
     unknownTitle: 'Unknown Title',
-    episodeCount: '{watched}/{total} eps'
+    episodeCount: '{watched}/{total} eps',
+    myReviews: 'My Reviews'
   },
   ar: {
     home: 'الرئيسية',
@@ -391,6 +392,7 @@ export const translations = {
     loadMore: 'تحميل المزيد',
     failedToAdd: 'فشلت الإضافة للمكتبة',
     unknownTitle: 'عنوان غير معروف',
-    episodeCount: '{watched}/{total} حلقة'
+    episodeCount: '{watched}/{total} حلقة',
+    myReviews: 'مراجعاتي'
   }
 };

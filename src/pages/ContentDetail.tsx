@@ -12,6 +12,7 @@ import { ContentCard } from '@/components/ContentCard';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { translations } from '@/i18n/translations';
+import { ReviewSection } from '@/components/ReviewSection';
 import { supabase } from '@/lib/supabase';
 
 export function ContentDetail() {
@@ -401,6 +402,14 @@ export function ContentDetail() {
               <GameAchievementTracker gameName={item.title} mediaId={watchlistItem.media_id} externalId={item.external_id} />
             </section>
           )}
+
+          <section className="pt-8 md:pt-12 border-t border-white/5">
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+              <Star className="w-6 h-6 text-yellow-500" />
+              User Reviews
+            </h2>
+            <ReviewSection mediaId={item.external_id} />
+          </section>
         </div>
         
         <div className="space-y-6">

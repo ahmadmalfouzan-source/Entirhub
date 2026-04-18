@@ -16,17 +16,22 @@ import {
   Lock,
   Award,
   Trophy,
-  Users
+  Users,
+  MessageSquare,
+  AlertTriangle
 } from 'lucide-react';
 import { ContentCard } from '@/components/ContentCard';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Badges } from '@/components/Badges';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchPSNProfile } from '@/services/psn';
 import { getFriends, Friendship } from '@/services/friendsService';
+import { Review, getUserReview } from '@/services/reviewService';
+import { fetchMediaDetails } from '@/services/api';
 
 interface Stats {
   totalMovies: number;
@@ -54,6 +59,9 @@ export function Profile() {
   const [loading, setLoading] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
   const [username, setUsername] = useState('');
+  const [activeTab, setActiveTab] = useState<'activity' | 'reviews'>('activity');
+  const [userReviews, setUserReviews] = useState<(Review & { media_details?: any })[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -78,6 +86,39 @@ export function Profile() {
     fetchProfile();
     loadFriends();
   }, [user]);
+
+  useEffect(() => {
+    const fetchUserReviews = async () => {
+      if (!user) return;
+      setReviewsLoading(true);
+      try {
+        const { data: reviews, error } = await supabase
+          .from('reviews')
+          .select('*, profiles:user_id(username, avatar_url)')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        // Fetch media details for each review
+        const reviewsWithDetails = await Promise.all((reviews || []).map(async (review) => {
+          const type = review.media_id.includes('_game_') ? 'game' : 
+                       review.media_id.includes('_series_') ? 'series' : 'movie';
+          const details = await fetchMediaDetails(review.media_id, type as any);
+          return { ...review, media_details: details };
+        }));
+
+        setUserReviews(reviewsWithDetails);
+      } catch (err) {
+        console.error('Error fetching user reviews:', err);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    if (activeTab === 'reviews') {
+      fetchUserReviews();
+    }
+  }, [user, activeTab]);
 
   useEffect(() => {
     const fetchPSN = async () => {
@@ -351,77 +392,154 @@ export function Profile() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-              <TrendingUp className="w-6 h-6 text-blue-400" />
-              {t('recentActivity')}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {stats.recentItems.map(item => (
-              <div key={item.id} className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-white/10 transition-colors group">
-                <div className="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                  <img src={item.media?.poster_url} alt="" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-white truncate">{item.media?.title}</h3>
-                  <p className="text-xs text-gray-400 capitalize mb-2">{item.media?.media_type}</p>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                      item.status === 'watching' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-gray-500/20 text-gray-400'
-                    }`}>
-                      {t(item.status as any)}
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="flex border-b border-white/5 mb-8 overflow-x-auto no-scrollbar">
+        <button
+          onClick={() => setActiveTab('activity')}
+          className={`px-6 py-4 text-sm font-bold tracking-widest uppercase transition-all border-b-2 ${
+            activeTab === 'activity' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-white'
+          }`}
+        >
+          {t('recentActivity')}
+        </button>
+        <button
+          onClick={() => setActiveTab('reviews')}
+          className={`px-6 py-4 text-sm font-bold tracking-widest uppercase transition-all border-b-2 ${
+            activeTab === 'reviews' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-white'
+          }`}
+        >
+          {t('myReviews')}
+        </button>
+      </div>
 
-        {/* Insights */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Star className="w-6 h-6 text-yellow-400" />
-            {t('insights')}
-          </h2>
-          <div className="bg-[#111827] border border-white/5 rounded-3xl p-8 space-y-8">
-            <div className="space-y-4">
-              <div className="flex justify-between items-end">
-                <span className="text-gray-400 text-sm">{t('favoriteRating')}</span>
-                <span className="text-3xl font-bold text-white flex items-center gap-2">
-                  {stats.favoriteRating}
-                  <Star className="w-6 h-6 text-yellow-400 fill-current" />
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 italic">
-                {t('favoriteRatingDesc')}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium text-gray-300">{t('genreDistribution')}</h4>
-              <div className="space-y-3">
-                {stats.topGenres.map((genre, i) => (
-                  <div key={genre} className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-400">{genre}</span>
-                      <span className="text-white">{100 - (i * 20)}%</span>
+      <AnimatePresence mode="wait">
+        {activeTab === 'activity' ? (
+          <motion.div 
+            key="activity"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-12"
+          >
+            {/* Recent Activity */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {stats.recentItems.map(item => (
+                  <Link key={item.id} to={`/content/${item.media?.external_id || item.media_id}`} className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-white/10 transition-colors group">
+                    <div className="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                      <img src={item.media?.poster_url} alt="" className="w-full h-full object-cover" />
                     </div>
-                    <Progress value={100 - (i * 20)} className="h-1.5" />
-                  </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-white truncate">{item.media?.title}</h3>
+                      <p className="text-xs text-gray-400 capitalize mb-2">{item.media?.media_type}</p>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                          item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                          item.status === 'watching' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-gray-500/20 text-gray-400'
+                        }`}>
+                          {t(item.status as any)}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
+                  </Link>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+
+            {/* Insights */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                <Star className="w-6 h-6 text-yellow-400" />
+                {t('insights')}
+              </h2>
+              <div className="bg-[#111827] border border-white/5 rounded-3xl p-8 space-y-8">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end">
+                    <span className="text-gray-400 text-sm">{t('favoriteRating')}</span>
+                    <span className="text-3xl font-bold text-white flex items-center gap-2">
+                      {stats.favoriteRating}
+                      <Star className="w-6 h-6 text-yellow-400 fill-current" />
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 italic">
+                    {t('favoriteRatingDesc')}
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-gray-300">{t('genreDistribution')}</h4>
+                  <div className="space-y-3">
+                    {stats.topGenres.map((genre, i) => (
+                      <div key={genre} className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-400">{genre}</span>
+                          <span className="text-white">{100 - (i * 20)}%</span>
+                        </div>
+                        <Progress value={100 - (i * 20)} className="h-1.5" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="reviews"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            {reviewsLoading ? (
+              <div className="col-span-full py-20 flex justify-center">
+                <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              </div>
+            ) : userReviews.length > 0 ? (
+              userReviews.map((review) => (
+                <Link 
+                  key={review.id} 
+                  to={`/content/${review.media_id}`}
+                  className="bg-[#111827] border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all group"
+                >
+                  <div className="flex p-4 gap-4">
+                    <div className="w-20 h-28 rounded-xl overflow-hidden flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
+                      <img src={review.media_details?.poster_url} className="w-full h-full object-cover" alt="" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className="font-bold text-white truncate pr-2">{review.media_details?.title}</h3>
+                        <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded text-[10px] font-black">
+                          <Star className="size-2.5 fill-current" />
+                          {review.rating}
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-3 line-clamp-3 leading-relaxed italic">
+                        "{review.content}"
+                      </p>
+                      <div className="flex justify-between items-center text-[10px] text-gray-600 font-bold uppercase tracking-wider">
+                        <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                        {review.contains_spoilers && (
+                          <span className="text-yellow-600 flex items-center gap-1">
+                            <AlertTriangle className="size-2.5" /> Spoilers
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white/5 rounded-3xl border border-dashed border-white/10 text-center">
+                <MessageSquare className="size-10 text-gray-700 mb-4" />
+                <p className="text-gray-400 font-bold">No reviews yet</p>
+                <p className="text-sm text-gray-600 mt-1">Start reviewing your favorite media to see them here.</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

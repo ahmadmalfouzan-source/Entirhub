@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-export type ActivityType = 'added' | 'completed' | 'started' | 'dropped' | 'rated';
+export type ActivityType = 'added' | 'completed' | 'started' | 'dropped' | 'rated' | 'reviewed';
 
 export const logActivity = async (type: ActivityType, mediaId: string, metadata: any = {}) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -34,7 +34,9 @@ export const getFeedActivities = async () => {
     .select(`
       *,
       profiles:user_id(id, username, avatar_url),
-      media:media_id(title, poster_url)
+      media:media_id(title, poster_url),
+      activity_likes(user_id),
+      activity_comments(id)
     `)
     .in('user_id', userIds)
     .order('created_at', { ascending: false });
@@ -47,7 +49,7 @@ export const getFeedActivities = async () => {
   return data;
 };
 
-export const toggleLikeActivity = async (activityId: string) => {
+export const toggleLike = async (activityId: string) => {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
   if (!user) return;
@@ -57,20 +59,101 @@ export const toggleLikeActivity = async (activityId: string) => {
     .select('id')
     .eq('activity_id', activityId)
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     return await supabase.from('activity_likes').delete().eq('id', existing.id);
   } else {
-    return await supabase.from('activity_likes').insert({ activity_id: activityId, user_id: user.id });
+    const res = await supabase.from('activity_likes').insert({ activity_id: activityId, user_id: user.id });
+    
+    // Notification
+    try {
+      const { data: activity } = await supabase
+        .from('activity_feed')
+        .select('user_id, media:media_id(title)')
+        .eq('id', activityId)
+        .single();
+        
+      if (activity && activity.user_id !== user.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+
+        await supabase.from('notifications').insert({
+          user_id: activity.user_id,
+          title: 'Activity Like',
+          message: `${profile?.username || 'Ahmad'} liked your activity`,
+        });
+      }
+    } catch (e) {
+      console.warn('Notification failed', e);
+    }
+    return res;
   }
+};
+
+export const getLikesData = async (activityId: string) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
+  const { data: likes, count, error } = await supabase
+    .from('activity_likes')
+    .select('user_id', { count: 'exact' })
+    .eq('activity_id', activityId);
+
+  if (error) return { count: 0, isLiked: false };
+
+  const isLiked = userId ? likes?.some(l => l.user_id === userId) : false;
+  return { count: count || 0, isLiked };
 };
 
 export const addComment = async (activityId: string, text: string) => {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
   if (!user) return;
-  return await supabase.from('activity_comments').insert({ activity_id: activityId, user_id: user.id, text });
+  
+  const res = await supabase.from('activity_comments').insert({ activity_id: activityId, user_id: user.id, text });
+  
+  // Notification
+  try {
+    const { data: activity } = await supabase
+      .from('activity_feed')
+      .select('user_id')
+      .eq('id', activityId)
+      .single();
+      
+    if (activity && activity.user_id !== user.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+
+      await supabase.from('notifications').insert({
+        user_id: activity.user_id,
+        title: 'New Comment',
+        message: `${profile?.username || 'Ahmad'} commented on your activity`,
+      });
+    }
+  } catch (e) {
+    console.warn('Comment notification failed', e);
+  }
+  
+  return res;
+};
+
+export const deleteComment = async (commentId: string) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  if (!user) return;
+  
+  return await supabase
+    .from('activity_comments')
+    .delete()
+    .eq('id', commentId)
+    .eq('user_id', user.id);
 };
 
 export const getComments = async (activityId: string) => {
