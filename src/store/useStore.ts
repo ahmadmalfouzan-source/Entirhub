@@ -86,7 +86,7 @@ export const useStore = create<StoreState>((set, get) => ({
         set({ watchlist: [] });
         return;
       }
-      const data = await libraryService.getUserLibrary();
+      const data = await libraryService.getUserLibrary(user.id);
       set({ watchlist: (data as any) || [] });
     } catch (error) {
       console.error('Error fetching watchlist:', error);

@@ -40,8 +40,11 @@ async function ensureProfileExists(userId: string, email?: string) {
  */
 export async function addToLibrary(media: MediaInput) {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) throw new Error('User not authenticated');
+    // Try to get session from sync auth state first to avoid lock stealing
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    
+    if (!user) throw new Error('User not authenticated');
 
     // Ensure profile exists to avoid foreign key violations
     await ensureProfileExists(user.id, user.email);
@@ -97,16 +100,23 @@ export async function addToLibrary(media: MediaInput) {
 
 /**
  * Fetches the current user's library with joined media details.
+ * @param userId Optional userId to skip auth check and avoid lock contention
  */
-export async function getUserLibrary() {
+export async function getUserLibrary(userId?: string) {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return [];
+    let finalUserId = userId;
+    
+    if (!finalUserId) {
+      const { data: { session } } = await supabase.auth.getSession();
+      finalUserId = session?.user?.id;
+    }
+    
+    if (!finalUserId) return [];
 
     const { data, error } = await supabase
       .from('user_library')
       .select('*, media(*), media_id')
-      .eq('user_id', user.id);
+      .eq('user_id', finalUserId);
 
     if (error) throw error;
     return data;

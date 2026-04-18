@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase';
+
 export interface SteamAchievement {
   name: string;
   defaultvalue: number;
@@ -10,19 +12,12 @@ export interface SteamAchievement {
 }
 
 export const getSteamAchievements = async (gameName: string): Promise<SteamAchievement[]> => {
-  const apiKey = import.meta.env.VITE_STEAM_API_KEY;
-  if (!apiKey) {
-    console.error('VITE_STEAM_API_KEY is not set');
-    return [];
-  }
-  console.log('API Key present:', apiKey.length > 5 ? `${apiKey.substring(0, 5)}...` : 'too short');
-
-  // Using local backend proxy to bypass CORS
-  const proxy = (url: string) => `/api/steam?url=${encodeURIComponent(url)}`;
+  // Using local backend proxy for search (which doesn't need API keys)
+  const localProxy = (url: string) => `/api/steam?url=${encodeURIComponent(url)}`;
 
   try {
     // 1. Search for game
-    const searchUrl = proxy(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(gameName)}&l=english&cc=US`);
+    const searchUrl = localProxy(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(gameName)}&l=english&cc=US`);
     console.log('Fetching Steam search:', searchUrl);
     const searchRes = await fetch(searchUrl);
     if (!searchRes.ok) throw new Error(`Search failed: ${searchRes.status} ${searchRes.statusText}`);
@@ -37,13 +32,27 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
     const appid = searchData.items[0].id;
     console.log('Found Steam AppID:', appid);
 
-    // 2. Fetch schema
-    const schemaUrl = proxy(`https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${apiKey}&appid=${appid}`);
-    console.log('Fetching Steam schema:', schemaUrl);
-    const schemaRes = await fetch(schemaUrl);
+    // 2. Fetch schema via Supabase Edge Function (hides API Key and bypasses CORS)
+    console.log('Fetching Steam schema via Supabase Edge Function...');
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration is missing');
+    }
+
+    const schemaUrl = `${supabaseUrl}/functions/v1/steam-proxy?appid=${appid}`;
+    const schemaRes = await fetch(schemaUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    });
     
     if (!schemaRes.ok) {
-        throw new Error(`Schema fetch failed: ${schemaRes.status} ${schemaRes.statusText}`);
+      const errorData = await schemaRes.json().catch(() => ({}));
+      throw new Error(`Schema fetch failed: ${errorData.error || schemaRes.statusText}`);
     }
     
     const schemaData = await schemaRes.json();
@@ -57,10 +66,10 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
     const achievements = schemaData.game.availableGameStats.achievements;
     console.log('Achievements count:', achievements.length);
 
-    // 3. Fetch global percentages
+    // 3. Fetch global percentages (Using local proxy as it doesn't need API key)
     let percentages: any[] = [];
     try {
-      const pctUrl = proxy(`https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${appid}`);
+      const pctUrl = localProxy(`https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${appid}`);
       console.log('Fetching Steam percentages:', pctUrl);
       const pctRes = await fetch(pctUrl);
       if (pctRes.ok) {

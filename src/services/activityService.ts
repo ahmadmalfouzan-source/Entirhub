@@ -3,7 +3,8 @@ import { supabase } from '@/lib/supabase';
 export type ActivityType = 'added' | 'completed' | 'started' | 'dropped' | 'rated';
 
 export const logActivity = async (type: ActivityType, mediaId: string, metadata: any = {}) => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return;
 
   return await supabase.from('activity_feed').insert({
@@ -15,7 +16,8 @@ export const logActivity = async (type: ActivityType, mediaId: string, metadata:
 };
 
 export const getFeedActivities = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data: friends } = await supabase
@@ -46,7 +48,8 @@ export const getFeedActivities = async () => {
 };
 
 export const toggleLikeActivity = async (activityId: string) => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return;
 
   const { data: existing } = await supabase
@@ -64,7 +67,8 @@ export const toggleLikeActivity = async (activityId: string) => {
 };
 
 export const addComment = async (activityId: string, text: string) => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return;
   return await supabase.from('activity_comments').insert({ activity_id: activityId, user_id: user.id, text });
 };

@@ -83,17 +83,13 @@ export default function App() {
   }, [setDeferredPrompt, clearDeferredPrompt]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // onAuthStateChange handles both initial session and subsequent changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      if (session) fetchWatchlist();
+      if (session) {
+        await fetchWatchlist();
+      }
       setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) fetchWatchlist();
     });
 
     return () => subscription.unsubscribe();

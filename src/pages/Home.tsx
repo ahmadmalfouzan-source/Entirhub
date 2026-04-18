@@ -32,18 +32,24 @@ export function Home() {
         const start = format(startOfMonth(now), 'yyyy-MM-dd');
         const end = format(endOfMonth(now), 'yyyy-MM-dd');
 
-        const [movies, series, activityData, calData] = await Promise.all([
+        // Parallel fetch for non-auth data and auth data separately to handle auth failures gracefully
+        const [movies, series, calData] = await Promise.all([
           fetchTrendingMovies(lang),
           fetchTrendingSeries(lang),
-          getFeedActivities(),
           fetchCalendarReleases(start, end)
         ]);
+
+        let activityData = [];
+        try {
+          activityData = await getFeedActivities();
+        } catch (e) {
+          console.warn('Friend activity failed to load (auth lock), skipping...', e);
+        }
         
         const mixed = [...movies.slice(0, 5), ...series.slice(0, 5)].sort(() => Math.random() - 0.5);
         setTrending(mixed.slice(0, 5));
         setRecommended(mixed.slice(5, 10));
         setActivities(activityData || []);
-        setUpcoming(watchlist.filter(item => item.media?.media_type === 'series' && item.status === 'watching').slice(0, 1));
         
         // Filter for upcoming releases in current month
         const upcomingReleases = calData
@@ -58,7 +64,14 @@ export function Home() {
     };
     
     loadData();
-  }, [language, watchlist]);
+  }, [language]);
+
+  // Handle upcoming and welcome stats (purely client-side from watchlist)
+  useEffect(() => {
+    if (watchlist.length > 0) {
+      setUpcoming(watchlist.filter(item => item.media?.media_type === 'series' && item.status === 'watching').slice(0, 1));
+    }
+  }, [watchlist]);
 
   const watchTonight = watchlist.filter(item => item.status === 'watch_tonight');
   const gamesTracked = watchlist.filter(item => item.media?.media_type === 'game').length;
