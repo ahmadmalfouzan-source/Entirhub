@@ -1,4 +1,44 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
+
+function safelyParseJSON(text: string, fallbackType: 'array' | 'object' = 'array') {
+  if (!text) return fallbackType === 'array' ? [] : {};
+  let cleaned = text.trim();
+  
+  // 1. Remove markdown backticks if present
+  cleaned = cleaned.replace(/^```(json)?/, '').replace(/```$/, '').trim();
+  
+  // 2. Try parsing originally 
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
+  // 3. Try parsing after removing literal newlines (fixes "Unterminated string" from literal \n in strings)
+  try {
+    cleaned = cleaned.replace(/[\n\r]+/g, ' ');
+    return JSON.parse(cleaned);
+  } catch (e) {}
+
+  // 4. Try fixing truncated JSON (e.g. cut off mid-generation)
+  try {
+    if (fallbackType === 'array' && cleaned.startsWith('[')) {
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (lastBrace !== -1) {
+        const repaired = cleaned.substring(0, lastBrace + 1) + ']';
+        return JSON.parse(repaired);
+      }
+    } else if (fallbackType === 'object' && cleaned.startsWith('{')) {
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (lastBrace !== -1) {
+        const repaired = cleaned.substring(0, lastBrace + 1);
+        return JSON.parse(repaired);
+      }
+    }
+  } catch (e) {
+    console.warn("Could not repair JSON:", e);
+  }
+
+  return fallbackType === 'array' ? [] : {};
+}
 
 export const getAIRecommendations = async (userData: {
   favoriteGenres: string[];
@@ -71,51 +111,219 @@ Return ONLY valid JSON in this format:
 No text outside the JSON.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            recommendations: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  type: { type: Type.STRING },
+                  reason: { type: Type.STRING },
+                  genre: { type: Type.STRING }
+                },
+                required: ["title", "type", "reason", "genre"]
+              }
+            }
+          },
+          required: ["recommendations"]
+        }
+      }
     });
 
     const text = response.text;
     if (!text) throw new Error('No text returned from Gemini');
     
-    // Safely extract JSON block
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON found in response');
-    
-    return JSON.parse(jsonMatch[0]);
+    return safelyParseJSON(text, 'object');
   } catch (error) {
     console.error('Error fetching AI recommendations:', error);
     return { recommendations: [] };
   }
 };
 
-export const getGameMissions = async (gameName: string): Promise<any[]> => {
+export const getGameMainMissions = async (gameName: string): Promise<any[]> => {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error('GEMINI_API_KEY is not defined');
-    return [];
-  }
+  if (!apiKey) return [];
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `List main story missions for "${gameName}". Return ONLY JSON array: [{"id": 1, "title": "Name", "description": "Desc"}]. Include 15-20 missions. No extra text.`;
+    const prompt = `List ALL main story missions for "${gameName}" in order. Be accurate and specific to the actual game "${gameName}". Do not make up missions or trophies that don't exist. Return ONLY JSON array: [{"id": 1, "title": "mission", "description": "brief description", "rewards": "rewards", "tips": "brief tips"}]. Include a maximum of 50 main missions. STRICT RULE: Keep descriptions to 1 short sentence. Do NOT use newlines or double quotes inside any text fields to prevent JSON errors.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
+      config: { 
+        maxOutputTokens: 8192,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.INTEGER },
+              title: { type: Type.STRING },
+              description: { type: Type.STRING },
+              rewards: { type: Type.STRING },
+              tips: { type: Type.STRING }
+            },
+            required: ["id", "title"]
+          }
+        }
+      },
     });
 
     const text = response.text;
     if (!text) throw new Error('No text returned from Gemini');
     
-    // Safely extract JSON block
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('No JSON found in response');
-    
-    return JSON.parse(jsonMatch[0]);
+    return safelyParseJSON(text, 'array');
   } catch (error) {
-    console.error('Error fetching missions:', error);
+    console.error('Error fetching main missions:', error);
     return [];
+  }
+};
+
+export const getGameSideMissions = async (gameName: string): Promise<any[]> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return [];
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `List ALL major side missions/quests for "${gameName}". Be accurate and specific to the actual game "${gameName}". Do not make up missions or trophies that don't exist. Return ONLY JSON array: [{"id": 1, "title": "mission", "description": "brief description", "rewards": "rewards", "tips": "brief tips"}]. Include a maximum of 40 major side missions. STRICT RULE: Keep descriptions to 1 short sentence. Do NOT use newlines or double quotes inside any text fields.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: { 
+        maxOutputTokens: 8192,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.INTEGER },
+              title: { type: Type.STRING },
+              description: { type: Type.STRING },
+              rewards: { type: Type.STRING },
+              tips: { type: Type.STRING }
+            },
+            required: ["id", "title"]
+          }
+        }
+      },
+    });
+
+    const text = response.text;
+    if (!text) throw new Error('No text returned from Gemini');
+    
+    return safelyParseJSON(text, 'array');
+  } catch (error) {
+    console.error('Error fetching side missions:', error);
+    return [];
+  }
+};
+
+export const getGameTrophies = async (gameName: string): Promise<any[]> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return [];
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `List ALL trophies/achievements for "${gameName}" on PlayStation and Steam. Be accurate and specific to the actual game "${gameName}". Do not make up missions or trophies that don't exist. Use the actual official trophy/achievement list for "${gameName}" from PlayStation Network or Steam. Return ONLY JSON array: [{"name": "trophy string", "description": "brief unlock guide", "difficulty": "Easy/Medium/Hard", "platform": "PSN/Steam/Both"}]. Include a maximum of 50 trophies. STRICT RULE: Keep descriptions to 1 short sentence. Do NOT use newlines or double quotes inside any text fields.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: { 
+        maxOutputTokens: 8192,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING },
+              description: { type: Type.STRING },
+              difficulty: { type: Type.STRING },
+              platform: { type: Type.STRING }
+            },
+            required: ["name"]
+          }
+        }
+      },
+    });
+
+    const text = response.text;
+    if (!text) throw new Error('No text returned from Gemini');
+    
+    return safelyParseJSON(text, 'array');
+  } catch (error) {
+    console.error('Error fetching trophies:', error);
+    return [];
+  }
+};
+
+export const getGameTipsAndClasses = async (gameName: string): Promise<{ tips: any[], classes: any[] } | null> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `Create a detailed tips and builds guide for "${gameName}". Provide specific accurate advice based on actual game mechanics of "${gameName}". For RPGs include actual class names and skill trees from the game. Return ONLY a valid JSON object: { "gameTips": [{"category": "General/Combat/Exploration", "title": "tip title", "description": "brief tip"}], "bestClasses": [{"name": "class/build name", "description": "brief playstyle", "pros": "advantages", "cons": "disadvantages"}] }. Include a maximum of 15 game tips and up to 10 best classes/builds. STRICT RULE: Keep descriptions to 1-2 short sentences. Do NOT use newlines or double quotes inside any text fields.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: { 
+        maxOutputTokens: 8192,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            gameTips: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  category: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING }
+                },
+                required: ["category", "title", "description"]
+              }
+            },
+            bestClasses: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  pros: { type: Type.STRING },
+                  cons: { type: Type.STRING }
+                },
+                required: ["name", "description"]
+              }
+            }
+          }
+        }
+      },
+    });
+
+    const text = response.text;
+    if (!text) throw new Error('No text returned from Gemini');
+    
+    const parsed = safelyParseJSON(text, 'object') as any;
+    return { tips: parsed.gameTips || [], classes: parsed.bestClasses || [] };
+  } catch (error) {
+    console.error('Error fetching tips and classes:', error);
+    return null;
   }
 };
 
@@ -145,20 +353,26 @@ export const extractTitlesFromImage = async (imageFile: File): Promise<string[]>
   
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: [
         { role: 'user', parts: [{ text: prompt }, { inlineData: { data: base64Data, mimeType: imageFile.type } }] }
       ],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.STRING
+          }
+        }
+      }
     });
     
     const text = response.text;
     if (!text) return [];
     
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) return [];
-    
-    const titles = JSON.parse(jsonMatch[0]);
-    return titles.slice(0, 20); // Ensure limit
+    const titles = safelyParseJSON(text, 'array') as any;
+    return Array.isArray(titles) ? titles.slice(0, 20) : []; // Ensure limit
   } catch (error) {
     console.error('Error extracting titles from image:', error);
     return [];

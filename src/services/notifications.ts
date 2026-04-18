@@ -137,3 +137,31 @@ export const markNotificationAsRead = async (id: string) => {
     console.error('Error marking notification as read:', error);
   }
 };
+
+export const toggleReleaseReminder = async (userId: string, release: any) => {
+  const message = `Reminder: ${release.title} releases on ${release.release_date}`;
+  
+  const { data: existing } = await supabase
+    .from('notifications')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('media_id', release.external_id)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase.from('notifications').delete().eq('id', existing.id);
+    if (error) throw error;
+    return false;
+  } else {
+    const { error } = await supabase.from('notifications').insert({
+      user_id: userId,
+      media_id: release.external_id,
+      title: release.title,
+      message: message,
+      poster_url: release.poster_url,
+      is_read: false
+    });
+    if (error) throw error;
+    return true;
+  }
+};

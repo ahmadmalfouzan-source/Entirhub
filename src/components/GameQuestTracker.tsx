@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/lib/supabase';
-import { getGameMissions } from '@/services/aiService';
+import { getGameMainMissions } from '@/services/aiService';
 import { toast } from 'sonner';
 
 interface Quest {
@@ -49,7 +49,7 @@ export function GameQuestTracker({ gameName, mediaId }: GameQuestTrackerProps) {
 
         // 2. Fetch from Gemini
         console.log('Fetching missions from Gemini...');
-        const missions = await getGameMissions(gameName);
+        const missions = await getGameMainMissions(gameName);
         console.log('Fetched missions:', missions);
         
         // 3. Fetch completed from Supabase

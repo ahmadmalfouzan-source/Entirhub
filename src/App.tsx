@@ -11,11 +11,15 @@ import { Header } from '@/components/Header';
 import { Home } from '@/pages/Home';
 import { ContentDetail } from '@/pages/ContentDetail';
 import { GameWiki } from '@/pages/GameWiki';
+import { Feed } from '@/pages/Feed';
+import { Countdown } from '@/pages/Countdown';
 import { ForYou } from '@/pages/ForYou';
+import { Friends } from '@/pages/Friends';
 import { Library } from '@/pages/Library';
 import { Profile } from '@/pages/Profile';
 import { PublicProfile } from '@/pages/PublicProfile';
 import { Settings } from '@/pages/Settings';
+import { ReleaseCalendar } from '@/pages/ReleaseCalendar';
 import { Onboarding } from '@/pages/Onboarding';
 import { Wrapped } from '@/pages/Wrapped';
 import Movies from '@/pages/Movies';
@@ -105,6 +109,9 @@ export default function App() {
         <Routes>
           <Route path="/onboarding" element={session ? <Navigate to="/" replace /> : <Onboarding />} />
           <Route path="/" element={<ProtectedLayout><Home /></ProtectedLayout>} />
+          <Route path="/feed" element={<ProtectedLayout><Feed /></ProtectedLayout>} />
+          <Route path="/calendar" element={<ProtectedLayout><ReleaseCalendar /></ProtectedLayout>} />
+          <Route path="/countdown" element={<ProtectedLayout><Countdown /></ProtectedLayout>} />
           <Route path="/games" element={<ProtectedLayout><Games /></ProtectedLayout>} />
           <Route path="/movies" element={<ProtectedLayout><Movies /></ProtectedLayout>} />
           <Route path="/series" element={<ProtectedLayout><Series /></ProtectedLayout>} />
@@ -112,6 +119,7 @@ export default function App() {
           <Route path="/wiki/:id" element={<ProtectedLayout><GameWiki /></ProtectedLayout>} />
           <Route path="/for-you" element={<ProtectedLayout><ForYou /></ProtectedLayout>} />
           <Route path="/library" element={<ProtectedLayout><Library /></ProtectedLayout>} />
+          <Route path="/friends" element={<ProtectedLayout><Friends /></ProtectedLayout>} />
           <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
           <Route path="/wrapped" element={<ProtectedLayout><Wrapped /></ProtectedLayout>} />
           <Route path="/admin" element={<ProtectedLayout><Admin /></ProtectedLayout>} />

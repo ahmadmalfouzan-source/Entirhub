@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
 import * as libraryService from '@/services/library';
+import { logActivity } from '@/services/activityService';
 
 export interface WatchlistItem {
   id: string;
@@ -103,6 +104,7 @@ export const useStore = create<StoreState>((set, get) => ({
         genres: media.genres,
         source: media.source || (media.id?.startsWith('rawg_') ? 'rawg' : 'tmdb')
       });
+      await logActivity('added', media.id);
       await get().fetchWatchlist();
     } catch (error) {
       console.error('Error adding to library:', error);
@@ -112,9 +114,18 @@ export const useStore = create<StoreState>((set, get) => ({
     try {
       if (updates.status) {
         await libraryService.updateStatus(id, updates.status);
+        const activityTypeMap: Record<string, string> = {
+          'completed': 'completed',
+          'watching': 'started',
+          'dropped': 'dropped'
+        };
+        if (activityTypeMap[updates.status]) {
+          await logActivity(activityTypeMap[updates.status] as any, id);
+        }
       }
       if (updates.rating !== undefined) {
         await libraryService.rateMedia(id, updates.rating);
+        await logActivity('rated', id, { rating: updates.rating });
       }
       await get().fetchWatchlist();
     } catch (error) {

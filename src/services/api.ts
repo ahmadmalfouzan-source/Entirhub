@@ -16,6 +16,9 @@ export interface MediaItem {
   number_of_episodes?: number;
   status?: string;
   next_episode_to_air?: any;
+  last_episode_to_air?: any;
+  credits?: { cast: any[] };
+  metacritic?: number;
 }
 
 const getTmdbImageUrl = (path: string | null) => 
@@ -24,8 +27,8 @@ const getTmdbImageUrl = (path: string | null) =>
 export const fetchTrendingMovies = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=${lang}`);
-    if (!res.ok) throw new Error('Failed to fetch movies');
+    const res = await fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=${lang}`).catch(() => null);
+    if (!res || !res.ok) throw new Error('Failed to fetch movies');
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_movie_${item.id}`,
@@ -46,8 +49,8 @@ export const fetchTrendingMovies = async (lang = 'en-US'): Promise<MediaItem[]> 
 export const fetchTrendingSeries = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&language=${lang}`);
-    if (!res.ok) throw new Error('Failed to fetch series');
+    const res = await fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&language=${lang}`).catch(() => null);
+    if (!res || !res.ok) throw new Error('Failed to fetch series');
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_series_${item.id}`,
@@ -68,8 +71,8 @@ export const fetchTrendingSeries = async (lang = 'en-US'): Promise<MediaItem[]> 
 export const searchMedia = async (query: string): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY || !query) return [];
   try {
-    const res = await fetch(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
-    if (!res.ok) throw new Error('Failed to search');
+    const res = await fetch(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`).catch(() => null);
+    if (!res || !res.ok) throw new Error('Failed to search');
     const data = await res.json();
     return data.results
       .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
@@ -150,6 +153,45 @@ export const fetchMediaVideos = async (mediaType: 'movie' | 'series', externalId
   } catch (error) {
     console.error('Error fetching videos:', error);
     return [];
+  }
+};
+
+export const fetchSimilar = async (type: 'movie' | 'series', externalId: string): Promise<MediaItem[]> => {
+  if (!TMDB_API_KEY) return [];
+  const tmdbId = externalId.replace('tmdb_series_', '').replace('tmdb_movie_', '').replace('tmdb_', '');
+  const endpoint = type === 'series' ? 'tv' : 'movie';
+  try {
+    const res = await fetch(`${TMDB_BASE_URL}/${endpoint}/${tmdbId}/similar?api_key=${TMDB_API_KEY}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.results.map((item: any) => ({
+      external_id: `tmdb_${type === 'series' ? 'series' : 'movie'}_${item.id}`,
+      media_type: type,
+      title: item.title || item.name,
+      poster_url: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
+      rating: item.vote_average,
+      release_date: item.release_date || item.first_air_date,
+      genres: [],
+      description: item.overview,
+    }));
+  } catch (error) {
+    console.error('Error fetching similar:', error);
+    return [];
+  }
+};
+
+export const fetchWatchProviders = async (type: 'movie' | 'series', externalId: string): Promise<any> => {
+  if (!TMDB_API_KEY) return null;
+  const tmdbId = externalId.replace('tmdb_series_', '').replace('tmdb_movie_', '').replace('tmdb_', '');
+  const endpoint = type === 'series' ? 'tv' : 'movie';
+  try {
+    const res = await fetch(`${TMDB_BASE_URL}/${endpoint}/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.results || null;
+  } catch (error) {
+    console.error('Error fetching watch providers:', error);
+    return null;
   }
 };
 
@@ -267,8 +309,8 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
   try {
     if (type === 'game' && RAWG_API_KEY) {
       const rawgId = id.replace('rawg_game_', '').replace('rawg_', '');
-      const res = await fetch(`${RAWG_BASE_URL}/games/${rawgId}?key=${RAWG_API_KEY}`);
-      if (!res.ok) return null;
+      const res = await fetch(`${RAWG_BASE_URL}/games/${rawgId}?key=${RAWG_API_KEY}`).catch(() => null);
+      if (!res || !res.ok) return null;
       const item = await res.json();
       return {
         external_id: `rawg_game_${item.id}`,
@@ -276,6 +318,7 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
         title: item.name,
         poster_url: item.background_image || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
         rating: item.rating,
+        metacritic: item.metacritic,
         release_date: item.released,
         genres: item.genres?.map((g: any) => g.name) || [],
         description: item.description_raw || item.description,
@@ -283,9 +326,22 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
     } else if (TMDB_API_KEY) {
       const tmdbId = id.replace('tmdb_movie_', '').replace('tmdb_series_', '').replace('tmdb_', '');
       const endpoint = type === 'movie' ? 'movie' : 'tv';
-      const res = await fetch(`${TMDB_BASE_URL}/${endpoint}/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits,similar&language=${lang}`);
-      if (!res.ok) return null;
+      const url = `${TMDB_BASE_URL}/${endpoint}/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits,similar&language=${lang}`;
+      console.log(`[API Debug] Fetching TMDB details from URL: ${url}`);
+      
+      const res = await fetch(url).catch((err) => {
+        console.error('[API Debug] Fetch failed:', err);
+        return null;
+      });
+      
+      if (!res || !res.ok) {
+        console.error(`[API Debug] TMDB response not OK: ${res?.status} ${res?.statusText}`);
+        return null;
+      }
+      
       const item = await res.json();
+      console.log(`[API Debug] Raw TMDB response for ${id}:`, item);
+      
       return {
         external_id: `tmdb_${type === 'series' ? 'series' : 'movie'}_${item.id}`,
         media_type: type,
@@ -298,6 +354,8 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
         number_of_episodes: item.number_of_episodes,
         status: item.status,
         next_episode_to_air: item.next_episode_to_air,
+        last_episode_to_air: item.last_episode_to_air,
+        credits: item.credits,
       };
     }
     return null;
@@ -305,4 +363,44 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
     console.error('Error fetching media details:', error);
     return null;
   }
+};
+
+export const fetchCalendarReleases = async (startDate: string, endDate: string) => {
+  const [moviesRes, seriesRes, gamesRes] = await Promise.all([
+    fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&primary_release_date.gte=${startDate}&primary_release_date.lte=${endDate}&sort_by=popularity.desc`).then(r => r.json()),
+    fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&first_air_date.gte=${startDate}&first_air_date.lte=${endDate}&sort_by=popularity.desc`).then(r => r.json()),
+    fetch(`https://api.rawg.io/api/games?key=${RAWG_API_KEY}&dates=${startDate},${endDate}&ordering=-added`).then(r => r.json())
+  ]);
+
+  const movies = (moviesRes.results || []).map((item: any) => ({
+    external_id: `tmdb_movie_${item.id}`,
+    media_type: 'movie' as const,
+    title: item.title,
+    poster_url: getTmdbImageUrl(item.poster_path),
+    release_date: item.release_date,
+    rating: item.vote_average,
+    genres: ['Movie']
+  }));
+
+  const series = (seriesRes.results || []).map((item: any) => ({
+    external_id: `tmdb_series_${item.id}`,
+    media_type: 'series' as const,
+    title: item.name,
+    poster_url: getTmdbImageUrl(item.poster_path),
+    release_date: item.first_air_date,
+    rating: item.vote_average,
+    genres: ['Series']
+  }));
+
+  const games = (gamesRes.results || []).map((item: any) => ({
+    external_id: `rawg_game_${item.id}`,
+    media_type: 'game' as const,
+    title: item.name,
+    poster_url: item.background_image || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
+    release_date: item.released,
+    rating: item.rating,
+    genres: item.genres?.map((g: any) => g.name) || []
+  }));
+
+  return [...movies, ...series, ...games];
 };

@@ -15,7 +15,8 @@ import {
   Globe,
   Lock,
   Award,
-  Trophy
+  Trophy,
+  Users
 } from 'lucide-react';
 import { ContentCard } from '@/components/ContentCard';
 import { Progress } from '@/components/ui/progress';
@@ -25,6 +26,7 @@ import { Badges } from '@/components/Badges';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchPSNProfile } from '@/services/psn';
+import { getFriends, Friendship } from '@/services/friendsService';
 
 interface Stats {
   totalMovies: number;
@@ -48,6 +50,7 @@ export function Profile() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [psnStats, setPsnStats] = useState<PSNStats | null>(null);
+  const [friends, setFriends] = useState<Friendship[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
   const [username, setUsername] = useState('');
@@ -65,11 +68,15 @@ export function Profile() {
         setUsername(data.username || user.email?.split('@')[0] || '');
         setIsPublic(data.is_public || false);
       } else {
-        // Fallback if profile doesn't exist yet
         setUsername(user.email?.split('@')[0] || '');
       }
     };
+    const loadFriends = async () => {
+      const data = await getFriends();
+      setFriends(data);
+    };
     fetchProfile();
+    loadFriends();
   }, [user]);
 
   useEffect(() => {
@@ -227,10 +234,26 @@ export function Profile() {
         </div>
         <div className="text-center md:text-left space-y-2 w-full md:w-auto">
           <h1 className="text-2xl md:text-4xl font-bold text-white truncate">{user?.email?.split('@')[0]}</h1>
-          <p className="text-gray-400 flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
-            <Calendar className="w-4 h-4" />
-            {t('memberSince')} {new Date(user?.created_at || '').toLocaleDateString()}
-          </p>
+          
+          <div className="flex flex-col md:flex-row items-center gap-4 text-sm md:text-base text-gray-400">
+            <p className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {t('memberSince')} {new Date(user?.created_at || '').toLocaleDateString()}
+            </p>
+            <div className="flex items-center gap-2 cursor-pointer hover:text-white" onClick={() => navigate('/friends')}>
+              <Users className="w-4 h-4" />
+              {friends.length} {t('friends')}
+            </div>
+            <div className="flex -space-x-2">
+              {friends.slice(0, 4).map(f => {
+                const friendProfile = f.sender.id === user?.id ? f.receiver : f.sender;
+                return (
+                  <img key={f.id} src={friendProfile.avatar_url} alt="" className="w-8 h-8 rounded-full border-2 border-[#0a0f1e]" />
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
             {stats.topGenres.map(genre => (
               <span key={genre} className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-blue-300 border border-white/10">

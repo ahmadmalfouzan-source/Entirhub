@@ -1,23 +1,36 @@
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Gamepad2, Film, Tv, Library, Sparkles, Settings, LogOut, User, Crown } from 'lucide-react';
+import { Home, Gamepad2, Film, Tv, Library, Sparkles, Settings, LogOut, User, Crown, Users, Rss, Timer, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/hooks/useTranslation';
-
-const navItems = [
-  { icon: Home, labelKey: 'home', path: '/' },
-  { icon: Gamepad2, labelKey: 'games', path: '/games' },
-  { icon: Film, labelKey: 'movies', path: '/movies' },
-  { icon: Tv, labelKey: 'series', path: '/series' },
-  { icon: Library, labelKey: 'myLibrary', path: '/library' },
-  { icon: Sparkles, labelKey: 'forYou', path: '/for-you' },
-  { icon: User, labelKey: 'profile', path: '/profile' },
-] as const;
+import { getPendingRequests } from '@/services/friendsService';
 
 export function Sidebar() {
   const location = useLocation();
   const { logout, isAdmin } = useStore();
   const { t } = useTranslation();
+  const [pendingCount, setPendingCount] = useState(0);
+  const [unreadFeedCount, setUnreadFeedCount] = useState(0);
+
+  useEffect(() => {
+    getPendingRequests().then(requests => setPendingCount(requests.length));
+    setUnreadFeedCount(0); // TODO: implement real unread logic
+  }, []);
+
+  const navItems = [
+    { icon: Home, labelKey: 'home', path: '/' },
+    { icon: Rss, labelKey: 'feed', path: '/feed' },
+    { icon: CalendarDays, labelKey: 'calendar', path: '/calendar' },
+    { icon: Timer, labelKey: 'countdown', path: '/countdown' },
+    { icon: Gamepad2, labelKey: 'games', path: '/games' },
+    { icon: Film, labelKey: 'movies', path: '/movies' },
+    { icon: Tv, labelKey: 'series', path: '/series' },
+    { icon: Library, labelKey: 'myLibrary', path: '/library' },
+    { icon: Users, labelKey: 'friends', path: '/friends' },
+    { icon: Sparkles, labelKey: 'forYou', path: '/for-you' },
+    { icon: User, labelKey: 'profile', path: '/profile' },
+  ] as const;
 
   return (
     <aside className="hidden md:flex w-64 bg-[#0a0f1e] border-r border-white/10 flex-col h-screen sticky top-0">
@@ -40,7 +53,7 @@ export function Sidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative",
                 isActive 
                   ? "bg-white/10 text-white font-medium" 
                   : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -48,6 +61,16 @@ export function Sidebar() {
             >
               <item.icon className={cn("w-5 h-5", isActive ? "text-blue-400" : "")} />
               {t(item.labelKey)}
+              {item.path === '/friends' && pendingCount > 0 && (
+                <span className="absolute right-4 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-[10px] text-white">
+                  {pendingCount}
+                </span>
+              )}
+              {item.path === '/feed' && unreadFeedCount > 0 && (
+                <span className="absolute right-4 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-[10px] text-white">
+                  {unreadFeedCount}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -3,11 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import { Star, Calendar, BookOpen, Plus, Heart, Trash2, RotateCcw, Monitor, Play, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { fetchMediaDetails, fetchMediaVideos, MediaItem } from '@/services/api';
+import { fetchMediaDetails, fetchMediaVideos, fetchWatchProviders, fetchSimilar, MediaItem } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EpisodeTracker } from '@/components/EpisodeTracker';
-import { GameQuestTracker } from '@/components/GameQuestTracker';
+import { GameAchievementTracker } from '@/components/GameAchievementTracker';
+import { ContentCard } from '@/components/ContentCard';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { translations } from '@/i18n/translations';
@@ -19,6 +20,9 @@ export function ContentDetail() {
   const [loading, setLoading] = useState(true);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [watchProviders, setWatchProviders] = useState<any | null>(null);
+  const [region, setRegion] = useState(() => localStorage.getItem('watchRegion') || 'SA');
+  const [similarTitles, setSimilarTitles] = useState<MediaItem[]>([]);
   const { t } = useTranslation();
   const { language } = useLanguageStore();
   const { 
@@ -70,6 +74,11 @@ export function ContentDetail() {
       }
 
       setLoading(false);
+
+      if (data && data.media_type !== 'game') {
+        fetchWatchProviders(data.media_type, data.external_id).then(setWatchProviders);
+        fetchSimilar(data.media_type, data.external_id).then(setSimilarTitles);
+      }
     };
     loadData();
   }, [id]);
@@ -306,6 +315,75 @@ export function ContentDetail() {
             </p>
           </section>
 
+          {/* Cast Section */}
+          {item.credits && item.credits.cast && item.credits.cast.length > 0 && (
+            <section className="pt-4 md:pt-8">
+              <h3 className="text-lg md:text-xl font-bold text-foreground mb-4">Cast</h3>
+              <div className="flex overflow-x-auto space-x-4 pb-4">
+                {item.credits.cast.slice(0, 6).map((actor: any) => (
+                  <div key={actor.id} className="flex-shrink-0 w-32">
+                    <img 
+                      src={actor.profile_path ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` : 'https://placehold.co/185x278?text=No+Photo'}
+                      alt={actor.name}
+                      className="w-full aspect-[2/3] object-cover rounded-lg mb-2"
+                      referrerPolicy="no-referrer"
+                    />
+                    <p className="font-bold text-sm text-foreground">{actor.name}</p>
+                    <p className="text-xs text-muted-foreground">{actor.character}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Watch Providers Section */}
+          {item.media_type !== 'game' && (
+            <section className="pt-4 md:pt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg md:text-xl font-bold text-foreground">Where to Watch</h3>
+                <Select value={region} onValueChange={(v) => { setRegion(v); localStorage.setItem('watchRegion', v); }}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SA">🇸🇦 Saudi Arabia</SelectItem>
+                    <SelectItem value="US">🇺🇸 United States</SelectItem>
+                    <SelectItem value="GB">🇬🇧 United Kingdom</SelectItem>
+                    <SelectItem value="AE">🇦🇪 United Arab Emirates</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {watchProviders && watchProviders[region] && (watchProviders[region].flatrate || watchProviders[region].rent || watchProviders[region].buy) ? (
+                <div className="flex items-center gap-4 flex-wrap">
+                  {[...new Map([...(watchProviders[region].flatrate || []), ...(watchProviders[region].rent || []), ...(watchProviders[region].buy || [])].map(p => [p.provider_id, p])).values()].map((p: any) => (
+                    <div key={p.provider_id} className="tooltip" title={p.provider_name}>
+                      <img 
+                        src={`https://image.tmdb.org/t/p/w92${p.logo_path}`} 
+                        alt={p.provider_name} 
+                        className="w-10 h-10 rounded-md"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Not available in your region</p>
+              )}
+            </section>
+          )}
+
+          {/* Similar Titles Section */}
+          {similarTitles.length > 0 && (
+            <section className="pt-4 md:pt-8">
+              <h3 className="text-lg md:text-xl font-bold text-foreground mb-4">You Might Also Like</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {similarTitles.slice(0, 6).map((item) => (
+                  <ContentCard key={item.external_id} item={item} />
+                ))}
+              </div>
+            </section>
+          )}
+
           {item.media_type === 'series' && (
             <section className="pt-4 md:pt-8">
               {watchlistItem ? (
@@ -320,7 +398,7 @@ export function ContentDetail() {
 
           {item.media_type === 'game' && watchlistItem && (
             <section className="pt-4 md:pt-8">
-              <GameQuestTracker gameName={item.title} mediaId={watchlistItem.media_id} />
+              <GameAchievementTracker gameName={item.title} mediaId={watchlistItem.media_id} externalId={item.external_id} />
             </section>
           )}
         </div>
@@ -346,7 +424,17 @@ export function ContentDetail() {
                 </div>
               )}
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>{t('yourRating')}</span>
+                <div className="flex items-center gap-2">
+                  <span>{t('yourRating')}</span>
+                  {item && item.media_type === 'game' && item.metacritic && (
+                    <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${
+                      item.metacritic >= 75 ? 'bg-green-600' : 
+                      item.metacritic >= 50 ? 'bg-yellow-600' : 'bg-red-600'
+                    }`}>
+                      MC: {item.metacritic}
+                    </div>
+                  )}
+                </div>
                 {watchlistItem ? (
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (
