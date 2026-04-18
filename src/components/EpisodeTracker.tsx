@@ -313,7 +313,7 @@ export function EpisodeTracker({ mediaId, externalId }: EpisodeTrackerProps) {
                                   )}
                                 </div>
                                 
-                                <div className="p-2 bg-[#111827] rounded-lg">
+                                <div className="p-2 bg-surface rounded-lg">
                                   <p className="text-sm font-medium text-white truncate">
                                     E{episode.episode_number} - {episode.name}
                                   </p>

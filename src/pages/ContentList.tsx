@@ -30,7 +30,7 @@ export function ContentList({ type }: { type: 'game' | 'movie' | 'series' }) {
   }, [type]);
 
   const titles = {
-    game: { title: 'Games', icon: Gamepad2, color: 'text-blue-400' },
+    game: { title: 'Games', icon: Gamepad2, color: 'text-accent' },
     movie: { title: 'Movies', icon: Film, color: 'text-purple-400' },
     series: { title: 'TV Series', icon: Tv, color: 'text-pink-400' }
   };
@@ -49,7 +49,7 @@ export function ContentList({ type }: { type: 'game' | 'movie' | 'series' }) {
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {[...Array(10)].map((_, i) => (
-            <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+            <div key={i} className="aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
           ))}
         </div>
       ) : content.length === 0 ? (

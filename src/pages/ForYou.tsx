@@ -61,7 +61,7 @@ export function ForYou() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+            <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
           ))}
         </div>
       ) : (
@@ -70,7 +70,7 @@ export function ForYou() {
             <div key={item.external_id} className="relative group flex flex-col">
               <ContentCard item={item} />
               {item.reason && (
-                <div className="mt-2 text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md self-start">
+                <div className="mt-2 text-xs text-accent bg-blue-500/10 px-2 py-1 rounded-md self-start">
                   {item.reason}
                 </div>
               )}

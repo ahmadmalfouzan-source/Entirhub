@@ -86,7 +86,7 @@ export function ReviewForm({ mediaId, existingReview, onSuccess, onCancel }: Rev
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="bg-[#111827] border border-white/10 rounded-xl p-6 space-y-6 shadow-2xl"
+      className="bg-surface border border-white/10 rounded-xl p-6 space-y-6 shadow-2xl"
     >
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-bold text-white">

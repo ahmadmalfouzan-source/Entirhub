@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, Calendar, BookOpen, Plus, Heart, Trash2, RotateCcw, Monitor, Play, X } from 'lucide-react';
+import { Star, Calendar, BookOpen, Plus, Heart, Trash2, RotateCcw, Monitor, Play, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { fetchMediaDetails, fetchMediaVideos, fetchWatchProviders, fetchSimilar, MediaItem } from '@/services/api';
@@ -15,6 +15,8 @@ import { translations } from '@/i18n/translations';
 import { ReviewSection } from '@/components/ReviewSection';
 import { supabase } from '@/lib/supabase';
 import { SteamPriceTracker } from '@/components/SteamPriceTracker';
+import { getDominantColor } from '@/lib/colorThief';
+import { cn } from '@/lib/utils';
 
 export function ContentDetail() {
   const { id } = useParams();
@@ -22,6 +24,7 @@ export function ContentDetail() {
   const [loading, setLoading] = useState(true);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [accentColor, setAccentColor] = useState<string>('var(--color-primary)');
   const [watchProviders, setWatchProviders] = useState<any | null>(null);
   const [region, setRegion] = useState(() => localStorage.getItem('watchRegion') || 'SA');
   const [similarTitles, setSimilarTitles] = useState<MediaItem[]>([]);
@@ -38,9 +41,14 @@ export function ContentDetail() {
     toggle100Completion
   } = useStore();
 
+  const fetchedId = useRef<string | null>(null);
+
   useEffect(() => {
+    if (fetchedId.current === id) return;
+    
     const loadData = async () => {
       if (!id) return;
+      fetchedId.current = id;
       setLoading(true);
       
       let fetchedType: 'movie' | 'series' | 'game' = 'movie';
@@ -67,11 +75,15 @@ export function ContentDetail() {
       
       setItem(data);
 
-      if (data && (data.media_type === 'movie' || data.media_type === 'series')) {
-        const videos = await fetchMediaVideos(data.media_type, data.external_id);
-        const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
-        if (trailer) {
-          setTrailerKey(trailer.key);
+      if (data) {
+        getDominantColor(data.backdrop_url || data.poster_url).then(setAccentColor);
+        
+        if (data.media_type === 'movie' || data.media_type === 'series') {
+          const videos = await fetchMediaVideos(data.media_type, data.external_id);
+          const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+          if (trailer) {
+            setTrailerKey(trailer.key);
+          }
         }
       }
 
@@ -112,10 +124,8 @@ export function ContentDetail() {
     fetchGameProgress();
   }, [item, watchlistItem]);
 
-  if (loading) return <div className="p-8 text-foreground">Loading...</div>;
-  if (!item) return <div className="p-8 text-foreground">Content not found.</div>;
-
   const handleAddToList = () => {
+    if (!item) return;
     addToWatchlist({
       external_id: item.external_id,
       media_type: item.media_type,
@@ -169,66 +179,102 @@ export function ContentDetail() {
   };
 
   return (
-    <div className="pb-20 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
-      {/* Hero Banner */}
-      <div className="h-[40vh] md:h-[60vh] relative">
-        <img 
-          src={item.poster_url || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=1200&q=80'} 
-          alt={item.title}
-          className="w-full h-full object-cover"
+    <>
+      {item?.backdrop_url && (
+        <div
+          className="content-bg"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 0,
+            backgroundImage: `url(${item.backdrop_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'brightness(0.25)',
+            pointerEvents: 'none',
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+      )}
+      
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        {loading ? (
+          <div className="p-8 text-foreground">Loading...</div>
+        ) : !item ? (
+          <div className="p-8 text-foreground">Content not found.</div>
+        ) : (
+          <div 
+            className="min-h-screen pb-20 animate-in fade-in duration-700 ease-in-out"
+            style={{ '--accent-color': accentColor } as React.CSSProperties}
+          >
+          {/* Hero Banner */}
+      <div className="h-[40vh] md:h-[65vh] relative flex items-end">
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-background)] via-transparent to-transparent pointer-events-none" />
         
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 max-w-7xl mx-auto flex items-end gap-8">
-          <img 
-            src={item.poster_url || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80'} 
-            alt={item.title}
-            className="w-64 rounded-xl shadow-2xl border border-border hidden md:block"
-          />
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2 md:mb-4">
-              <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 capitalize">
+        <div className="relative w-full p-4 md:p-12 max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-12 translate-y-20 md:translate-y-24">
+          <div className="relative group shrink-0">
+            <div 
+              className="absolute -inset-1 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500"
+              style={{ backgroundColor: 'var(--accent-color)' }}
+            />
+            <img 
+              src={item.poster_url || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80'} 
+              alt={item.title}
+              className="w-48 md:w-72 rounded-xl shadow-2xl border border-white/10 relative"
+            />
+          </div>
+
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4 md:mb-6">
+              <Badge 
+                style={{ backgroundColor: `${accentColor}20`, color: accentColor, borderColor: `${accentColor}40` }}
+                className="capitalize px-4 py-1 text-sm font-bold border"
+              >
                 {item.media_type}
               </Badge>
-              <div className="flex items-center gap-1 text-yellow-400 font-medium text-sm md:text-base">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 font-bold border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
                 <Star className="w-4 h-4 fill-current" />
                 {item.rating > 0 ? item.rating.toFixed(1) : 'N/A'}
               </div>
-              <div className="text-muted-foreground flex items-center gap-1 text-sm md:text-base">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-muted-foreground font-medium border border-white/10">
                 <Calendar className="w-4 h-4" />
                 {item.release_date ? new Date(item.release_date).getFullYear() : 'N/A'}
               </div>
             </div>
-            <h1 className="text-2xl md:text-5xl font-bold text-foreground mb-2 md:mb-4">{item.title}</h1>
-            <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
+
+            <h1 className="text-3xl md:text-6xl font-black text-white mb-4 md:mb-8 tracking-tighter drop-shadow-2xl">
+              {item.title}
+            </h1>
+
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-8 md:mb-10">
               {item.genres?.map((genre: string) => (
-                <Badge key={genre} variant="outline" className="border-border text-muted-foreground">
+                <span key={genre} className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-widest text-[#94a3b8] bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
                   {genre}
-                </Badge>
+                </span>
               ))}
             </div>
-            <div className="flex items-center gap-4 mb-4 md:mb-6">
-              {trailerKey && (
-                <Button 
-                  onClick={() => setShowTrailer(true)} 
-                  className="bg-red-600 hover:bg-red-700 text-white border-0"
-                >
-                  <Play className="w-4 h-4 mr-2" /> {t('watchTrailer')}
-                </Button>
-              )}
-            </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
               {!watchlistItem ? (
-                <Button onClick={handleAddToList} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm">
-                  <Plus className="w-5 h-5 sm:w-4 sm:h-4 mr-2" /> {t('addToLibrary')}
+                <Button 
+                  onClick={handleAddToList} 
+                  className="w-full sm:w-auto px-8 h-12 text-base font-bold text-white border-0 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+                  style={{ 
+                    background: `linear-gradient(45deg, ${accentColor}, ${accentColor}cc)`,
+                    boxShadow: `0 8px 24px -6px ${accentColor}60`
+                  }}
+                >
+                  <Plus className="w-5 h-5 mr-2" /> {t('addToLibrary')}
                 </Button>
               ) : (
-                <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 w-full sm:w-auto">
                   <Select value={watchlistItem.status} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-full sm:w-[160px] h-12 sm:h-10 bg-white/10 border-border text-foreground">
+                    <SelectTrigger className="w-[180px] h-12 bg-white/10 backdrop-blur-md border-white/10 text-white font-medium hover:bg-white/20 transition-all">
                       <SelectValue placeholder={t('status')} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#1a1f2e] border-white/10">
                       <SelectItem value="planned">{t('planned')}</SelectItem>
                       <SelectItem value="watch_tonight">{t('watchTonight')}</SelectItem>
                       <SelectItem value="watching">{t('watching')}</SelectItem>
@@ -242,65 +288,27 @@ export function ContentDetail() {
                     <Button 
                       onClick={handleRewatch}
                       variant="outline" 
-                      className="bg-white/10 border-border text-foreground hover:bg-white/20 h-12 sm:h-10 w-full sm:w-auto"
+                      className="h-12 border-white/10 bg-white/10 hover:bg-white/20 text-white font-medium px-6"
                     >
-                      <RotateCcw className="w-5 h-5 sm:w-4 sm:h-4 mr-2" />
+                      <RotateCcw className="w-5 h-5 mr-2" />
                       Rewatch {watchlistItem.rewatch_count ? `(${watchlistItem.rewatch_count}x)` : ''}
                     </Button>
                   )}
 
-                  {item.media_type === 'game' && (
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                      <Select value={watchlistItem.platform || ''} onValueChange={handlePlatformChange}>
-                        <SelectTrigger className="w-full sm:w-[160px] h-12 sm:h-10 bg-white/10 border-border text-foreground">
-                          <Monitor className="w-5 h-5 sm:w-4 sm:h-4 mr-2" />
-                          <SelectValue placeholder="Platform" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PS5">PS5</SelectItem>
-                          <SelectItem value="PS4">PS4</SelectItem>
-                          <SelectItem value="PC">PC</SelectItem>
-                          <SelectItem value="Xbox">Xbox</SelectItem>
-                          <SelectItem value="Nintendo Switch">Nintendo Switch</SelectItem>
-                          <SelectItem value="Mobile">Mobile</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      
-                      <div className="flex items-center justify-between sm:justify-start gap-2 bg-white/10 border border-border rounded-md px-4 sm:px-3 h-12 sm:h-10">
-                        <span className="text-sm sm:text-xs text-muted-foreground">Hours</span>
-                        <input 
-                          type="number" 
-                          value={watchlistItem.hours_played || 0} 
-                          onChange={handleHoursChange}
-                          className="bg-transparent border-none text-foreground w-16 sm:w-12 text-base sm:text-sm focus:outline-none text-right sm:text-left"
-                        />
-                      </div>
-
-                      <Button 
-                        onClick={handleToggle100}
-                        variant="outline" 
-                        className={`border-border h-12 sm:h-10 w-full sm:w-auto ${watchlistItem.is_completed_100 ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500/50' : 'bg-white/10 text-foreground'}`}
-                      >
-                        <Heart className={`w-5 h-5 sm:w-4 sm:h-4 mr-2 ${watchlistItem.is_completed_100 ? 'fill-current' : ''}`} />
-                        100%
-                      </Button>
-                    </div>
-                  )}
-
-                  <Button variant="destructive" onClick={handleRemove} size="icon" className="h-12 w-12 sm:h-10 sm:w-10 hidden sm:flex">
-                    <Trash2 className="w-5 h-5 sm:w-4 sm:h-4" />
-                  </Button>
-                  <Button variant="destructive" onClick={handleRemove} className="h-12 w-full sm:hidden flex items-center justify-center">
-                    <Trash2 className="w-5 h-5 mr-2" /> Remove from Library
+                  <Button variant="destructive" onClick={handleRemove} size="icon" className="h-12 w-12 rounded-xl">
+                    <Trash2 className="w-5 h-5" />
                   </Button>
                 </div>
               )}
-              {item.media_type === 'game' && (
-                <Link to={`/wiki/${item.external_id}`} className="w-full sm:w-auto">
-                  <Button variant="secondary" className="bg-white/10 text-foreground hover:bg-white/20 border-0 w-full sm:w-auto h-12 sm:h-10">
-                    <BookOpen className="w-5 h-5 sm:w-4 sm:h-4 mr-2" /> Open Wiki
-                  </Button>
-                </Link>
+
+              {trailerKey && !showTrailer && (
+                <Button 
+                  onClick={() => setShowTrailer(true)} 
+                  variant="outline"
+                  className="h-12 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold backdrop-blur-md"
+                >
+                  <Play className="w-5 h-5 mr-3 fill-current text-red-500" /> {t('watchTrailer')}
+                </Button>
               )}
             </div>
           </div>
@@ -308,36 +316,70 @@ export function ContentDetail() {
       </div>
 
       {/* Content Details */}
-      <div className="max-w-7xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
-        <div className="lg:col-span-2 space-y-6 md:space-y-8">
-          <section>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2 md:mb-4">{t('overview')}</h2>
-            <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
-              {item.description || 'No description available.'}
-            </p>
+      <div className="max-w-7xl mx-auto p-4 md:p-8 pt-40 md:pt-52 grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2 space-y-12">
+          <section className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8 space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
+                {t('overview')}
+              </h2>
+              <p className="text-[#94a3b8] leading-relaxed text-lg">
+                {item.description || 'No description available.'}
+              </p>
+            </div>
+
+            {item.media_type === 'game' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <Link to={`/wiki/${item.external_id}`} className="w-full">
+                  <Button variant="secondary" className="bg-white/5 text-silver hover:bg-white/10 border border-white/5 w-full h-14 text-base font-bold">
+                    <BookOpen className="w-5 h-5 mr-3" /> Open Strategy Wiki
+                  </Button>
+                </Link>
+                {item.media_type === 'game' && watchlistItem && (
+                   <Button 
+                    onClick={handleToggle100}
+                    variant="outline" 
+                    className={`h-14 w-full text-base font-bold transition-all ${watchlistItem.is_completed_100 ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500/50' : 'bg-white/5 text-white border-white/5'}`}
+                   >
+                    <Heart className={`w-5 h-5 mr-3 ${watchlistItem.is_completed_100 ? 'fill-current' : ''}`} />
+                    Completionist 100%
+                   </Button>
+                )}
+              </div>
+            )}
           </section>
 
           {item.media_type === 'game' && (
-            <section className="pt-2">
+            <section className="animate-in fade-in slide-in-from-bottom-6 duration-500 delay-200">
               <SteamPriceTracker gameName={item.title} />
             </section>
           )}
 
           {/* Cast Section */}
           {item.credits && item.credits.cast && item.credits.cast.length > 0 && (
-            <section className="pt-4 md:pt-8">
-              <h3 className="text-lg md:text-xl font-bold text-foreground mb-4">Cast</h3>
-              <div className="flex overflow-x-auto space-x-4 pb-4">
-                {item.credits.cast.slice(0, 6).map((actor: any) => (
-                  <div key={actor.id} className="flex-shrink-0 w-32">
-                    <img 
-                      src={actor.profile_path ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` : 'https://placehold.co/185x278?text=No+Photo'}
-                      alt={actor.name}
-                      className="w-full aspect-[2/3] object-cover rounded-lg mb-2"
-                      referrerPolicy="no-referrer"
-                    />
-                    <p className="font-bold text-sm text-foreground">{actor.name}</p>
-                    <p className="text-xs text-muted-foreground">{actor.character}</p>
+            <section className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8">
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <Star className="w-5 h-5" style={{ color: accentColor }} />
+                Cast & Crew
+              </h3>
+              <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
+                {item.credits.cast.slice(0, 8).map((actor: any) => (
+                  <div key={actor.id} className="flex-shrink-0 w-32 group">
+                    <div className="relative mb-3">
+                      <div 
+                        className="absolute -inset-0.5 rounded-xl blur opacity-0 group-hover:opacity-40 transition-opacity duration-300"
+                        style={{ backgroundColor: accentColor }}
+                      />
+                      <img 
+                        src={actor.profile_path ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` : 'https://placehold.co/185x278?text=No+Photo'}
+                        alt={actor.name}
+                        className="w-full aspect-[2/3] object-cover rounded-xl relative border border-white/10"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <p className="font-bold text-sm text-white truncate">{actor.name}</p>
+                    <p className="text-xs text-[#94a3b8] truncate">{actor.character}</p>
                   </div>
                 ))}
               </div>
@@ -346,14 +388,17 @@ export function ContentDetail() {
 
           {/* Watch Providers Section */}
           {item.media_type !== 'game' && (
-            <section className="pt-4 md:pt-8">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg md:text-xl font-bold text-foreground">Where to Watch</h3>
+            <section className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Monitor className="w-5 h-5" style={{ color: accentColor }} />
+                  Streaming On
+                </h3>
                 <Select value={region} onValueChange={(v) => { setRegion(v); localStorage.setItem('watchRegion', v); }}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#1a1f2e] border-white/10">
                     <SelectItem value="SA">🇸🇦 Saudi Arabia</SelectItem>
                     <SelectItem value="US">🇺🇸 United States</SelectItem>
                     <SelectItem value="GB">🇬🇧 United Kingdom</SelectItem>
@@ -364,18 +409,23 @@ export function ContentDetail() {
               {watchProviders && watchProviders[region] && (watchProviders[region].flatrate || watchProviders[region].rent || watchProviders[region].buy) ? (
                 <div className="flex items-center gap-4 flex-wrap">
                   {[...new Map([...(watchProviders[region].flatrate || []), ...(watchProviders[region].rent || []), ...(watchProviders[region].buy || [])].map(p => [p.provider_id, p])).values()].map((p: any) => (
-                    <div key={p.provider_id} className="tooltip" title={p.provider_name}>
+                    <div key={p.provider_id} className="group relative">
+                      <div 
+                        className="absolute -inset-1 rounded-lg blur opacity-0 group-hover:opacity-40 transition-opacity"
+                        style={{ backgroundColor: accentColor }}
+                      />
                       <img 
                         src={`https://image.tmdb.org/t/p/w92${p.logo_path}`} 
                         alt={p.provider_name} 
-                        className="w-10 h-10 rounded-md"
+                        className="w-12 h-12 rounded-xl relative border border-white/10 shadow-lg"
                         referrerPolicy="no-referrer"
+                        title={p.provider_name}
                       />
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground">Not available in your region</p>
+                <p className="text-[#94a3b8] italic">No active providers found for this region.</p>
               )}
             </section>
           )}
@@ -405,72 +455,125 @@ export function ContentDetail() {
           )}
 
           {item.media_type === 'game' && watchlistItem && (
-            <section className="pt-4 md:pt-8">
+            <section className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-8">
+                <Zap className="w-6 h-6" style={{ color: accentColor }} />
+                <h3 className="text-xl font-bold text-white">Achievement Tracker</h3>
+              </div>
               <GameAchievementTracker gameName={item.title} mediaId={watchlistItem.media_id} externalId={item.external_id} />
             </section>
           )}
 
           <section className="pt-8 md:pt-12 border-t border-white/5">
-            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-              <Star className="w-6 h-6 text-yellow-500" />
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Star className="w-5 h-5" style={{ color: accentColor }} />
               User Reviews
-            </h2>
+            </h3>
             <ReviewSection mediaId={item.external_id} />
           </section>
         </div>
         
-        <div className="space-y-6">
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="font-semibold text-foreground mb-4">{t('yourTracking')}</h3>
-            <div className="space-y-4 text-sm">
-              <div className="flex justify-between text-muted-foreground">
-                <span>{t('status')}</span>
-                <span className="text-foreground capitalize">{watchlistItem?.status ? t(watchlistItem.status.replace('_', '') as keyof typeof translations.en) || watchlistItem.status.replace('_', ' ') : t('notTracked')}</span>
-              </div>
-              {watchlistItem?.rewatch_count ? (
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Rewatched</span>
-                  <span className="text-foreground">{watchlistItem.rewatch_count}x</span>
+        <div className="space-y-8">
+          {watchlistItem && (
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 space-y-6 shadow-xl relative overflow-hidden group">
+              <div 
+                className="absolute top-0 right-0 w-32 h-32 blur-3xl opacity-20 transition-opacity group-hover:opacity-40"
+                style={{ backgroundColor: accentColor }}
+              />
+              
+              <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                <div className="w-1 h-5 rounded-full" style={{ backgroundColor: accentColor }} />
+                {t('yourTracking')}
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">{t('status')}</span>
+                  <Badge 
+                    variant="outline"
+                    className="capitalize font-bold border-white/10 bg-white/5"
+                    style={{ color: accentColor, borderColor: `${accentColor}40` }}
+                  >
+                    {watchlistItem.status ? t(watchlistItem.status.replace('_', '') as keyof typeof translations.en) || watchlistItem.status.replace('_', ' ') : t('notTracked')}
+                  </Badge>
                 </div>
-              ) : null}
-              {watchlistItem?.platform && (
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Platform</span>
-                  <span className="text-foreground">{watchlistItem.platform}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <span>{t('yourRating')}</span>
-                  {item && item.media_type === 'game' && item.metacritic && (
-                    <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${
-                      item.metacritic >= 75 ? 'bg-green-600' : 
-                      item.metacritic >= 50 ? 'bg-yellow-600' : 'bg-red-600'
-                    }`}>
-                      MC: {item.metacritic}
+
+                {item.media_type === 'game' && (
+                  <>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Platform</span>
+                      <Select value={watchlistItem.platform || ''} onValueChange={handlePlatformChange}>
+                        <SelectTrigger className="w-[120px] h-8 bg-white/5 border-white/10 text-xs">
+                          <SelectValue placeholder="Set Platform" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1a1f2e] border-white/10">
+                          <SelectItem value="PS5">PS5</SelectItem>
+                          <SelectItem value="PS4">PS4</SelectItem>
+                          <SelectItem value="PC">PC</SelectItem>
+                          <SelectItem value="Xbox">Xbox</SelectItem>
+                          <SelectItem value="Nintendo Switch">Nintendo Switch</SelectItem>
+                          <SelectItem value="Mobile">Mobile</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
-                </div>
-                {watchlistItem ? (
-                  <div className="flex items-center gap-1">
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Hours Played</span>
+                        <span className="text-white font-bold">{watchlistItem.hours_played || 0}h</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-1000"
+                          style={{ 
+                            width: `${Math.min((watchlistItem.hours_played || 0) / 100 * 100, 100)}%`,
+                            backgroundColor: accentColor,
+                            boxShadow: `0 0 10px ${accentColor}80`
+                          }}
+                        />
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="200" 
+                        step="0.5"
+                        value={watchlistItem.hours_played || 0} 
+                        onChange={(e) => updateHoursPlayed(watchlistItem.id, parseFloat(e.target.value))}
+                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        style={{ accentColor }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="pt-4 border-t border-white/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground">{t('yourRating')}</span>
+                    <span className="text-xl font-black" style={{ color: accentColor }}>
+                      {watchlistItem.rating ? `${watchlistItem.rating}/5` : '--'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-1">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         onClick={() => handleRatingChange(star)}
-                        className={`hover:scale-110 transition-transform ${
-                          (watchlistItem.rating || 0) >= star ? 'text-yellow-400' : 'text-gray-600'
-                        }`}
+                        className="p-1 transition-all hover:scale-125"
                       >
-                        <Star className={`w-5 h-5 ${(watchlistItem.rating || 0) >= star ? 'fill-current' : ''}`} />
+                        <Star 
+                          className={cn(
+                            "w-6 h-6 transition-colors",
+                            (watchlistItem.rating || 0) >= star ? "fill-current" : "text-white/10"
+                          )} 
+                          style={{ color: (watchlistItem.rating || 0) >= star ? accentColor : undefined }}
+                        />
                       </button>
                     ))}
                   </div>
-                ) : (
-                  <span className="text-foreground">--</span>
-                )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -496,6 +599,9 @@ export function ContentDetail() {
           </div>
         </div>
       )}
-    </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

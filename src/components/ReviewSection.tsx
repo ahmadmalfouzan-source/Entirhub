@@ -141,7 +141,7 @@ export function ReviewSection({ mediaId }: ReviewSectionProps) {
                 <SelectValue placeholder="Sort by" />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-[#111827] border-white/10 text-white">
+            <SelectContent className="bg-surface border-white/10 text-white">
               <SelectItem value="newest">Newest First</SelectItem>
               <SelectItem value="most_liked">Most Liked</SelectItem>
               <SelectItem value="friends">Friends First</SelectItem>

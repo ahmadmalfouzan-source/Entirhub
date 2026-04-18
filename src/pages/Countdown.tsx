@@ -178,7 +178,7 @@ function StatusBadge({ status }: { status?: string }) {
     'Returning Series': 'bg-green-500/10 text-green-400 border-green-500/20',
     'Ended': 'bg-gray-500/10 text-gray-400 border-gray-500/20',
     'Canceled': 'bg-red-500/10 text-red-400 border-red-500/20',
-    'In Production': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    'In Production': 'bg-blue-500/10 text-accent border-blue-500/20',
   };
   return <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${colors[status] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>{status}</span>;
 }
@@ -267,7 +267,7 @@ function EpisodeCard({ ep, updateWatchlistItem }: { ep: EpisodeItem, updateWatch
           <>
             <p className="text-sm text-gray-400 font-medium">S{ep.episode.season_number} E{ep.episode.episode_number} — {ep.episode.name}</p>
             {ep.airDate && (
-              <p className="text-xs text-blue-400">{format(ep.airDate, 'EEEE, MMM d, yyyy')}</p>
+              <p className="text-xs text-accent">{format(ep.airDate, 'EEEE, MMM d, yyyy')}</p>
             )}
           </>
         )}

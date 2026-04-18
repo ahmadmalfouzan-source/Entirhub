@@ -67,7 +67,7 @@ export default function Series() {
       {/* Genre Filter */}
       <section>
         <div className="flex items-center gap-2 mb-4 md:mb-6">
-          <Filter className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+          <Filter className="w-4 h-4 md:w-5 md:h-5 text-accent" />
           <h2 className="text-lg md:text-xl font-semibold text-white">{t('browseByGenre')}</h2>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -76,7 +76,7 @@ export default function Series() {
             onClick={() => setSelectedGenre(null)}
             className={`rounded-full text-xs md:text-sm h-8 md:h-10 ${
               selectedGenre === null 
-                ? "bg-blue-600 text-white" 
+                ? "bg-primary text-white" 
                 : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
             }`}
           >
@@ -89,7 +89,7 @@ export default function Series() {
               onClick={() => setSelectedGenre(genre.id)}
               className={`rounded-full text-xs md:text-sm h-8 md:h-10 ${
                 selectedGenre === genre.id 
-                  ? "bg-blue-600 text-white" 
+                  ? "bg-primary text-white" 
                   : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
               }`}
             >
@@ -107,7 +107,7 @@ export default function Series() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {[...Array(10)].map((_, i) => (
-                <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+                <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
               ))}
             </div>
           ) : (
@@ -125,7 +125,7 @@ export default function Series() {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
                 ))}
               </div>
             ) : (
@@ -142,7 +142,7 @@ export default function Series() {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-[#111827] rounded-xl animate-pulse border border-white/5"></div>
+                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
                 ))}
               </div>
             ) : (

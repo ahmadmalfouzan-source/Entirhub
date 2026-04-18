@@ -4,15 +4,18 @@ import { usePWAStore } from '@/store/usePWAStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, User, Shield, AlertTriangle, Gamepad2, Smartphone, Loader2, Camera } from 'lucide-react';
+import { Settings as SettingsIcon, User, Shield, AlertTriangle, Gamepad2, Smartphone, Loader2, Camera, Palette } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { syncPSNGamesToLibrary } from '@/services/psn';
+import { useThemeStore } from '@/store/useThemeStore';
+import { themes } from '@/styles/themes';
 
 export function Settings() {
   const { user, logout, psnUsername, avatarUrl, fetchProfile, fetchWatchlist } = useStore();
   const { deferredPrompt, isInstallable, clearDeferredPrompt } = usePWAStore();
+  const { themeName, setTheme } = useThemeStore();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -142,25 +145,25 @@ export function Settings() {
         <div className="space-y-2">
           <button 
             onClick={() => setActiveTab('profile')}
-            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'profile' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
+            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'profile' ? 'bg-primary/10 text-accent border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
             <User className="w-5 h-5" /> {t('profile')}
           </button>
           <button 
             onClick={() => setActiveTab('security')}
-            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'security' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
+            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'security' ? 'bg-primary/10 text-accent border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
             <Shield className="w-5 h-5" /> {t('security')}
           </button>
           <button 
             onClick={() => setActiveTab('integrations')}
-            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'integrations' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
+            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'integrations' ? 'bg-primary/10 text-accent border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
             <Gamepad2 className="w-5 h-5" /> {t('integrations')}
           </button>
           <button 
             onClick={() => setActiveTab('app')}
-            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'app' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
+            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${activeTab === 'app' ? 'bg-primary/10 text-accent border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}
           >
             <Smartphone className="w-5 h-5" /> {t('appSettings')}
           </button>
@@ -168,7 +171,7 @@ export function Settings() {
 
         <div className="md:col-span-3 space-y-8">
           {activeTab === 'profile' && (
-            <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
+            <div className="bg-surface border border-white/10 rounded-2xl p-8 shadow-xl">
               <h2 className="text-2xl font-bold text-white mb-8">{t('profileInformation')}</h2>
               
               <div className="flex items-center gap-6 mb-10">
@@ -233,14 +236,14 @@ export function Settings() {
                   <Input id="email" type="email" defaultValue={user?.email || 'guest@example.com'} disabled className="bg-white/5 border-white/10 text-gray-500 h-12 rounded-xl cursor-not-allowed" />
                   <p className="text-xs text-gray-500 mt-1">{t('emailCannotBeChanged')}</p>
                 </div>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 rounded-xl w-full sm:w-auto mt-4">{t('saveChanges')}</Button>
+                <Button className="bg-primary hover:bg-primary/90 text-white h-12 px-8 rounded-xl w-full sm:w-auto mt-4">{t('saveChanges')}</Button>
               </div>
             </div>
           )}
 
           {activeTab === 'security' && (
             <div className="space-y-8">
-              <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
+              <div className="bg-surface border border-white/10 rounded-2xl p-8 shadow-xl">
                 <h2 className="text-2xl font-bold text-white mb-2">{t('changePassword')}</h2>
                 <p className="text-gray-400 mb-8">{t('ensureLongPassword')}</p>
                 
@@ -249,7 +252,7 @@ export function Settings() {
                     <Label htmlFor="password" className="text-gray-300">{t('newPassword')}</Label>
                     <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="bg-white/5 border-white/10 text-white h-12 rounded-xl" placeholder="••••••••" />
                   </div>
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 rounded-xl w-full sm:w-auto">{t('saveChanges')}</Button>
+                  <Button type="submit" className="bg-primary hover:bg-primary/90 text-white h-12 px-8 rounded-xl w-full sm:w-auto">{t('saveChanges')}</Button>
                 </form>
               </div>
 
@@ -267,7 +270,7 @@ export function Settings() {
           )}
 
           {activeTab === 'integrations' && (
-            <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
+            <div className="bg-surface border border-white/10 rounded-2xl p-8 shadow-xl">
               <h2 className="text-2xl font-bold text-white mb-2">{t('playstationNetwork')}</h2>
               <p className="text-gray-400 mb-8">{t('connectPSN')}</p>
               
@@ -294,14 +297,14 @@ export function Settings() {
             </div>
           )}
           {activeTab === 'app' && (
-            <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-xl">
+            <div className="bg-surface border border-white/10 rounded-2xl p-8 shadow-xl">
               <h2 className="text-2xl font-bold text-white mb-2">{t('appSettings')}</h2>
               <p className="text-gray-400 mb-8">{t('manageAppExperience')}</p>
               
               <div className="space-y-6 max-w-md">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-6">
                   <div className="flex items-center gap-4 mb-4">
-                    <Smartphone className="w-8 h-8 text-blue-400" />
+                    <Smartphone className="w-8 h-8 text-accent" />
                     <div>
                       <h3 className="text-lg font-medium text-white">{t('installApp')}</h3>
                       <p className="text-sm text-gray-400">{t('installAppDesc')}</p>
@@ -310,11 +313,69 @@ export function Settings() {
                   <Button 
                     onClick={handleInstallApp}
                     disabled={!isInstallable}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl"
+                    className="w-full bg-primary hover:bg-primary/90 text-white h-12 rounded-xl"
                   >
                     {isInstallable ? t('installApp') : t('appAlreadyInstalled')}
                   </Button>
                 </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <Palette className="w-8 h-8 text-purple-400" />
+                    <div>
+                      <h3 className="text-lg font-medium text-white">App Theme</h3>
+                      <p className="text-sm text-gray-400">Choose your favorite streaming color scheme</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                    {Object.entries(themes).map(([key, theme]) => {
+                      const isActive = themeName === key;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => setTheme(key as any)}
+                          className={`relative w-full text-left rounded-2xl border-2 transition-all overflow-hidden ${
+                            isActive ? 'border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'border-transparent hover:border-white/30'
+                          }`}
+                          style={{ backgroundColor: (theme as any)['color-background'] }}
+                        >
+                          {/* Mock App Header */}
+                          <div style={{ backgroundColor: (theme as any)['color-surface'] }} className="px-4 py-3 flex items-center justify-between border-b border-white/5">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 rounded" style={{ backgroundColor: (theme as any)['color-primary'] }} />
+                              <span className="text-sm font-bold truncate max-w-[100px]" style={{ color: (theme as any)['color-text'] }}>{theme.name}</span>
+                            </div>
+                            {isActive && <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: (theme as any)['color-primary'] }}/></div>}
+                          </div>
+                          
+                          {/* Mock App Content */}
+                          <div className="p-4 space-y-3">
+                            {/* Banner */}
+                            <div className="w-full h-16 rounded-xl relative overflow-hidden" style={{ backgroundColor: (theme as any)['color-surface'] }}>
+                               <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `linear-gradient(to right, ${(theme as any)['color-primary']}, ${(theme as any)['color-accent']})` }} />
+                            </div>
+                            
+                            {/* Mock cards row */}
+                            <div className="flex space-x-2 overflow-hidden">
+                              <div className="w-12 h-16 rounded-md border border-white/5" style={{ backgroundColor: (theme as any)['color-surface'] }} />
+                              <div className="w-12 h-16 rounded-md border border-white/5" style={{ backgroundColor: (theme as any)['color-surface'] }} />
+                              <div className="w-12 h-16 rounded-md border border-white/5" style={{ backgroundColor: (theme as any)['color-surface'] }} />
+                            </div>
+
+                            {/* Color Swatches */}
+                            <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                              <div className="w-3 h-3 rounded-full shadow-inner" style={{ backgroundColor: (theme as any)['color-primary'] }} title="Primary" />
+                              <div className="w-3 h-3 rounded-full border border-white/10" style={{ backgroundColor: (theme as any)['color-background'] }} title="Background" />
+                              <div className="w-3 h-3 rounded-full shadow-inner" style={{ backgroundColor: (theme as any)['color-accent'] }} title="Accent" />
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
             </div>
           )}

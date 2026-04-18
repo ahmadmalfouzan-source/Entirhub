@@ -131,7 +131,7 @@ export function Onboarding() {
       title: "What kind of games do you play?",
       icon: Gamepad2,
       category: 'games',
-      color: 'text-blue-400'
+      color: 'text-accent'
     },
     {
       title: "What movies do you enjoy?",
@@ -149,14 +149,14 @@ export function Onboarding() {
 
   if (step === -1) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-8">
           <Sparkles className="w-8 h-8 text-white" />
         </div>
         <div className="max-w-md w-full text-center">
           <h1 className="text-4xl font-bold text-white mb-2">{t('welcomeTo')}</h1>
           <p className="text-gray-400 mb-8">{isLogin ? t('signInToContinue') : 'Create an account to get started'}</p>
-          <div className="bg-[#111827] border border-white/10 rounded-3xl p-8">
+          <div className="bg-surface border border-white/10 rounded-3xl p-8">
             <form onSubmit={handleAuth} className="space-y-4">
               {!isLogin && (
                 <Input
@@ -203,7 +203,7 @@ export function Onboarding() {
                       className="rounded border-white/10 bg-white/5"
                     />
                     <label htmlFor="tos" className="text-sm text-gray-400">
-                      I agree to the <a href="#" className="text-blue-400 hover:underline">Terms of Service</a>
+                      I agree to the <a href="#" className="text-accent hover:underline">Terms of Service</a>
                     </label>
                   </div>
                 </>
@@ -213,19 +213,19 @@ export function Onboarding() {
                   <button 
                     type="button" 
                     onClick={handleForgotPassword}
-                    className="text-sm text-blue-400 hover:underline"
+                    className="text-sm text-accent hover:underline"
                   >
                     Forgot Password?
                   </button>
                 </div>
               )}
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white" disabled={loading}>
                 {loading ? t('loading') : isLogin ? t('signIn') : t('signUp')}
               </Button>
             </form>
             <div className="mt-6 text-sm text-gray-400">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <button onClick={() => setIsLogin(!isLogin)} className="text-blue-400 hover:underline">
+              <button onClick={() => setIsLogin(!isLogin)} className="text-accent hover:underline">
                 {isLogin ? t('signUp') : t('signIn')}
               </button>
             </div>
@@ -238,7 +238,7 @@ export function Onboarding() {
   const currentStep = steps[step];
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-8">
         <Sparkles className="w-8 h-8 text-white" />
       </div>
@@ -247,7 +247,7 @@ export function Onboarding() {
         <h1 className="text-4xl font-bold text-white mb-2">Let's personalize your hub</h1>
         <p className="text-gray-400 mb-12">Select the genres you love to get better recommendations.</p>
 
-        <div className="bg-[#111827] border border-white/10 rounded-3xl p-10">
+        <div className="bg-surface border border-white/10 rounded-3xl p-10">
           <div className="flex items-center justify-center gap-4 mb-8">
             <currentStep.icon className={`w-8 h-8 ${currentStep.color}`} />
             <h2 className="text-2xl font-semibold text-white">{currentStep.title}</h2>
@@ -262,7 +262,7 @@ export function Onboarding() {
                   onClick={() => toggleGenre(currentStep.category, genre)}
                   className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 ${
                     isSelected 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 scale-105' 
+                      ? 'bg-primary text-white shadow-lg shadow-blue-500/25 scale-105' 
                       : 'bg-white/5 text-gray-300 hover:bg-white/10'
                   }`}
                 >

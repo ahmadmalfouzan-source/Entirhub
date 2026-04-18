@@ -107,13 +107,13 @@ export function ReleaseCalendar() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0f1e] text-white">
+    <div className="flex flex-col min-h-screen bg-background text-white">
       <div className="p-4 md:p-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <CalendarDays className="text-blue-400" />
+              <CalendarDays className="text-accent" />
               Release Calendar
             </h1>
             <div className="flex items-center bg-white/5 rounded-xl p-1">
@@ -175,8 +175,8 @@ export function ReleaseCalendar() {
                 >
                   <span className={cn(
                     "w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold",
-                    isTodayDay ? "bg-blue-600 text-white" : "",
-                    isPicked && !isTodayDay ? "border-2 border-blue-500 text-blue-400" : ""
+                    isTodayDay ? "bg-primary text-white" : "",
+                    isPicked && !isTodayDay ? "border-2 border-blue-500 text-accent" : ""
                   )}>
                     {format(day, 'd')}
                   </span>
@@ -209,7 +209,7 @@ export function ReleaseCalendar() {
         >
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <span className="text-blue-400">●</span>
+              <span className="text-accent">●</span>
               Releases for {format(selectedDate, 'EEEE, MMM do')}
             </h2>
             <Badge variant="outline" className="text-gray-400">
@@ -253,7 +253,7 @@ export function ReleaseCalendar() {
                 >
                   <img src={release.poster_url} className="w-full h-40 object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
                   <div className="absolute top-4 left-4">
-                    <Badge className="bg-blue-600 text-white border-0 shadow-lg">
+                    <Badge className="bg-primary text-white border-0 shadow-lg">
                       {daysTo > 0 ? `In ${daysTo} days` : daysTo === 0 ? 'Today' : 'Released'}
                     </Badge>
                   </div>
@@ -262,7 +262,7 @@ export function ReleaseCalendar() {
                     <div className="space-y-1">
                       <h3 className="font-bold line-clamp-1">{release.title}</h3>
                       <div className="flex items-center gap-2">
-                        {release.media_type === 'movie' ? <Film className="w-3 h-3 text-blue-400" /> : 
+                        {release.media_type === 'movie' ? <Film className="w-3 h-3 text-accent" /> : 
                          release.media_type === 'series' ? <Tv className="w-3 h-3 text-purple-400" /> : 
                          <Gamepad2 className="w-3 h-3 text-green-400" />}
                         <span className="text-xs text-gray-400 capitalize">{release.media_type}</span>
@@ -296,7 +296,7 @@ function ReleaseCard({
       <div className="relative w-24 h-36 flex-shrink-0">
         <img src={release.poster_url} className="w-full h-full object-cover rounded-xl shadow-lg" alt="" />
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-          <Button size="icon" variant="ghost" className="rounded-full bg-blue-600 hover:bg-blue-500 h-8 w-8" onClick={onAdd}>
+          <Button size="icon" variant="ghost" className="rounded-full bg-primary hover:bg-blue-500 h-8 w-8" onClick={onAdd}>
             <Plus className="w-4 h-4 text-white" />
           </Button>
           <Button 

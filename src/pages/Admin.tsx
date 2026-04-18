@@ -103,7 +103,7 @@ export function Admin() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400">
+          <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-accent">
             <Users className="w-6 h-6" />
           </div>
           <div>

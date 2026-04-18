@@ -293,7 +293,7 @@ export function Profile() {
               {friends.slice(0, 4).map(f => {
                 const friendProfile = f.sender.id === user?.id ? f.receiver : f.sender;
                 return (
-                  <img key={f.id} src={friendProfile.avatar_url} alt="" className="w-8 h-8 rounded-full border-2 border-[#0a0f1e]" />
+                  <img key={f.id} src={friendProfile.avatar_url} alt="" className="w-8 h-8 rounded-full border-2 border-background" />
                 );
               })}
             </div>
@@ -354,7 +354,7 @@ export function Profile() {
       {/* Stats Grid */}
       <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard 
-          icon={<Film className="w-6 h-6 text-blue-400" />}
+          icon={<Film className="w-6 h-6 text-accent" />}
           label={t('moviesWatched')}
           value={stats.totalMovies}
           subtext={t('completedSubtext')}
@@ -381,7 +381,7 @@ export function Profile() {
         {psnStats && (
           <>
             <StatCard 
-              icon={<Trophy className="w-6 h-6 text-blue-400" />}
+              icon={<Trophy className="w-6 h-6 text-accent" />}
               label={t('psnTrophies')}
               value={psnStats.totalTrophies}
               subtext={t('totalEarned')}
@@ -438,7 +438,7 @@ export function Profile() {
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full ${
                           item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                          item.status === 'watching' ? 'bg-blue-500/20 text-blue-400' :
+                          item.status === 'watching' ? 'bg-blue-500/20 text-accent' :
                           'bg-gray-500/20 text-gray-400'
                         }`}>
                           {t(item.status as any)}
@@ -457,7 +457,7 @@ export function Profile() {
                 <Star className="w-6 h-6 text-yellow-400" />
                 {t('insights')}
               </h2>
-              <div className="bg-[#111827] border border-white/5 rounded-3xl p-8 space-y-8">
+              <div className="bg-surface border border-white/5 rounded-3xl p-8 space-y-8">
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">
                     <span className="text-gray-400 text-sm">{t('favoriteRating')}</span>
@@ -505,7 +505,7 @@ export function Profile() {
                 <Link 
                   key={review.id} 
                   to={`/content/${review.media_id}`}
-                  className="bg-[#111827] border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all group"
+                  className="bg-surface border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all group"
                 >
                   <div className="flex p-4 gap-4">
                     <div className="w-20 h-28 rounded-xl overflow-hidden flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
@@ -550,7 +550,7 @@ export function Profile() {
 
 function StatCard({ icon, label, value, subtext }: { icon: React.ReactNode, label: string, value: string | number, subtext: string }) {
   return (
-    <div className="bg-[#111827] border border-white/5 p-6 rounded-2xl hover:border-white/10 transition-all group">
+    <div className="bg-surface border border-white/5 p-6 rounded-2xl hover:border-white/10 transition-all group">
       <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
         {icon}
       </div>

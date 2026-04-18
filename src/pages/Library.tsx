@@ -238,7 +238,7 @@ export function Library() {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               disabled={isLoading}
-              className="appearance-none bg-[#111827] border border-white/10 text-white text-sm rounded-lg pl-10 pr-8 py-2 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+              className="appearance-none bg-surface border border-white/10 text-white text-sm rounded-lg pl-10 pr-8 py-2 focus:outline-none focus:border-blue-500 disabled:opacity-50"
             >
               <option value="date_added">{t('recentlyAdded')}</option>
               <option value="rating">{t('highestRated')}</option>
@@ -251,7 +251,7 @@ export function Library() {
       </div>
 
       <Tabs defaultValue="all" className="w-full" onValueChange={setFilter}>
-        <TabsList className="bg-[#111827] border border-white/10 mb-6 md:mb-8 flex flex-wrap h-auto p-1">
+        <TabsList className="bg-surface border border-white/10 mb-6 md:mb-8 flex flex-wrap h-auto p-1">
           <TabsTrigger value="all" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('all')}</TabsTrigger>
           <TabsTrigger value="planned" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('wantToWatch')}</TabsTrigger>
           <TabsTrigger value="games" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-w-[70px] text-xs md:text-sm py-2">{t('games')}</TabsTrigger>

@@ -30,7 +30,7 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0f1e]/95 backdrop-blur-md border-t border-white/10 z-50 px-2 py-1 flex items-center justify-around pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 px-2 py-1 flex items-center justify-around pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {mainNav.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -39,7 +39,7 @@ export function BottomNav() {
               to={item.path}
               className={cn(
                 "flex flex-col items-center justify-center p-2 rounded-lg transition-all active:scale-95",
-                isActive ? "text-blue-400" : "text-gray-400"
+                isActive ? "text-accent" : "text-gray-400"
               )}
             >
               <item.icon className="w-6 h-6" />
@@ -49,7 +49,7 @@ export function BottomNav() {
         })}
         <button
           onClick={() => setShowMore(!showMore)}
-          className={cn("flex flex-col items-center justify-center p-2 rounded-lg transition-all", showMore ? "text-blue-400" : "text-gray-400")}
+          className={cn("flex flex-col items-center justify-center p-2 rounded-lg transition-all", showMore ? "text-accent" : "text-gray-400")}
         >
           <Grid3X3 className="w-6 h-6" />
           <span className="text-[10px] mt-0.5 font-medium">{t('more')}</span>
@@ -57,7 +57,7 @@ export function BottomNav() {
       </nav>
 
       {showMore && (
-        <div className="md:hidden fixed inset-0 bg-[#0a0f1e]/95 backdrop-blur-md z-50 p-6 flex flex-col pt-16">
+        <div className="md:hidden fixed inset-0 bg-background/95 backdrop-blur-md z-50 p-6 flex flex-col pt-16">
           <button onClick={() => setShowMore(false)} className="absolute top-4 right-4 text-white">Close</button>
           <div className="grid grid-cols-3 gap-6">
             {moreItems.map(item => (

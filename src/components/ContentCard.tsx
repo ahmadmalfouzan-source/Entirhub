@@ -159,7 +159,7 @@ export function ContentCard({ item, progress, onDelete }: ContentCardProps) {
         {progress && (
           <div className="mt-auto sm:mt-2 space-y-1.5">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-blue-400">{t('episodeCount', { watched: progress.watched, total: progress.total })}</span>
+              <span className="text-accent">{t('episodeCount', { watched: progress.watched, total: progress.total })}</span>
               <span className="text-gray-400">{Math.round(progress.percent)}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">

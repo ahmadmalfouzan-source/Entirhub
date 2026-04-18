@@ -44,7 +44,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, onEdit, onDelete
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-[#111827] border border-white/5 rounded-2xl overflow-hidden group hover:border-white/10 transition-colors"
+      className="bg-surface border border-white/5 rounded-2xl overflow-hidden group hover:border-white/10 transition-colors"
     >
       <div className="p-5 space-y-4">
         {/* Header: User Profile & Meta */}

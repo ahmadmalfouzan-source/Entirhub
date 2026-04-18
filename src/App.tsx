@@ -29,19 +29,27 @@ import { Admin } from '@/pages/Admin';
 import { useStore } from '@/store/useStore';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { usePWAStore } from '@/store/usePWAStore';
+import { useThemeStore } from '@/store/useThemeStore';
 import { Toaster } from '@/components/ui/sonner';
 import { supabase } from '@/lib/supabase';
 import { Footer } from '@/components/Footer';
 
+import { NetflixLayout } from '@/layouts/NetflixLayout';
+
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { session } = useStore();
+  const { themeName } = useThemeStore();
   
   if (!session) {
     return <Navigate to="/onboarding" replace />;
   }
 
+  if (themeName === 'netflix') {
+    return <NetflixLayout>{children}</NetflixLayout>;
+  }
+
   return (
-    <div className="flex min-h-screen bg-[#0a0f1e] text-white pb-20 md:pb-0">
+    <div className="flex min-h-screen bg-background text-[var(--color-text)] pb-20 md:pb-0">
       <Sidebar />
       <main className="flex-1 flex flex-col min-w-0">
         <Header />
@@ -61,7 +69,12 @@ export default function App() {
   const { session, setSession, fetchWatchlist } = useStore();
   const { language } = useLanguageStore();
   const { setDeferredPrompt, clearDeferredPrompt } = usePWAStore();
+  const { themeName, applyTheme } = useThemeStore();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    applyTheme(themeName);
+  }, [themeName, applyTheme]);
 
   useEffect(() => {
     console.log('App component mounting...');
@@ -144,7 +157,7 @@ export default function App() {
   }, [setSession, fetchWatchlist]);
 
   if (loading) {
-    return <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center text-white">Loading...</div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center text-white">Loading...</div>;
   }
 
   return (

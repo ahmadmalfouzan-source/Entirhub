@@ -119,7 +119,7 @@ export function Wrapped() {
             <div className="text-xs md:text-sm text-purple-200 uppercase tracking-wider font-semibold">Series</div>
           </div>
           <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl md:rounded-3xl p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
-            <Gamepad2 className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-2 md:mb-4 text-blue-400" />
+            <Gamepad2 className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-2 md:mb-4 text-accent" />
             <div className="text-3xl md:text-4xl font-bold mb-1 md:mb-2">{stats.games}</div>
             <div className="text-xs md:text-sm text-blue-200 uppercase tracking-wider font-semibold">Games</div>
           </div>

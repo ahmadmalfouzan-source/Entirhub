@@ -83,7 +83,7 @@ export function PublicProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center text-gray-400">
+      <div className="min-h-screen bg-background flex items-center justify-center text-gray-400">
         Loading profile...
       </div>
     );
@@ -91,7 +91,7 @@ export function PublicProfile() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-8 text-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
         {error === 'This profile is private' ? (
           <Lock className="w-16 h-16 text-gray-600 mb-4" />
         ) : (
@@ -108,7 +108,7 @@ export function PublicProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
+    <div className="min-h-screen bg-background text-white animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="p-8 space-y-12 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center gap-8 bg-white/5 p-8 rounded-3xl border border-white/5">
           <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-3xl font-bold text-white shadow-xl">

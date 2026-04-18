@@ -259,10 +259,10 @@ export function GameWiki() {
     
     return (
       <div className="space-y-6 mt-4">
-        <div className="bg-[#111827] border border-white/5 rounded-xl p-6 shadow-xl">
+        <div className="bg-surface border border-white/5 rounded-xl p-6 shadow-xl">
           <div className="flex justify-between items-end text-sm mb-4">
             <span className="text-gray-300 font-medium text-base">{completedCount} / {missions.length} Missions Completed</span>
-            <span className="text-blue-400 font-bold">{Math.round(progressPercent)}%</span>
+            <span className="text-accent font-bold">{Math.round(progressPercent)}%</span>
           </div>
           <div className="h-2.5 bg-gray-800 rounded-full overflow-hidden">
             <div className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -275,7 +275,7 @@ export function GameWiki() {
             const isExpanded = expandedMissions.has(missionKey);
             
             return (
-              <div key={missionKey} className="bg-[#111827] border border-white/10 rounded-xl overflow-hidden transition-all hover:border-white/20">
+              <div key={missionKey} className="bg-surface border border-white/10 rounded-xl overflow-hidden transition-all hover:border-white/20">
                 <div className="flex items-center gap-4 p-4 md:p-5 hover:bg-white/[0.02] cursor-pointer" onClick={() => toggleExpand(missionKey)}>
                   <div onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
@@ -293,8 +293,8 @@ export function GameWiki() {
                 </div>
                 
                 {isExpanded && (
-                  <div className="p-4 md:p-6 pt-0 border-t border-white/10 bg-[#0a0f1e]/50">
-                    <p className="text-gray-300 text-sm mt-4 mb-6 leading-relaxed bg-[#111827] p-4 rounded-lg border border-white/5">
+                  <div className="p-4 md:p-6 pt-0 border-t border-white/10 bg-background/50">
+                    <p className="text-gray-300 text-sm mt-4 mb-6 leading-relaxed bg-surface p-4 rounded-lg border border-white/5">
                       {mission.description || 'No description available.'}
                     </p>
                     
@@ -309,7 +309,7 @@ export function GameWiki() {
                       )}
                       {mission.tips && (
                         <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-                          <h4 className="text-blue-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <h4 className="text-accent text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             <BookOpen className="w-4 h-4" /> Strategy Tips
                           </h4>
                           <p className="text-blue-200/90 text-sm leading-relaxed">{mission.tips}</p>
@@ -334,13 +334,13 @@ export function GameWiki() {
     );
   }
 
-  if (!game) return <div className="p-8 text-white flex justify-center items-center h-[50vh]"><p className="bg-[#111827] p-6 rounded-xl border border-white/10">Game details not found.</p></div>;
+  if (!game) return <div className="p-8 text-white flex justify-center items-center h-[50vh]"><p className="bg-surface p-6 rounded-xl border border-white/10">Game details not found.</p></div>;
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Link to={`/content/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full bg-[#111827] border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
+          <Link to={`/content/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full bg-surface border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex flex-col">
@@ -356,14 +356,14 @@ export function GameWiki() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-[#111827] border border-white/10 mb-8 flex flex-wrap h-auto p-1 rounded-xl">
-          <TabsTrigger value="main" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white flex-1 min-w-[140px] text-sm py-2.5 rounded-lg transition-all">
+        <TabsList className="bg-surface border border-white/10 mb-8 flex flex-wrap h-auto p-1 rounded-xl">
+          <TabsTrigger value="main" className="data-[state=active]:bg-primary data-[state=active]:text-white flex-1 min-w-[140px] text-sm py-2.5 rounded-lg transition-all">
             <Shield className="w-4 h-4 mr-2" /> Main Missions
           </TabsTrigger>
-          <TabsTrigger value="side" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white flex-1 min-w-[140px] text-sm py-2.5 rounded-lg transition-all">
+          <TabsTrigger value="side" className="data-[state=active]:bg-primary data-[state=active]:text-white flex-1 min-w-[140px] text-sm py-2.5 rounded-lg transition-all">
             <Map className="w-4 h-4 mr-2" /> Side Missions
           </TabsTrigger>
-          <TabsTrigger value="tips" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white flex-1 min-w-[140px] text-sm py-2.5 rounded-lg transition-all">
+          <TabsTrigger value="tips" className="data-[state=active]:bg-primary data-[state=active]:text-white flex-1 min-w-[140px] text-sm py-2.5 rounded-lg transition-all">
             <BookOpen className="w-4 h-4 mr-2" /> Tips & Builds
           </TabsTrigger>
         </TabsList>
@@ -387,12 +387,12 @@ export function GameWiki() {
               {/* Game Tips Section */}
               <section>
                 <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                  <BookOpen className="w-6 h-6 text-blue-400" />
+                  <BookOpen className="w-6 h-6 text-accent" />
                   General Tips & Strategies
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tipsAndClasses?.tips?.map((tip, idx) => (
-                    <div key={idx} className="bg-[#111827] border border-white/5 rounded-xl p-6 hover:border-white/20 transition-all flex flex-col h-full">
+                    <div key={idx} className="bg-surface border border-white/5 rounded-xl p-6 hover:border-white/20 transition-all flex flex-col h-full">
                       <span className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2">{tip.category}</span>
                       <h3 className="text-lg font-bold text-white mb-3">{tip.title}</h3>
                       <p className="text-gray-300 text-sm leading-relaxed max-w-prose">{tip.description}</p>
@@ -412,10 +412,10 @@ export function GameWiki() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {tipsAndClasses?.classes?.map((cls, idx) => (
-                    <div key={idx} className="bg-[#111827] border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition-all flex flex-col">
+                    <div key={idx} className="bg-surface border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition-all flex flex-col">
                       <div className="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 p-6 border-b border-white/5">
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                          <Swords className="w-5 h-5 text-blue-400" />
+                          <Swords className="w-5 h-5 text-accent" />
                           {cls.name}
                         </h3>
                       </div>

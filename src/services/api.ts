@@ -9,6 +9,7 @@ export interface MediaItem {
   media_type: 'movie' | 'series' | 'game';
   title: string;
   poster_url: string;
+  backdrop_url?: string;
   rating: number;
   release_date: string;
   genres: string[];
@@ -21,8 +22,14 @@ export interface MediaItem {
   metacritic?: number;
 }
 
-const getTmdbImageUrl = (path: string | null) => 
-  path ? `https://image.tmdb.org/t/p/w342${path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=342&q=80';
+const getTmdbImageUrl = (path: string | null, type: 'poster' | 'backdrop' = 'poster') => {
+  if (!path) return type === 'poster' 
+    ? 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=342&q=80'
+    : 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=1280&q=80';
+  
+  const size = type === 'poster' ? 'w342' : 'original';
+  return `https://image.tmdb.org/t/p/${size}${path}`;
+};
 
 export const fetchTrendingMovies = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
@@ -329,6 +336,7 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
         media_type: 'game',
         title: item.name,
         poster_url: item.background_image || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
+        backdrop_url: item.background_image_additional || item.background_image,
         rating: item.rating,
         metacritic: item.metacritic,
         release_date: item.released,
@@ -359,6 +367,7 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
         media_type: type,
         title: item.title || item.name,
         poster_url: getTmdbImageUrl(item.poster_path),
+        backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
         rating: item.vote_average,
         release_date: item.release_date || item.first_air_date,
         genres: item.genres?.map((g: any) => g.name) || [],
