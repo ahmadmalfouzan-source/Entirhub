@@ -21,8 +21,8 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
   }
 
   const authHeaders = {
-    'apikey': supabaseKey,
-    'Authorization': `Bearer ${supabaseKey}`
+    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
   };
 
   try {
