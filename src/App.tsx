@@ -36,6 +36,7 @@ import { Footer } from '@/components/Footer';
 
 import { NetflixLayout } from '@/layouts/NetflixLayout';
 import { DisneyLayout } from '@/layouts/DisneyLayout';
+import { HBOLayout } from '@/layouts/HBOLayout';
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { session } = useStore();
@@ -51,6 +52,10 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
   
   if (themeName === 'disney') {
     return <DisneyLayout>{children}</DisneyLayout>;
+  }
+
+  if (themeName === 'hbo') {
+    return <HBOLayout>{children}</HBOLayout>;
   }
 
   return (

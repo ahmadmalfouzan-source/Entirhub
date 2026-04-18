@@ -49,8 +49,8 @@ export function NetflixRow({ title, items }: { title: string, items: any[] }) {
           {items.map((item, i) => (
             <div 
               key={`${item.id}-${i}`}
-              className="relative shrink-0 transition-transform duration-300 ease-in-out hover:scale-125 hover:z-50 origin-center cursor-pointer rounded-md shadow-sm hover:shadow-xl group/card"
-              style={{ width: 'clamp(200px, 20vw, 300px)', aspectRatio: '16/9' }}
+              className="relative shrink-0 transition-transform duration-300 ease-in-out hover:scale-125 hover:z-50 origin-center cursor-pointer rounded-md shadow-sm hover:shadow-xl group/card snap-start"
+              style={{ width: 'clamp(140px, 30vw, 300px)', aspectRatio: '16/9' }}
             >
               <img 
                 src={item.backdrop_url || item.poster_url} 

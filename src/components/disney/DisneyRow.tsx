@@ -32,11 +32,11 @@ export function DisneyRow({ title, items }: { title: string, items: any[] }) {
 
         <div 
           ref={rowRef}
-          className="flex gap-4 md:gap-5 overflow-x-auto overflow-y-visible px-4 md:px-12 pb-8 pt-4 scrollbar-hide scroll-smooth snap-x snap-mandatory"
+          className="grid grid-cols-2 sm:grid-cols-3 md:flex gap-4 md:gap-5 md:overflow-x-auto md:overflow-y-visible px-4 md:px-12 pb-8 pt-4 md:scrollbar-hide scroll-smooth md:snap-x md:snap-mandatory"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {items.map((item, i) => (
-            <div key={`${item.id || item.external_id}-${i}`} className="snap-start py-2">
+          {items.slice(0, 10).map((item, i) => (
+            <div key={`${item.id || item.external_id}-${i}`} className="md:snap-start py-2">
               <DisneyCard item={item} />
             </div>
           ))}

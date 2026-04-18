@@ -11,7 +11,7 @@ export function DisneyCard({ item }: { item: MediaItem }) {
   return (
     <Link 
       to={`/content/${item.external_id || (item as any).id}`} 
-      className="flex flex-col gap-2 group w-[130px] md:w-[160px] lg:w-[200px] shrink-0 cursor-pointer"
+      className="flex flex-col gap-2 group w-full md:w-[160px] lg:w-[200px] shrink-0 cursor-pointer"
     >
       <div className="relative aspect-[2/3] rounded-2xl overflow-hidden border-[3px] border-[#1a1d29] shadow-lg transition-all duration-300 ease-out group-hover:scale-105 group-hover:border-white/60 group-hover:shadow-[0_0_20px_rgba(77,181,255,0.5)]">
         <img 

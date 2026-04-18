@@ -1,9 +1,19 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 
 export function StarField() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const stars = useMemo(() => {
-    // Generate 150 random stars
-    return Array.from({ length: 150 }).map((_, i) => ({
+    // Generate fewer stars on mobile
+    const count = isMobile ? 80 : 150;
+    return Array.from({ length: count }).map((_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -11,7 +21,7 @@ export function StarField() {
       duration: Math.random() * 3 + 2, // 2s to 5s
       delay: Math.random() * 5, // 0s to 5s
     }));
-  }, []);
+  }, [isMobile]);
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#040714]">

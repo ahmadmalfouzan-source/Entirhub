@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { ContentCard } from '@/components/ContentCard';
 import { NetflixRow } from '@/components/netflix/NetflixRow';
 import { DisneyRow } from '@/components/disney/DisneyRow';
+import { HBOHero } from '@/components/hbo/HBOHero';
+import { HBORow } from '@/components/hbo/HBORow';
 import { Sparkles, TrendingUp, Moon, Users, CalendarDays, ChevronRight, Play, Plus } from 'lucide-react';
 import { fetchTrendingMovies, fetchTrendingSeries, fetchCalendarReleases, MediaItem } from '@/services/api';
 import { useStore } from '@/store/useStore';
@@ -102,9 +104,9 @@ export function Home() {
   
   if (themeName === 'netflix') {
     return (
-      <div className="flex flex-col min-h-screen bg-black -mt-20">
+      <div className="flex flex-col min-h-screen bg-black -mt-16 md:-mt-20">
         {/* Billboard Hero */}
-        <div className="relative w-full h-[80vh] md:h-[90vh] mb-8 group">
+        <div className="relative w-full h-[50vh] md:h-[90vh] mb-4 md:mb-8 group">
           {trending.length > 0 && (
             <>
               <img 
@@ -113,22 +115,22 @@ export function Home() {
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/40 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-[#141414]/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/20 to-transparent md:via-[#141414]/40" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#141414]/90 via-[#141414]/50 to-transparent md:from-[#141414] md:via-[#141414]/50" />
               
-              <div className="absolute bottom-[20%] left-4 md:left-12 max-w-2xl">
-                <h1 className="text-4xl md:text-7xl font-black text-white drop-shadow-2xl mb-4 leading-tight">
+              <div className="absolute bottom-[10%] md:bottom-[20%] left-4 md:left-12 max-w-2xl pr-4">
+                <h1 className="text-3xl sm:text-4xl md:text-7xl font-black text-white drop-shadow-2xl mb-2 md:mb-4 leading-tight">
                   {trending[0].title}
                 </h1>
-                <p className="text-sm md:text-lg text-white/90 drop-shadow-lg mb-6 line-clamp-3">
+                <p className="text-xs sm:text-sm md:text-lg text-white/90 drop-shadow-lg mb-4 md:mb-6 line-clamp-3">
                   {(trending[0] as any).overview || "A great title you'll definitely enjoy. Watch it today on EntertainHub."}
                 </p>
-                <div className="flex items-center gap-4">
-                  <button className="flex items-center gap-2 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded md:rounded-md font-bold hover:bg-white/80 transition shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                    <TrendingUp className="w-5 h-5 md:w-6 md:h-6 fill-current" /> Play
+                <div className="flex items-center gap-3 md:gap-4">
+                  <button className="flex items-center gap-2 bg-white text-black px-4 md:px-8 min-h-[44px] md:py-3 rounded md:rounded-md font-bold hover:bg-white/80 transition shadow-[0_0_20px_rgba(255,255,255,0.3)] text-sm md:text-base">
+                    <TrendingUp className="w-4 h-4 md:w-6 md:h-6 fill-current" /> Play
                   </button>
-                  <button className="flex items-center gap-2 bg-gray-500/50 text-white px-6 md:px-8 py-2 md:py-3 rounded md:rounded-md font-bold hover:bg-gray-500/70 transition backdrop-blur-sm">
-                    <Sparkles className="w-5 h-5 md:w-6 md:h-6" /> More Info
+                  <button className="flex items-center gap-2 bg-gray-500/50 text-white px-4 md:px-8 min-h-[44px] md:py-3 rounded md:rounded-md font-bold hover:bg-gray-500/70 transition backdrop-blur-sm text-sm md:text-base">
+                    <Sparkles className="w-4 h-4 md:w-6 md:h-6" /> More Info
                   </button>
                 </div>
               </div>
@@ -137,9 +139,9 @@ export function Home() {
         </div>
 
         {loading ? (
-           <div className="p-12 text-white">Loading Netflix interface...</div>
+           <div className="p-8 md:p-12 text-white text-center">Loading Netflix interface...</div>
         ) : (
-          <div className="relative z-10 -mt-32 space-y-8 pb-20">
+          <div className="relative z-10 -mt-16 sm:-mt-24 md:-mt-32 space-y-4 md:space-y-8 pb-20 overflow-hidden">
             {watchTonight.length > 0 && (
               <NetflixRow 
                 title={'Continue Watching'} 
@@ -187,33 +189,33 @@ export function Home() {
 
   if (themeName === 'disney') {
     return (
-      <div className="flex flex-col min-h-screen text-[#f9f9f9] -mt-20">
+      <div className="flex flex-col min-h-screen text-[#f9f9f9] -mt-16 md:-mt-20">
         {/* Disney Hero */}
-        <div className="relative w-full h-[70vh] md:h-[85vh] mb-12">
+        <div className="relative w-full h-[60vh] md:h-[85vh] mb-4 md:mb-12 flex items-end md:items-center">
           {trending.length > 0 && (
             <>
               <img 
                 src={(trending[0] as any).backdrop_url || trending[0].poster_url} 
                 alt={trending[0].title}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#040714] via-[#040714]/40 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#040714] via-[#040714]/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#040714] via-[#040714]/40 to-transparent md:via-[#040714]/40" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#040714]/90 via-[#040714]/60 to-transparent md:from-[#040714] md:via-[#040714]/60" />
               
-              <div className="absolute bottom-[20%] left-4 md:left-12 max-w-2xl">
-                <h1 className="text-5xl md:text-7xl font-black text-[#f9f9f9] drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] mb-4 tracking-tight" style={{ fontFamily: 'monospace' }}>
+              <div className="relative z-10 w-full px-4 md:px-12 pb-8 md:pb-0 md:absolute md:bottom-[20%] max-w-2xl flex flex-col pt-24 md:pt-0">
+                <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-[#f9f9f9] drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] mb-2 md:mb-4 tracking-tight" style={{ fontFamily: 'monospace' }}>
                   {trending[0].title}
                 </h1>
-                <p className="text-sm md:text-lg text-[#f9f9f9]/90 drop-shadow-xl mb-6 line-clamp-3 md:line-clamp-4 max-w-xl">
+                <p className="text-xs sm:text-sm md:text-lg text-[#f9f9f9]/90 drop-shadow-xl mb-4 md:mb-6 line-clamp-3 md:line-clamp-4 max-w-xl">
                   {(trending[0] as any).overview || "Explore this amazing title and more on EntertainHub+."}
                 </p>
-                <div className="flex flex-wrap items-center gap-4">
-                  <button className="flex items-center gap-2 bg-[#f9f9f9] text-black px-6 md:px-8 py-3 rounded md:rounded-lg font-bold hover:bg-white/80 transition-all hover:scale-105">
-                    <Play className="w-5 h-5 fill-current" /> Watch Now
+                <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 md:gap-4">
+                  <button className="flex items-center justify-center gap-2 bg-[#f9f9f9] text-black px-6 md:px-8 py-3 w-full sm:w-auto rounded md:rounded-lg font-bold hover:bg-white/80 transition-all sm:hover:scale-105 min-h-[44px] text-sm md:text-base">
+                    <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" /> Watch Now
                   </button>
-                  <button className="flex items-center gap-2 bg-black/60 border border-white/50 text-[#f9f9f9] px-6 md:px-8 py-3 rounded md:rounded-lg font-bold hover:bg-white/20 transition-all hover:scale-105">
-                    <Plus className="w-5 h-5" /> Add
+                  <button className="flex items-center justify-center gap-2 bg-black/60 border border-white/50 text-[#f9f9f9] px-6 md:px-8 py-3 w-full sm:w-auto rounded md:rounded-lg font-bold hover:bg-white/20 transition-all sm:hover:scale-105 min-h-[44px] text-sm md:text-base">
+                    <Plus className="w-4 h-4 md:w-5 md:h-5" /> Add
                   </button>
                 </div>
               </div>
@@ -222,9 +224,9 @@ export function Home() {
         </div>
 
         {loading ? (
-           <div className="p-12 text-[#f9f9f9] text-center">Loading Disney interface...</div>
+           <div className="p-8 md:p-12 text-[#f9f9f9] text-center">Loading Disney interface...</div>
         ) : (
-          <div className="relative z-10 pb-20">
+          <div className="relative z-10 pb-20 space-y-4 md:space-y-0">
             {watchTonight.length > 0 && (
               <DisneyRow 
                 title="Continue Watching" 
@@ -239,6 +241,35 @@ export function Home() {
             )}
             
             <DisneyRow title="Top Picks For You" items={recommended} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (themeName === 'hbo') {
+    return (
+      <div className="flex flex-col min-h-screen text-white bg-[#0d0d0d] -mt-16 md:-mt-20">
+        <HBOHero items={trending} />
+        
+        {loading ? (
+          <div className="p-8 md:p-16 text-center text-gray-400 font-medium tracking-wider uppercase">Loading catalog...</div>
+        ) : (
+          <div className="relative z-10 pb-20 md:bg-gradient-to-t md:from-[#0d0d0d] md:via-[#0d0d0d] md:to-transparent space-y-2 md:space-y-0 pt-4 md:pt-0">
+            {watchTonight.length > 0 && (
+              <HBORow 
+                title="Continue Watching" 
+                items={watchTonight.map(i => i.media)} 
+              />
+            )}
+            
+            <HBORow title="Critically Acclaimed" items={trending} />
+            
+            {monthReleases.length > 0 && (
+              <HBORow title="New & Noteworthy" items={monthReleases} />
+            )}
+            
+            <HBORow title="Top Rated" items={recommended} />
           </div>
         )}
       </div>
