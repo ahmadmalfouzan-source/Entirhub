@@ -35,6 +35,7 @@ import { supabase } from '@/lib/supabase';
 import { Footer } from '@/components/Footer';
 
 import { NetflixLayout } from '@/layouts/NetflixLayout';
+import { DisneyLayout } from '@/layouts/DisneyLayout';
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { session } = useStore();
@@ -46,6 +47,10 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
   if (themeName === 'netflix') {
     return <NetflixLayout>{children}</NetflixLayout>;
+  }
+  
+  if (themeName === 'disney') {
+    return <DisneyLayout>{children}</DisneyLayout>;
   }
 
   return (

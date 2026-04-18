@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ContentCard } from '@/components/ContentCard';
 import { NetflixRow } from '@/components/netflix/NetflixRow';
-import { Sparkles, TrendingUp, Moon, Users, CalendarDays, ChevronRight } from 'lucide-react';
+import { DisneyRow } from '@/components/disney/DisneyRow';
+import { Sparkles, TrendingUp, Moon, Users, CalendarDays, ChevronRight, Play, Plus } from 'lucide-react';
 import { fetchTrendingMovies, fetchTrendingSeries, fetchCalendarReleases, MediaItem } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -178,6 +179,66 @@ export function Home() {
             )}
 
             <NetflixRow title={'Top Rated'} items={recommended} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (themeName === 'disney') {
+    return (
+      <div className="flex flex-col min-h-screen text-[#f9f9f9] -mt-20">
+        {/* Disney Hero */}
+        <div className="relative w-full h-[70vh] md:h-[85vh] mb-12">
+          {trending.length > 0 && (
+            <>
+              <img 
+                src={(trending[0] as any).backdrop_url || trending[0].poster_url} 
+                alt={trending[0].title}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#040714] via-[#040714]/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#040714] via-[#040714]/60 to-transparent" />
+              
+              <div className="absolute bottom-[20%] left-4 md:left-12 max-w-2xl">
+                <h1 className="text-5xl md:text-7xl font-black text-[#f9f9f9] drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] mb-4 tracking-tight" style={{ fontFamily: 'monospace' }}>
+                  {trending[0].title}
+                </h1>
+                <p className="text-sm md:text-lg text-[#f9f9f9]/90 drop-shadow-xl mb-6 line-clamp-3 md:line-clamp-4 max-w-xl">
+                  {(trending[0] as any).overview || "Explore this amazing title and more on EntertainHub+."}
+                </p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <button className="flex items-center gap-2 bg-[#f9f9f9] text-black px-6 md:px-8 py-3 rounded md:rounded-lg font-bold hover:bg-white/80 transition-all hover:scale-105">
+                    <Play className="w-5 h-5 fill-current" /> Watch Now
+                  </button>
+                  <button className="flex items-center gap-2 bg-black/60 border border-white/50 text-[#f9f9f9] px-6 md:px-8 py-3 rounded md:rounded-lg font-bold hover:bg-white/20 transition-all hover:scale-105">
+                    <Plus className="w-5 h-5" /> Add
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {loading ? (
+           <div className="p-12 text-[#f9f9f9] text-center">Loading Disney interface...</div>
+        ) : (
+          <div className="relative z-10 pb-20">
+            {watchTonight.length > 0 && (
+              <DisneyRow 
+                title="Continue Watching" 
+                items={watchTonight.map(i => i.media)} 
+              />
+            )}
+            
+            <DisneyRow title="Trending" items={trending} />
+            
+            {monthReleases.length > 0 && (
+              <DisneyRow title="New to EntertainHub" items={monthReleases} />
+            )}
+            
+            <DisneyRow title="Top Picks For You" items={recommended} />
           </div>
         )}
       </div>
