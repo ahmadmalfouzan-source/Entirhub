@@ -10,6 +10,11 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", mode: process.env.NODE_ENV || 'development' });
+  });
+
   // Steam API route
   app.get("/api/steam", async (req, res) => {
     const { url } = req.query;
@@ -27,14 +32,18 @@ async function startServer() {
     }
   });
 
+  const isProduction = process.env.NODE_ENV === "production";
+  
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  if (!isProduction) {
+    console.log("Starting server in development mode with Vite middleware...");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
+    console.log("Starting server in production mode...");
     const distPath = path.join(__dirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {

@@ -12,12 +12,12 @@ export interface SteamAchievement {
 }
 
 export const getSteamAchievements = async (gameName: string): Promise<SteamAchievement[]> => {
-  // Using local backend proxy for search (which doesn't need API keys)
-  const localProxy = (url: string) => `/api/steam?url=${encodeURIComponent(url)}`;
+  // Using public CORS proxy for search and percentages (which don't need API keys)
+  const publicProxy = (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
 
   try {
     // 1. Search for game
-    const searchUrl = localProxy(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(gameName)}&l=english&cc=US`);
+    const searchUrl = publicProxy(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(gameName)}&l=english&cc=US`);
     console.log('Fetching Steam search:', searchUrl);
     const searchRes = await fetch(searchUrl);
     if (!searchRes.ok) throw new Error(`Search failed: ${searchRes.status} ${searchRes.statusText}`);
@@ -66,10 +66,10 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
     const achievements = schemaData.game.availableGameStats.achievements;
     console.log('Achievements count:', achievements.length);
 
-    // 3. Fetch global percentages (Using local proxy as it doesn't need API key)
+    // 3. Fetch global percentages (Using public proxy as it doesn't need API key)
     let percentages: any[] = [];
     try {
-      const pctUrl = localProxy(`https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${appid}`);
+      const pctUrl = publicProxy(`https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${appid}`);
       console.log('Fetching Steam percentages:', pctUrl);
       const pctRes = await fetch(pctUrl);
       if (pctRes.ok) {

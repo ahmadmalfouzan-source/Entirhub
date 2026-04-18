@@ -83,13 +83,22 @@ export default function App() {
   }, [setDeferredPrompt, clearDeferredPrompt]);
 
   useEffect(() => {
-    // onAuthStateChange handles both initial session and subsequent changes
+    // Check for initial session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) fetchWatchlist();
+      setLoading(false);
+    }).catch(err => {
+      console.error('Initial session fetch failed:', err);
+      setLoading(false);
+    });
+
+    // Handle subsequent auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session) {
         await fetchWatchlist();
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
