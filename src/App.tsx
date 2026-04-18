@@ -106,11 +106,13 @@ export default function App() {
           console.log('Session found, initializing user data...');
           setSession(session);
           // Only fetch critical user data here
-          try {
-            await fetchWatchlist();
-          } catch (e) {
-            console.error('Watchlist fetch failed but continuing:', e);
-          }
+          setTimeout(async () => {
+            try {
+              await fetchWatchlist();
+            } catch (e) {
+              console.error('Watchlist fetch failed but continuing:', e);
+            }
+          }, 1000);
         } else {
           console.log('No active session found.');
           setSession(null);
@@ -130,7 +132,9 @@ export default function App() {
       
       if (event === 'SIGNED_IN') {
         setSession(session);
-        await fetchWatchlist();
+        setTimeout(() => {
+          fetchWatchlist();
+        }, 1000);
       } else if (event === 'SIGNED_OUT') {
         setSession(null);
       }

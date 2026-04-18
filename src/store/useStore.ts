@@ -81,17 +81,33 @@ export const useStore = create<StoreState>((set, get) => ({
   },
   fetchWatchlist: async () => {
     try {
-      console.log('[Store Debug] Fetching watchlist...');
-      const response = await libraryService.getUserLibrary();
-      console.log('[Store Debug] Raw watchlist response:', response);
+      console.log('[Store] Fetching watchlist...');
+      // 1. Get current session
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
       
-      if (response.error) throw response.error;
+      if (authError) throw authError;
       
-      const data = response.data || [];
-      set({ watchlist: data as any });
-      console.log('[Store Debug] Watchlist state updated with', data.length, 'items');
+      if (!session) {
+        console.log('[Store] No active session, clearing watchlist');
+        set({ watchlist: [] });
+        return;
+      }
+
+      // 2. Fetch library data using the session's user ID
+      const { data, error } = await supabase
+        .from('user_library')
+        .select('*, media(*)')
+        .eq('user_id', session.user.id);
+      
+      if (error) {
+        console.error('[Store] Supabase error in fetchWatchlist:', error);
+        throw error;
+      }
+      
+      console.log('[Store] Library data received:', data?.length, 'items');
+      set({ watchlist: data as any || [] });
     } catch (error) {
-      console.error('Error fetching watchlist:', error);
+      console.error('[Store] Critical error in fetchWatchlist:', error);
     }
   },
   addToWatchlist: async (media) => {
