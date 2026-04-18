@@ -70,14 +70,17 @@ export function ContentCard({ item, progress, onDelete }: ContentCardProps) {
   const isAiring = item.media_type === 'series' && 
     (item.status === 'Returning Series' || item.next_episode_to_air !== null);
 
+  const optimizedPosterUrl = item.poster_url?.replace('/w500/', '/w342/') || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=342&q=80';
+
   return (
     <Link to={`/content/${item.external_id}`} className="group relative rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20 flex flex-row sm:flex-col h-36 sm:h-auto active:scale-[0.98]">
       <div className="aspect-[2/3] h-full sm:h-auto sm:w-full relative shrink-0">
         <img 
-          src={item.poster_url || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80'} 
+          src={optimizedPosterUrl} 
           alt={item.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
         

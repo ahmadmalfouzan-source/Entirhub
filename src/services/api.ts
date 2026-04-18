@@ -22,7 +22,7 @@ export interface MediaItem {
 }
 
 const getTmdbImageUrl = (path: string | null) => 
-  path ? `https://image.tmdb.org/t/p/w500${path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80';
+  path ? `https://image.tmdb.org/t/p/w342${path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=342&q=80';
 
 export const fetchTrendingMovies = async (lang = 'en-US'): Promise<MediaItem[]> => {
   if (!TMDB_API_KEY) return [];
@@ -168,7 +168,7 @@ export const fetchSimilar = async (type: 'movie' | 'series', externalId: string)
       external_id: `tmdb_${type === 'series' ? 'series' : 'movie'}_${item.id}`,
       media_type: type,
       title: item.title || item.name,
-      poster_url: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
+      poster_url: item.poster_path ? `https://image.tmdb.org/t/p/w342${item.poster_path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=342&q=80',
       rating: item.vote_average,
       release_date: item.release_date || item.first_air_date,
       genres: [],

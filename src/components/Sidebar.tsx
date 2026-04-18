@@ -14,8 +14,15 @@ export function Sidebar() {
   const [unreadFeedCount, setUnreadFeedCount] = useState(0);
 
   useEffect(() => {
-    getPendingRequests().then(requests => setPendingCount(requests.length));
+    // Defer friends and activity calls to improve perceived startup speed
+    const timeoutId = setTimeout(() => {
+      getPendingRequests()
+        .then(requests => setPendingCount(requests.length))
+        .catch(err => console.warn('Sidebar friend requests check deferred/failed:', err));
+    }, 2000);
+    
     setUnreadFeedCount(0); // TODO: implement real unread logic
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const navItems = [

@@ -64,11 +64,17 @@ export function Header() {
   useEffect(() => {
     if (user) {
       const loadNotifications = async () => {
-        // First check and create any new notifications
-        await checkAndCreateNotifications(user.id);
-        // Then fetch all notifications
-        const notifs = await getNotifications(user.id);
-        setNotifications(notifs);
+        try {
+          // Defer notification check to prioritize initial page load
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          // First check and create any new notifications
+          await checkAndCreateNotifications(user.id);
+          // Then fetch all notifications
+          const notifs = await getNotifications(user.id);
+          setNotifications(notifs);
+        } catch (e) {
+          console.warn('Notifications check deferred/failed:', e);
+        }
       };
       loadNotifications();
     }

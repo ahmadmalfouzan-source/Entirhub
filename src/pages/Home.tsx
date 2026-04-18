@@ -11,6 +11,22 @@ import { formatDistanceToNow, startOfMonth, endOfMonth, format, differenceInDays
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
+function HomeSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex flex-row sm:flex-col h-36 sm:h-auto rounded-xl overflow-hidden bg-card/50 border border-border/50 animate-pulse">
+          <div className="aspect-[2/3] h-full sm:h-auto sm:w-full bg-white/5" />
+          <div className="p-3 md:p-4 flex-1 space-y-2">
+            <div className="h-4 bg-white/10 rounded w-3/4" />
+            <div className="h-3 bg-white/5 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function Home() {
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [recommended, setRecommended] = useState<MediaItem[]>([]);
@@ -32,24 +48,25 @@ export function Home() {
         const start = format(startOfMonth(now), 'yyyy-MM-dd');
         const end = format(endOfMonth(now), 'yyyy-MM-dd');
 
-        // Parallel fetch for non-auth data and auth data separately to handle auth failures gracefully
         const [movies, series, calData] = await Promise.all([
           fetchTrendingMovies(lang),
           fetchTrendingSeries(lang),
           fetchCalendarReleases(start, end)
         ]);
 
-        let activityData = [];
-        try {
-          activityData = await getFeedActivities();
-        } catch (e) {
-          console.warn('Friend activity failed to load (auth lock), skipping...', e);
-        }
+        // Friends activities are fetched separately and later to prioritize trending content
+        setTimeout(async () => {
+          try {
+            const activityData = await getFeedActivities();
+            setActivities(activityData || []);
+          } catch (e) {
+            console.warn('Friend activity failed to load (auth lock), skipping...', e);
+          }
+        }, 1000);
         
         const mixed = [...movies.slice(0, 5), ...series.slice(0, 5)].sort(() => Math.random() - 0.5);
         setTrending(mixed.slice(0, 5));
-        setRecommended(mixed.slice(5, 10));
-        setActivities(activityData || []);
+        setRecommended(mixed.slice(0, 5)); // Use first 5 as recommended for fastest first paint
         
         // Filter for upcoming releases in current month
         const upcomingReleases = calData
@@ -226,11 +243,7 @@ export function Home() {
           <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('trending')}</h2>
         </div>
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
-            ))}
-          </div>
+          <HomeSkeleton />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {trending.map(item => (
@@ -247,11 +260,7 @@ export function Home() {
           <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('recommended')}</h2>
         </div>
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
-            ))}
-          </div>
+          <HomeSkeleton />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {recommended.map(item => (

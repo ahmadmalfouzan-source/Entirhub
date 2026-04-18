@@ -102,14 +102,18 @@ export default function App() {
         
         if (error) throw error;
         
-        console.log('Session fetched successfully:', !!session);
-        setSession(session);
         if (session) {
+          console.log('Session found, initializing user data...');
+          setSession(session);
+          // Only fetch critical user data here
           try {
             await fetchWatchlist();
           } catch (e) {
             console.error('Watchlist fetch failed but continuing:', e);
           }
+        } else {
+          console.log('No active session found.');
+          setSession(null);
         }
       } catch (err) {
         console.error('Initial session fetch failed:', err);
@@ -121,15 +125,14 @@ export default function App() {
     fetchInitialSession();
 
     // Handle subsequent auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('Auth state changed:', _event, !!session);
-      setSession(session);
-      if (session) {
-        try {
-          await fetchWatchlist();
-        } catch (e) {
-          console.error('Auth change watchlist fetch failed:', e);
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, !!session);
+      
+      if (event === 'SIGNED_IN') {
+        setSession(session);
+        await fetchWatchlist();
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null);
       }
     });
 
