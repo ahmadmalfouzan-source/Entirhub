@@ -64,6 +64,16 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('App component mounting...');
+    
+    // Safety timeout to prevent stuck loading screen
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('Session check exceeded 5s limit, forcing load...');
+        setLoading(false);
+      }
+    }, 5000);
+
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -77,27 +87,49 @@ export default function App() {
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, [setDeferredPrompt, clearDeferredPrompt]);
 
   useEffect(() => {
-    // Check for initial session immediately
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) fetchWatchlist();
-      setLoading(false);
-    }).catch(err => {
-      console.error('Initial session fetch failed:', err);
-      setLoading(false);
-    });
+    // Check for initial session immediately with try/catch
+    const fetchInitialSession = async () => {
+      try {
+        console.log('Fetching initial Supabase session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+        
+        console.log('Session fetched successfully:', !!session);
+        setSession(session);
+        if (session) {
+          try {
+            await fetchWatchlist();
+          } catch (e) {
+            console.error('Watchlist fetch failed but continuing:', e);
+          }
+        }
+      } catch (err) {
+        console.error('Initial session fetch failed:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialSession();
 
     // Handle subsequent auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log('Auth state changed:', _event, !!session);
       setSession(session);
       if (session) {
-        await fetchWatchlist();
+        try {
+          await fetchWatchlist();
+        } catch (e) {
+          console.error('Auth change watchlist fetch failed:', e);
+        }
       }
     });
 
