@@ -98,6 +98,12 @@ export function ContentDetail() {
   }, [id]);
 
   useEffect(() => {
+    if (item) {
+      console.log('Item data:', JSON.stringify(item));
+    }
+  }, [item]);
+
+  useEffect(() => {
     if (item?.backdrop_url) {
       console.log('Backdrop URL:', item.backdrop_url);
       // Test if image loads
@@ -189,12 +195,14 @@ export function ContentDetail() {
     }
   };
 
+  const bgImage = item?.backdrop_url || item?.cover_url || item?.poster_url;
+
   return (
     <>
       <AnimatePresence>
-        {item?.backdrop_url && (
+        {bgImage && (
           <motion.div
-            key={item.backdrop_url}
+            key={bgImage}
             initial={{ opacity: 0, scale: 1.1 }}
             animate={{ opacity: 0.25, scale: 1 }}
             exit={{ opacity: 0 }}
@@ -207,7 +215,7 @@ export function ContentDetail() {
               width: '100vw',
               height: '100vh',
               zIndex: 0,
-              backgroundImage: `url(${item.backdrop_url})`,
+              backgroundImage: `url(${bgImage})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               filter: 'brightness(0.6)', 

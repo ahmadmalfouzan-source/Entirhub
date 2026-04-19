@@ -12,6 +12,7 @@ export interface MediaItem {
   title: string;
   poster_url: string;
   backdrop_url?: string;
+  cover_url?: string;
   rating: number;
   release_date: string;
   genres: string[];
@@ -325,7 +326,7 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
         media_type: 'game',
         title: item.name,
         poster_url: item.background_image || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
-        backdrop_url: item.background_image_additional || item.background_image,
+        backdrop_url: item.background_image, // Use background_image as requested
         rating: item.rating,
         metacritic: item.metacritic,
         release_date: item.released,
@@ -353,7 +354,7 @@ export const fetchMediaDetails = async (id: string, type: 'movie' | 'series' | '
         media_type: type as 'movie' | 'series',
         title: item.title || item.name,
         poster_url: getTmdbImageUrl(item.poster_path),
-        backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
+        backdrop_url: item.backdrop_path ? `https://image.tmdb.org/t/p/original${item.backdrop_path}` : undefined,
         rating: item.vote_average,
         release_date: item.release_date || item.first_air_date,
         genres: item.genres?.map((g: any) => g.name) || [],
