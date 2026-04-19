@@ -25,11 +25,19 @@ export const getSteamAppId = async (gameName: string): Promise<number | null> =>
 
   try {
     const searchUrl = `${supabaseUrl}/functions/v1/steam-proxy?q=${encodeURIComponent(gameName)}`;
+    console.log('[SteamAppId] Searching for:', gameName);
+    console.log('[SteamAppId] Search URL:', searchUrl);
+    
     const searchRes = await fetch(searchUrl, { headers: authHeaders }).catch(() => null);
     
-    if (!searchRes || !searchRes.ok) return null;
+    if (!searchRes || !searchRes.ok) {
+      console.error('[SteamAppId] Search request failed');
+      return null;
+    }
     
     const searchData = await searchRes.json();
+    console.log('[SteamAppId] Results:', searchData);
+    
     if (!searchData?.items || searchData.items.length === 0) return null;
 
     return searchData.items[0].id;

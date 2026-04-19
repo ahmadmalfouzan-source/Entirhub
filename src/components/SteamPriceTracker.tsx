@@ -29,11 +29,15 @@ export function SteamPriceTracker({ gameName }: SteamPriceTrackerProps) {
       try {
         console.log('[SteamPrice] Starting fetch for:', gameName);
         const id = await getSteamAppId(gameName);
-        console.log('[SteamPrice] Found AppID:', id);
+        console.log('[SteamPrice] AppID result:', id, 'for game:', gameName);
+        if (!id) {
+          console.log('[SteamPrice] No AppID found, skipping price fetch');
+          setLoading(false);
+          return;
+        }
         
-        if (id) {
-          setAppId(id);
-          console.log('[SteamPrice] Triggering price fetches for ID:', id);
+        setAppId(id);
+        console.log('[SteamPrice] Triggering price fetches for ID:', id);
           const [sa, us, low, { data: { user } }] = await Promise.all([
             getSteamPrice(id, 'SA'),
             getSteamPrice(id, 'US'),
@@ -48,7 +52,6 @@ export function SteamPriceTracker({ gameName }: SteamPriceTrackerProps) {
             const alert = await getPriceAlert(user.id, id);
             setActiveAlert(alert);
           }
-        }
       } catch (err) {
         console.error('[SteamPrice] Failed to load data:', err);
       } finally {
