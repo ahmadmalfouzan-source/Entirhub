@@ -50,27 +50,25 @@ export interface SteamPriceData {
 export const getSteamPrice = async (appId: number, region: string): Promise<SteamPriceData | null | 'free'> => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const url = `${supabaseUrl}/functions/v1/steam-proxy?type=price&appid=${appId}&region=${region}`;
   
   if (!supabaseUrl || !supabaseKey) return null;
 
   try {
-    const url = `${supabaseUrl}/functions/v1/steam-proxy?type=price&appid=${appId}&cc=${region}`;
-    console.log('[SteamPrice Debug] Requesting Edge Function:', url);
-    
-    const response = await fetch(url, {
+    console.log('Price URL:', url);
+    const res = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${supabaseKey}`,
-        'apikey': supabaseKey,
+        'apikey': supabaseKey
       }
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[SteamPrice Debug] Edge Function error:', errorText);
+    
+    if (!res.ok) {
+      console.error('Price fetch failed:', res.status);
       return null;
     }
 
-    const data = await response.json();
+    const data = await res.json();
     const appData = data[appId.toString()];
     
     if (!appData?.success) return null;
@@ -78,7 +76,7 @@ export const getSteamPrice = async (appId: number, region: string): Promise<Stea
     
     return appData.data.price_overview || null;
   } catch (err) {
-    console.error('[SteamPrice Debug] Fetch failed:', err);
+    console.error('Steam price fetch error:', err);
     return null;
   }
 };
