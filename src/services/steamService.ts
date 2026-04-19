@@ -102,5 +102,5 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
 
     result.sort((a, b) => a.percent - b.percent);
     return result;
-  }, { expiresInHours: 0, fallbackOnError: true }).catch(() => []); // 0 for "no expiry"
+  }, { expiresInHours: 0, fallbackOnError: true }).catch(() => []);
 };

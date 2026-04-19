@@ -37,7 +37,7 @@ export function GameAchievementTracker({ gameName, mediaId, externalId }: GameAc
           const { data: trophiesData } = await supabase
             .from('earned_trophies')
             .select('trophy_name')
-            .eq('media_id', externalId)
+            .eq('media_id', mediaId)
             .eq('user_id', user.id);
             
           if (trophiesData) {
@@ -51,7 +51,7 @@ export function GameAchievementTracker({ gameName, mediaId, externalId }: GameAc
       }
 
       try {
-        const { data: cache } = await supabase.from('game_wiki_cache').select('data').eq('media_id', externalId).eq('wiki_type', 'trophies').maybeSingle();
+        const { data: cache } = await supabase.from('game_wiki_cache').select('data').eq('media_id', mediaId).eq('wiki_type', 'trophies').maybeSingle();
         if (cache && cache.data) {
           setTrophies(cache.data);
           setLoading(false);
@@ -63,7 +63,7 @@ export function GameAchievementTracker({ gameName, mediaId, externalId }: GameAc
       const data: Trophy[] = await getSteamAchievements(gameName);
       
       if (data && data.length > 0) {
-        try { await supabase.from('game_wiki_cache').upsert({ media_id: externalId, wiki_type: 'trophies', data }); } catch(e){}
+        try { await supabase.from('game_wiki_cache').upsert({ media_id: mediaId, wiki_type: 'trophies', data }); } catch(e){}
       }
       setTrophies(data || []);
       setLoading(false);
@@ -92,31 +92,39 @@ export function GameAchievementTracker({ gameName, mediaId, externalId }: GameAc
       if (newState) {
         const { error } = await supabase.from('earned_trophies').upsert({
           user_id: user.id,
-          media_id: externalId,
+          media_id: mediaId,
           trophy_name: trophyName,
-          earned_at: new Date().toISOString()
+          created_at: new Date().toISOString()
         }, { onConflict: 'user_id,media_id,trophy_name' });
         
         if (error) {
-           if (error.message.includes('does not exist')) {
-             toast.error('Database configuration required', {
-               description: 'Table earned_trophies is missing. Create it first.'
-             });
-           } else throw error;
+          console.error('[Trophy Tracker] Upsert error:', error);
+          if (error.message.includes('does not exist')) {
+            toast.error('Database configuration required', {
+              description: 'Table earned_trophies is missing. Create it first.'
+            });
+          } else {
+            throw error;
+          }
         }
       } else {
         const { error } = await supabase.from('earned_trophies')
           .delete()
           .eq('user_id', user.id)
-          .eq('media_id', externalId)
+          .eq('media_id', mediaId)
           .eq('trophy_name', trophyName);
           
-        if (error) throw error;
+        if (error) {
+          console.error('[Trophy Tracker] Delete error:', error);
+          throw error;
+        }
       }
     } catch (err: any) {
-      console.error(err);
+      console.error('[Trophy Tracker] Operation failed:', err);
       if (!err.message?.includes('does not exist')) {
-        toast.error('Error saving trophy progress');
+        toast.error('Error saving trophy progress', {
+          description: err.message || 'Unknown error occurred'
+        });
       }
       // Revert optimistic
       setEarnedTrophies(prev => {

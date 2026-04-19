@@ -130,9 +130,8 @@ export default function App() {
           console.log('Session found, initializing user data...');
           setSession(session);
           
-          // Pre-fetch trending data in background
+          // Cache warming
           const warmCache = async () => {
-            console.log('Warming cache...');
             fetchTrendingMovies().catch(() => {});
             fetchTrendingSeries().catch(() => {});
             fetchTopRatedGames().catch(() => {});
@@ -167,9 +166,8 @@ export default function App() {
       if (event === 'SIGNED_IN') {
         setSession(session);
         
-        // Pre-fetch trending data
+        // Cache warming
         const warmCache = async () => {
-          console.log('Warming cache after sign-in...');
           fetchTrendingMovies().catch(() => {});
           fetchTrendingSeries().catch(() => {});
           fetchTopRatedGames().catch(() => {});
