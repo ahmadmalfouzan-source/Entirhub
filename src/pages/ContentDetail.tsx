@@ -14,7 +14,6 @@ import { useLanguageStore } from '@/store/useLanguageStore';
 import { translations } from '@/i18n/translations';
 import { ReviewSection } from '@/components/ReviewSection';
 import { supabase } from '@/lib/supabase';
-import { SteamPriceTracker } from '@/components/SteamPriceTracker';
 import { getDominantColor } from '@/lib/colorThief';
 import { cn } from '@/lib/utils';
 
@@ -350,11 +349,6 @@ export function ContentDetail() {
             )}
           </section>
 
-          {item.media_type === 'game' && (
-            <section className="animate-in fade-in slide-in-from-bottom-6 duration-500 delay-200">
-              <SteamPriceTracker gameName={item.title} />
-            </section>
-          )}
 
           {/* Cast Section */}
           {item.credits && item.credits.cast && item.credits.cast.length > 0 && (
