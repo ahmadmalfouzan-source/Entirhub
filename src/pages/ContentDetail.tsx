@@ -16,6 +16,7 @@ import { ReviewSection } from '@/components/ReviewSection';
 import { supabase } from '@/lib/supabase';
 import { getDominantColor } from '@/lib/colorThief';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function ContentDetail() {
   const { id } = useParams();
@@ -95,6 +96,17 @@ export function ContentDetail() {
     };
     loadData();
   }, [id]);
+
+  useEffect(() => {
+    if (item?.backdrop_url) {
+      console.log('Backdrop URL:', item.backdrop_url);
+      // Test if image loads
+      const img = new Image();
+      img.onload = () => console.log('Backdrop loaded successfully');
+      img.onerror = () => console.log('Backdrop FAILED to load');
+      img.src = item.backdrop_url;
+    }
+  }, [item]);
 
   const watchlistItem = watchlist.find(w => w.media?.external_id === item?.external_id);
 
@@ -179,24 +191,31 @@ export function ContentDetail() {
 
   return (
     <>
-      {item?.backdrop_url && (
-        <div
-          className="content-bg"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            zIndex: 0,
-            backgroundImage: `url(${item.backdrop_url})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'brightness(0.25)',
-            pointerEvents: 'none',
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {item?.backdrop_url && (
+          <motion.div
+            key={item.backdrop_url}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 0.25, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            className="content-bg"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 0,
+              backgroundImage: `url(${item.backdrop_url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'brightness(0.6)', 
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </AnimatePresence>
       
       <div style={{ position: 'relative', zIndex: 10 }}>
         {loading ? (

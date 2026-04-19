@@ -46,6 +46,7 @@ export const fetchTrendingMovies = async (lang = 'en-US'): Promise<MediaItem[]> 
       media_type: 'movie',
       title: item.title,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       rating: item.vote_average,
       release_date: item.release_date,
       genres: ['Movie'],
@@ -67,6 +68,7 @@ export const fetchTrendingSeries = async (lang = 'en-US'): Promise<MediaItem[]> 
       media_type: 'series',
       title: item.name,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       rating: item.vote_average,
       release_date: item.first_air_date,
       genres: ['Series'],
@@ -90,6 +92,7 @@ export const searchMedia = async (query: string): Promise<MediaItem[]> => {
         media_type: item.media_type === 'tv' ? 'series' : 'movie',
         title: item.title || item.name,
         poster_url: getTmdbImageUrl(item.poster_path),
+        backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
         rating: item.vote_average,
         release_date: item.release_date || item.first_air_date,
         genres: [item.media_type === 'tv' ? 'Series' : 'Movie'],
@@ -137,6 +140,7 @@ export const fetchGames = async (search?: string): Promise<MediaItem[]> => {
       media_type: 'game',
       title: item.name,
       poster_url: item.background_image || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
+      backdrop_url: item.background_image,
       rating: item.rating,
       release_date: item.released,
       genres: item.genres?.map((g: any) => g.name) || [],
@@ -174,6 +178,7 @@ export const fetchSimilar = async (type: 'movie' | 'series', externalId: string)
       media_type: type,
       title: item.title || item.name,
       poster_url: item.poster_path ? `https://image.tmdb.org/t/p/w342${item.poster_path}` : 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=342&q=80',
+      backdrop_url: item.backdrop_path ? `https://image.tmdb.org/t/p/original${item.backdrop_path}` : undefined,
       rating: item.vote_average,
       release_date: item.release_date || item.first_air_date,
       genres: [],
@@ -209,6 +214,7 @@ export const fetchPopularMovies = async (lang = 'en-US'): Promise<MediaItem[]> =
       media_type: 'movie',
       title: item.title,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       rating: item.vote_average,
       release_date: item.release_date,
       genres: ['Movie'],
@@ -222,14 +228,15 @@ export const fetchMoviesByGenre = async (genreId: string, lang = 'en-US'): Promi
   const cacheKey = `movies_genre_${genreId}_${lang}`;
   
   return getCacheOrFetch(cacheKey, async () => {
-    const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`);
-    if (!res.ok) throw new Error('Failed to fetch movies by genre');
+    const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`).catch(() => null);
+    if (!res || !res.ok) throw new Error('Failed to fetch movies by genre');
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_movie_${item.id}`,
       media_type: 'movie',
       title: item.title,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       rating: item.vote_average,
       release_date: item.release_date,
       genres: ['Movie'],
@@ -251,6 +258,7 @@ export const fetchPopularSeries = async (lang = 'en-US'): Promise<MediaItem[]> =
       media_type: 'series',
       title: item.name,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       rating: item.vote_average,
       release_date: item.first_air_date,
       genres: ['Series'],
@@ -264,14 +272,15 @@ export const fetchSeriesByGenre = async (genreId: string, lang = 'en-US'): Promi
   const cacheKey = `series_genre_${genreId}_${lang}`;
   
   return getCacheOrFetch(cacheKey, async () => {
-    const res = await fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`);
-    if (!res.ok) throw new Error('Failed to fetch series by genre');
+    const res = await fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`).catch(() => null);
+    if (!res || !res.ok) throw new Error('Failed to fetch series by genre');
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_series_${item.id}`,
       media_type: 'series',
       title: item.name,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       rating: item.vote_average,
       release_date: item.first_air_date,
       genres: ['Series'],
@@ -293,6 +302,7 @@ export const fetchTopRatedGames = async (): Promise<MediaItem[]> => {
       media_type: 'game',
       title: item.name,
       poster_url: item.background_image || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
+      backdrop_url: item.background_image,
       rating: item.rating,
       release_date: item.released,
       genres: item.genres?.map((g: any) => g.name) || [],
@@ -393,6 +403,7 @@ export const fetchCalendarReleases = async (startDate: string, endDate: string) 
       media_type: 'movie' as const,
       title: item.title,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       release_date: item.release_date,
       rating: item.vote_average,
       genres: ['Movie']
@@ -403,6 +414,7 @@ export const fetchCalendarReleases = async (startDate: string, endDate: string) 
       media_type: 'series' as const,
       title: item.name,
       poster_url: getTmdbImageUrl(item.poster_path),
+      backdrop_url: getTmdbImageUrl(item.backdrop_path, 'backdrop'),
       release_date: item.first_air_date,
       rating: item.vote_average,
       genres: ['Series']
@@ -413,6 +425,7 @@ export const fetchCalendarReleases = async (startDate: string, endDate: string) 
       media_type: 'game' as const,
       title: item.name,
       poster_url: item.background_image || 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80',
+      backdrop_url: item.background_image,
       release_date: item.released,
       rating: item.rating,
       genres: item.genres?.map((g: any) => g.name) || []
