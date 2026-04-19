@@ -27,9 +27,13 @@ export function SteamPriceTracker({ gameName }: SteamPriceTrackerProps) {
     const fetchData = async () => {
       setLoading(true);
       try {
+        console.log('[SteamPrice] Starting fetch for:', gameName);
         const id = await getSteamAppId(gameName);
+        console.log('[SteamPrice] Found AppID:', id);
+        
         if (id) {
           setAppId(id);
+          console.log('[SteamPrice] Triggering price fetches for ID:', id);
           const [sa, us, low, { data: { user } }] = await Promise.all([
             getSteamPrice(id, 'SA'),
             getSteamPrice(id, 'US'),

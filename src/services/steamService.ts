@@ -47,39 +47,40 @@ export interface SteamPriceData {
   final_formatted: string;
 }
 
-export const getSteamPrice = async (appid: number, cc: string): Promise<SteamPriceData | null | 'free'> => {
-  const cacheKey = `steam_price_${appid}_${cc}`;
+export const getSteamPrice = async (appId: number, region: string): Promise<SteamPriceData | null | 'free'> => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   
-  return getCacheOrFetch(cacheKey, async () => {
-    if (!supabaseUrl || !supabaseAnonKey) throw new Error('Supabase configuration missing');
+  if (!supabaseUrl || !supabaseKey) return null;
 
-    const url = `${supabaseUrl}/functions/v1/steam-proxy?type=price&appid=${appid}&region=${cc}`;
-    console.log('[Steam Debug] Fetching price from:', url);
-    const res = await fetch(url, {
+  try {
+    const url = `${supabaseUrl}/functions/v1/steam-proxy?type=price&appid=${appId}&cc=${region}`;
+    console.log('[SteamPrice Debug] Requesting Edge Function:', url);
+    
+    const response = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-        'apikey': supabaseAnonKey
+        'Authorization': `Bearer ${supabaseKey}`,
+        'apikey': supabaseKey,
       }
     });
 
-    console.log('[Steam Debug] Response status:', res.status);
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('[Steam Debug] Error response:', errText);
-      throw new Error('Steam price fetch failed');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[SteamPrice Debug] Edge Function error:', errorText);
+      return null;
     }
+
+    const data = await response.json();
+    const appData = data[appId.toString()];
     
-    const data = await res.json();
-    console.log('[Steam Debug] Raw response data:', data);
-    const appData = data[appid.toString()];
-    
-    if (!appData?.success) throw new Error('Steam app details failed');
+    if (!appData?.success) return null;
     if (appData.data.is_free) return 'free';
     
     return appData.data.price_overview || null;
-  }, { expiresInHours: 6, fallbackOnError: true }).catch(() => null);
+  } catch (err) {
+    console.error('[SteamPrice Debug] Fetch failed:', err);
+    return null;
+  }
 };
 
 export interface SteamLowRecord {
@@ -89,28 +90,32 @@ export interface SteamLowRecord {
 }
 
 export const getSteamHistoricalLow = async (appid: number): Promise<SteamLowRecord | null> => {
-  const itadKey = import.meta.env.VITE_ITAD_API_KEY;
-  if (!itadKey || itadKey === 'MY_ITAD_API_KEY' || !itadKey.trim()) return null;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) return null;
 
   try {
-    // 1. Get ITAD ID from Steam AppID
-    const lookupUrl = `https://api.isthereanydeal.com/games/lookup/v1?key=${itadKey}&appid=${appid}`;
-    const lookupProxy = `/api/steam?url=${encodeURIComponent(lookupUrl)}`;
-    const lookupRes = await fetch(lookupProxy);
+    const authHeaders = {
+      'Authorization': `Bearer ${supabaseKey}`,
+      'apikey': supabaseKey
+    };
+
+    // 1. Get ITAD ID from Steam AppID via Edge Function
+    const lookupUrl = `${supabaseUrl}/functions/v1/steam-proxy?type=itad_lookup&appid=${appid}`;
+    const lookupRes = await fetch(lookupUrl, { headers: authHeaders });
     if (!lookupRes.ok) return null;
     const lookupData = await lookupRes.json();
     if (!lookupData?.found || !lookupData?.game?.id) return null;
 
     const gameId = lookupData.game.id;
 
-    // 2. Get Historical Low
-    const lowUrl = `https://api.isthereanydeal.com/games/storelow/v2?key=${itadKey}&id=${gameId}&shops=61`; // 61 is usually Steam
-    const lowProxy = `/api/steam?url=${encodeURIComponent(lowUrl)}`;
-    const lowRes = await fetch(lowProxy);
+    // 2. Get Historical Low via Edge Function
+    const lowUrl = `${supabaseUrl}/functions/v1/steam-proxy?type=itad_low&gameid=${gameId}`;
+    const lowRes = await fetch(lowUrl, { headers: authHeaders });
     if (!lowRes.ok) return null;
     const lowData = await lowRes.json();
     
-    // ITAD v2 returns an object keyed by ITAD game IDs
     const gameLowData = lowData[gameId];
     if (!gameLowData || !Array.isArray(gameLowData)) return null;
 
@@ -208,9 +213,8 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
 
     let percentages: any[] = [];
     try {
-      const pctUrl = `https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${appid}`;
-      const internalProxy = (url: string) => `/api/steam?url=${encodeURIComponent(url)}`;
-      const pctRes = await fetch(internalProxy(pctUrl)).catch(() => null);
+      const pctUrl = `${supabaseUrl}/functions/v1/steam-proxy?type=percentages&appid=${appid}`;
+      const pctRes = await fetch(pctUrl, { headers: authHeaders }).catch(() => null);
       if (pctRes && pctRes.ok) {
         const pctData = await pctRes.json();
         percentages = pctData.achievementpercentages?.achievements || [];

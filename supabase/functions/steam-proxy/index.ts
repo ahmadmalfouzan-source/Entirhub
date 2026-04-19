@@ -21,9 +21,21 @@ serve(async (req) => {
     let steamUrl = ''
     
     if (type === 'price') {
-      const region = url.searchParams.get('region') || 'SA'
+      const region = url.searchParams.get('cc') || url.searchParams.get('region') || 'SA'
       steamUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}&cc=${region}&filters=price_overview`
-      console.log(`Proxying Price request for AppID: ${appid} in region: ${region}`)
+      console.log(`[SteamProxy] Price request for AppID: ${appid} (CC: ${region})`)
+    } else if (type === 'percentages') {
+      steamUrl = `https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${appid}`
+      console.log(`[SteamProxy] Percentages request for AppID: ${appid}`)
+    } else if (type === 'itad_lookup') {
+      const itadKey = Deno.env.get('ITAD_API_KEY')
+      steamUrl = `https://api.isthereanydeal.com/games/lookup/v1?key=${itadKey}&appid=${appid}`
+      console.log(`[SteamProxy] ITAD Lookup for AppID: ${appid}`)
+    } else if (type === 'itad_low') {
+      const itadKey = Deno.env.get('ITAD_API_KEY')
+      const gameId = url.searchParams.get('gameid')
+      steamUrl = `https://api.isthereanydeal.com/games/storelow/v2?key=${itadKey}&id=${gameId}&shops=61`
+      console.log(`[SteamProxy] ITAD Low for GameID: ${gameId}`)
     } else if (appid) {
       if (!steamKey) throw new Error('STEAM_API_KEY secret not found in Supabase')
       steamUrl = `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${steamKey}&appid=${appid}`
