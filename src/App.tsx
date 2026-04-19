@@ -110,26 +110,19 @@ export default function App() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, [setDeferredPrompt, clearDeferredPrompt]);
+    // Initial session fetch and auth listener
+    let mounted = true;
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, !!session);
+      
+      if (!mounted) return;
 
-  useEffect(() => {
-    // Check for initial session immediately with try/catch
-    const fetchInitialSession = async () => {
-      try {
-        console.log('Fetching initial Supabase session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
+      if (session) {
+        setSession(session);
         
-        if (error) throw error;
-        
-        if (session) {
-          console.log('Session found, initializing user data...');
-          setSession(session);
-          
+        // Only fetch data on SIGNED_IN or when state was previously null
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || (event as any) === 'TOKEN_REFRESHED') {
           // Cache warming
           const warmCache = async () => {
             fetchTrendingMovies().catch(() => {});
@@ -138,52 +131,26 @@ export default function App() {
           };
           warmCache();
 
-          // Only fetch critical user data here
-          setTimeout(async () => {
-            try {
-              await fetchWatchlist();
-            } catch (e) {
-              console.error('Watchlist fetch failed but continuing:', e);
-            }
-          }, 1000);
-        } else {
-          console.log('No active session found.');
-          setSession(null);
+          // Fetch user specific data with a slight delay to avoid initial congestion
+          setTimeout(() => {
+            if (mounted) fetchWatchlist().catch(() => {});
+          }, 500);
         }
-      } catch (err) {
-        console.error('Initial session fetch failed:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInitialSession();
-
-    // Handle subsequent auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, !!session);
-      
-      if (event === 'SIGNED_IN') {
-        setSession(session);
-        
-        // Cache warming
-        const warmCache = async () => {
-          fetchTrendingMovies().catch(() => {});
-          fetchTrendingSeries().catch(() => {});
-          fetchTopRatedGames().catch(() => {});
-        };
-        warmCache();
-
-        setTimeout(() => {
-          fetchWatchlist();
-        }, 1000);
-      } else if (event === 'SIGNED_OUT') {
+      } else {
         setSession(null);
       }
+      
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, [setSession, fetchWatchlist]);
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, [setSession, fetchWatchlist, setLoading, setDeferredPrompt, clearDeferredPrompt, loading]);
 
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center text-white">Loading...</div>;

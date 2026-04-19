@@ -41,7 +41,8 @@ export interface SeasonRating {
  */
 export async function getSeasonRatings(mediaId: string): Promise<SeasonRating[]> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) return [];
 
     const { data, error } = await supabase
@@ -63,7 +64,8 @@ export async function getSeasonRatings(mediaId: string): Promise<SeasonRating[]>
  */
 export async function saveSeasonRating(mediaId: string, seasonNumber: number, rating: number) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
     // Ensure mediaId is a valid UUID format (basic check)
@@ -134,7 +136,8 @@ export async function fetchSeasonEpisodes(externalId: string, seasonNumber: numb
  */
 export async function getWatchedEpisodes(mediaId: string): Promise<WatchedEpisode[]> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) return [];
 
     const { data, error } = await supabase
@@ -156,7 +159,8 @@ export async function getWatchedEpisodes(mediaId: string): Promise<WatchedEpisod
  */
 export async function markEpisodeWatched(mediaId: string, season: number, episode: number) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
     const { error } = await supabase
@@ -180,7 +184,8 @@ export async function markEpisodeWatched(mediaId: string, season: number, episod
  */
 export async function unmarkEpisodeWatched(mediaId: string, season: number, episode: number) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
     const { error } = await supabase
@@ -203,7 +208,8 @@ export async function unmarkEpisodeWatched(mediaId: string, season: number, epis
  */
 export async function markSeasonWatched(mediaId: string, season: number, episodeCount: number) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
     const episodes = Array.from({ length: episodeCount }, (_, i) => ({

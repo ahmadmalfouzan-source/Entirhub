@@ -93,8 +93,7 @@ export function GameAchievementTracker({ gameName, mediaId, externalId }: GameAc
         const { error } = await supabase.from('earned_trophies').upsert({
           user_id: user.id,
           media_id: mediaId,
-          trophy_name: trophyName,
-          created_at: new Date().toISOString()
+          trophy_name: trophyName
         }, { onConflict: 'user_id,media_id,trophy_name' });
         
         if (error) {

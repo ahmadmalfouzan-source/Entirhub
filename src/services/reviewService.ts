@@ -80,7 +80,8 @@ export const deleteReview = async (reviewId: string) => {
 };
 
 export const getMediaReviews = async (mediaId: string): Promise<Review[]> => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   
   const { data: reviewsData, error: reviewsError } = await supabase
     .from('reviews')
@@ -117,7 +118,8 @@ export const getMediaReviews = async (mediaId: string): Promise<Review[]> => {
 };
 
 export const getUserReview = async (mediaId: string): Promise<Review | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return null;
 
   const { data, error } = await supabase

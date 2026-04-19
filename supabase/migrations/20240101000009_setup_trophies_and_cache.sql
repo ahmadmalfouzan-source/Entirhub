@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS earned_trophies (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     media_id UUID REFERENCES media(id) ON DELETE CASCADE,
     trophy_name TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
+    earned_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, media_id, trophy_name)
 );
 
