@@ -29,7 +29,8 @@ export function SteamPriceTracker({ gameName }: SteamPriceTrackerProps) {
       try {
         console.log('[SteamPrice] Starting fetch for:', gameName);
         const id = await getSteamAppId(gameName);
-        console.log('[SteamPrice] AppID result:', id, 'for game:', gameName);
+        console.log('[Debug] AppID found:', id);
+        
         if (!id) {
           console.log('[SteamPrice] No AppID found, skipping price fetch');
           setLoading(false);
@@ -37,16 +38,21 @@ export function SteamPriceTracker({ gameName }: SteamPriceTrackerProps) {
         }
         
         setAppId(id);
-        console.log('[SteamPrice] Triggering price fetches for ID:', id);
-          const [sa, us, low, { data: { user } }] = await Promise.all([
-            getSteamPrice(id, 'SA'),
-            getSteamPrice(id, 'US'),
-            getSteamHistoricalLow(id),
-            supabase.auth.getUser()
-          ]);
-          setPriceSA(sa);
-          setPriceUS(us);
-          setHistoricalLow(low);
+        console.log('[Debug] About to fetch prices for appId:', id);
+        
+        const [sa, us, low, { data: { user } }] = await Promise.all([
+          getSteamPrice(id, 'SA'),
+          getSteamPrice(id, 'US'),
+          getSteamHistoricalLow(id),
+          supabase.auth.getUser()
+        ]);
+        
+        console.log('[Debug] SA price:', sa);
+        console.log('[Debug] US price:', us);
+        
+        setPriceSA(sa);
+        setPriceUS(us);
+        setHistoricalLow(low);
 
           if (user) {
             const alert = await getPriceAlert(user.id, id);
