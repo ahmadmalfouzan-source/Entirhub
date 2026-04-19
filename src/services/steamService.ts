@@ -56,6 +56,7 @@ export const getSteamPrice = async (appid: number, cc: string): Promise<SteamPri
     if (!supabaseUrl || !supabaseAnonKey) throw new Error('Supabase configuration missing');
 
     const url = `${supabaseUrl}/functions/v1/steam-proxy?type=price&appid=${appid}&region=${cc}`;
+    console.log('[Steam Debug] Fetching price from:', url);
     const res = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${supabaseAnonKey}`,
@@ -63,9 +64,15 @@ export const getSteamPrice = async (appid: number, cc: string): Promise<SteamPri
       }
     });
 
-    if (!res.ok) throw new Error('Steam price fetch failed');
+    console.log('[Steam Debug] Response status:', res.status);
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('[Steam Debug] Error response:', errText);
+      throw new Error('Steam price fetch failed');
+    }
     
     const data = await res.json();
+    console.log('[Steam Debug] Raw response data:', data);
     const appData = data[appid.toString()];
     
     if (!appData?.success) throw new Error('Steam app details failed');
