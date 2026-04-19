@@ -37,6 +37,7 @@ import { Footer } from '@/components/Footer';
 import { NetflixLayout } from '@/layouts/NetflixLayout';
 import { DisneyLayout } from '@/layouts/DisneyLayout';
 import { HBOLayout } from '@/layouts/HBOLayout';
+import { fetchTrendingMovies, fetchTrendingSeries, fetchTopRatedGames } from '@/services/api';
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { session } = useStore();
@@ -128,6 +129,16 @@ export default function App() {
         if (session) {
           console.log('Session found, initializing user data...');
           setSession(session);
+          
+          // Pre-fetch trending data in background
+          const warmCache = async () => {
+            console.log('Warming cache...');
+            fetchTrendingMovies().catch(() => {});
+            fetchTrendingSeries().catch(() => {});
+            fetchTopRatedGames().catch(() => {});
+          };
+          warmCache();
+
           // Only fetch critical user data here
           setTimeout(async () => {
             try {
@@ -155,6 +166,16 @@ export default function App() {
       
       if (event === 'SIGNED_IN') {
         setSession(session);
+        
+        // Pre-fetch trending data
+        const warmCache = async () => {
+          console.log('Warming cache after sign-in...');
+          fetchTrendingMovies().catch(() => {});
+          fetchTrendingSeries().catch(() => {});
+          fetchTopRatedGames().catch(() => {});
+        };
+        warmCache();
+
         setTimeout(() => {
           fetchWatchlist();
         }, 1000);

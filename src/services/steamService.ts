@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { getCacheOrFetch } from './cacheService';
 
 export interface SteamAchievement {
   name: string;
@@ -47,23 +48,22 @@ export interface SteamPriceData {
 }
 
 export const getSteamPrice = async (appid: number, cc: string): Promise<SteamPriceData | null | 'free'> => {
-  try {
+  const cacheKey = `steam_price_${appid}_${cc}`;
+  
+  return getCacheOrFetch(cacheKey, async () => {
     const url = `https://store.steampowered.com/api/appdetails?appids=${appid}&cc=${cc}&filters=price_overview`;
     const proxyUrl = `/api/steam?url=${encodeURIComponent(url)}`;
     const res = await fetch(proxyUrl);
-    if (!res.ok) return null;
+    if (!res.ok) throw new Error('Steam price fetch failed');
     
     const data = await res.json();
     const appData = data[appid.toString()];
     
-    if (!appData?.success) return null;
+    if (!appData?.success) throw new Error('Steam app details failed');
     if (appData.data.is_free) return 'free';
     
     return appData.data.price_overview || null;
-  } catch (err) {
-    console.error(`[Steam] Price fetch failed for ${cc}:`, err);
-    return null;
-  }
+  }, { expiresInHours: 6, fallbackOnError: true }).catch(() => null);
 };
 
 export interface SteamLowRecord {
@@ -157,20 +157,21 @@ export const deletePriceAlert = async (alertId: string) => {
 };
 
 export const getSteamAchievements = async (gameName: string): Promise<SteamAchievement[]> => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const cacheKey = `steam_achievements_${gameName.toLowerCase().trim()}`;
   
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn('[Steam] Supabase configuration missing');
-    return [];
-  }
+  return getCacheOrFetch(cacheKey, async () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration missing');
+    }
 
-  const authHeaders = {
-    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-  };
+    const authHeaders = {
+      'Authorization': `Bearer ${supabaseKey}`,
+      'apikey': supabaseKey
+    };
 
-  try {
     const appid = await getSteamAppId(gameName);
     if (!appid) return [];
 
@@ -179,20 +180,16 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
     const schemaRes = await fetch(schemaUrl, { headers: authHeaders }).catch(() => null);
     
     if (!schemaRes || !schemaRes.ok) {
-      console.warn('[Steam] Schema fetch via proxy failed');
-      return [];
+      throw new Error('Schema fetch via proxy failed');
     }
     
     const schemaData = await schemaRes.json();
     if (!schemaData?.game?.availableGameStats?.achievements) {
-      console.warn('[Steam] No achievements found in schema');
       return [];
     }
 
     const achievements = schemaData.game.availableGameStats.achievements;
 
-    // 3. Fetch global percentages (Can use direct proxy as it doesn't need key, or just search proxy)
-    // For simplicity, we'll try percentages via the existing internal proxy if available
     let percentages: any[] = [];
     try {
       const pctUrl = `https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${appid}`;
@@ -203,7 +200,7 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
         percentages = pctData.achievementpercentages?.achievements || [];
       }
     } catch (e) {
-      console.warn("[Steam] Percentages fetch failed:", e);
+      console.warn("[Steam] Percentages fetch failed but continuing...");
     }
     
     // Merge data
@@ -217,9 +214,5 @@ export const getSteamAchievements = async (gameName: string): Promise<SteamAchie
 
     result.sort((a, b) => a.percent - b.percent);
     return result;
-
-  } catch (err: any) {
-    console.error('[Steam] Service error:', err.message);
-    return [];
-  }
+  }, { expiresInHours: 0, fallbackOnError: true }).catch(() => []); // 0 for "no expiry"
 };
