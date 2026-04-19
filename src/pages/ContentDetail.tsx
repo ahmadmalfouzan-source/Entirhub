@@ -42,6 +42,7 @@ export function ContentDetail() {
   } = useStore();
 
   const fetchedId = useRef<string | null>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (fetchedId.current === id) return;
@@ -195,6 +196,27 @@ export function ContentDetail() {
     }
   };
 
+  useEffect(() => {
+    if (!bgRef.current) return;
+    let scale = 1;
+    let direction = 1;
+    let animationFrameId: number;
+
+    const animate = () => {
+      scale += 0.00005 * direction;
+      if (scale >= 1.08) direction = -1;
+      if (scale <= 1.0) direction = 1;
+      
+      if (bgRef.current) {
+        bgRef.current.style.transform = `scale(${scale})`;
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [item]);
+
   const bgImage = item?.backdrop_url || item?.cover_url || item?.poster_url;
 
   return (
@@ -203,8 +225,9 @@ export function ContentDetail() {
         {bgImage && (
           <motion.div
             key={bgImage}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 0.25, scale: 1 }}
+            ref={bgRef}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.25 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5, ease: "easeOut" }}
             className="content-bg"
@@ -220,6 +243,7 @@ export function ContentDetail() {
               backgroundPosition: 'center',
               filter: 'brightness(0.6)', 
               pointerEvents: 'none',
+              transform: 'scale(1)',
             }}
           />
         )}
