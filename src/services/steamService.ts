@@ -49,11 +49,20 @@ export interface SteamPriceData {
 
 export const getSteamPrice = async (appid: number, cc: string): Promise<SteamPriceData | null | 'free'> => {
   const cacheKey = `steam_price_${appid}_${cc}`;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   
   return getCacheOrFetch(cacheKey, async () => {
-    const url = `https://store.steampowered.com/api/appdetails?appids=${appid}&cc=${cc}&filters=price_overview`;
-    const proxyUrl = `/api/steam?url=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl);
+    if (!supabaseUrl || !supabaseAnonKey) throw new Error('Supabase configuration missing');
+
+    const url = `${supabaseUrl}/functions/v1/steam-proxy?type=price&appid=${appid}&region=${cc}`;
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'apikey': supabaseAnonKey
+      }
+    });
+
     if (!res.ok) throw new Error('Steam price fetch failed');
     
     const data = await res.json();

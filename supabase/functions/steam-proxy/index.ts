@@ -16,10 +16,15 @@ serve(async (req) => {
     const url = new URL(req.url)
     const appid = url.searchParams.get('appid')
     const query = url.searchParams.get('q')
+    const type = url.searchParams.get('type')
     
     let steamUrl = ''
     
-    if (appid) {
+    if (type === 'price') {
+      const region = url.searchParams.get('region') || 'SA'
+      steamUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}&cc=${region}&filters=price_overview`
+      console.log(`Proxying Price request for AppID: ${appid} in region: ${region}`)
+    } else if (appid) {
       if (!steamKey) throw new Error('STEAM_API_KEY secret not found in Supabase')
       steamUrl = `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${steamKey}&appid=${appid}`
       console.log(`Proxying Schema request for AppID: ${appid}`)
