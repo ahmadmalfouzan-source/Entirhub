@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useStore } from '@/store/useStore';
+import { cn } from '@/lib/utils';
 
 interface ReviewCardProps {
   review: Review;
@@ -42,50 +43,54 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, onEdit, onDelete
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="bg-surface border border-white/5 rounded-2xl overflow-hidden group hover:border-white/10 transition-colors"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-[#030308] border border-white/5 rounded-[32px] overflow-hidden group hover:border-white/10 transition-all duration-500 shadow-2xl"
     >
-      <div className="p-5 space-y-4">
+      <div className="p-6 space-y-5">
         {/* Header: User Profile & Meta */}
         <div className="flex items-start justify-between">
-          <div className="flex gap-3">
-            <img 
-              src={review.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'} 
-              className="size-10 rounded-full ring-2 ring-white/5 object-cover"
-              alt=""
-            />
+          <div className="flex gap-4">
+            <div className="relative group/avatar cursor-pointer">
+              <div className="size-12 rounded-[18px] bg-gradient-to-br from-primary to-accent p-0.5 shadow-lg group-hover/avatar:rotate-12 transition-transform duration-500">
+                <img 
+                  src={review.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'} 
+                  className="w-full h-full rounded-[16px] object-cover bg-[#030308]"
+                  alt=""
+                />
+              </div>
+            </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-white hover:underline cursor-pointer">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black text-white italic tracking-tighter uppercase group-hover:text-primary transition-colors cursor-pointer">
                   {review.profiles?.username || 'Anonymous'}
                 </span>
                 {review.is_verified && (
-                  <div className="flex items-center gap-1 bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter">
-                    <CheckCircle2 className="size-3" />
-                    <span>Verified</span>
+                  <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-primary/20">
+                    <CheckCircle2 className="size-2.5" />
+                    <span>SYNCED</span>
                   </div>
                 )}
               </div>
-              <span className="text-[10px] text-gray-500 font-medium">
-                {formatDistanceToNow(new Date(review.created_at))} ago
+              <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest mt-1 block">
+                {formatDistanceToNow(new Date(review.created_at))} AGO • SIGNAL RECEIVED
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded-lg">
-              <Star className="size-3 fill-current" />
-              <span className="text-xs font-black">{review.rating}</span>
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-3 py-1.5 rounded-[14px] border border-yellow-500/20 shadow-[0_0_15px_rgba(234,179,8,0.1)]">
+              <Star className="size-3.5 fill-current" />
+              <span className="text-sm font-black italic">{review.rating}</span>
             </div>
             {isOwner && (
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="icon-xs" onClick={() => onEdit(review)}>
-                  <Edit2 className="size-3.5 text-gray-400 hover:text-white" />
-                </Button>
-                <Button variant="ghost" size="icon-xs" onClick={handleDelete}>
-                  <Trash2 className="size-3.5 text-gray-400 hover:text-red-500" />
-                </Button>
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all">
+                <button onClick={() => onEdit(review)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-500 hover:text-white transition-all">
+                  <Edit2 className="size-3.5" />
+                </button>
+                <button onClick={handleDelete} className="p-2 rounded-xl bg-red-500/5 hover:bg-red-500/20 text-gray-500 hover:text-red-500 transition-all">
+                  <Trash2 className="size-3.5" />
+                </button>
               </div>
             )}
           </div>
@@ -94,60 +99,62 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, onEdit, onDelete
         {/* Content: Review Text */}
         <div className="relative">
           {review.contains_spoilers && !showSpoiler ? (
-            <div className="relative rounded-xl overflow-hidden">
-              <div className="bg-white/5 backdrop-blur-xl p-8 flex flex-col items-center justify-center text-center space-y-3">
-                <AlertTriangle className="size-8 text-yellow-500 animate-pulse" />
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-white">Spoiler Alert!</p>
-                  <p className="text-xs text-gray-400 max-w-[200px]">This review contains plot details that might reveal secrets.</p>
+            <div className="relative rounded-[24px] overflow-hidden">
+              <div className="bg-white/[0.02] backdrop-blur-3xl border border-dashed border-white/10 p-10 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="size-16 rounded-[24px] bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                   <AlertTriangle className="size-8 text-yellow-500 animate-pulse" />
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <div className="space-y-1">
+                  <h4 className="text-sm font-black text-white italic tracking-widest uppercase">Spoiler Encryption Active</h4>
+                  <p className="text-[11px] text-gray-500 font-medium max-w-[240px] leading-relaxed">This transmission contains restricted plot data. Decrypt at your own risk.</p>
+                </div>
+                <button 
                   onClick={() => setShowSpoiler(true)}
-                  className="bg-white/10 border-white/10 hover:bg-white/20 transition-all font-bold"
+                  className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-white font-black uppercase tracking-[0.2em] rounded-2xl transition-all active:scale-95 shadow-xl"
                 >
-                  Show Content
-                </Button>
+                  DECRYPT LOGS
+                </button>
               </div>
-              <p className="absolute inset-0 -z-10 blur-md opacity-20 p-2 text-sm text-gray-400">
-                {review.content}
-              </p>
             </div>
           ) : (
-            <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-wrap break-words">
-              {review.content}
-            </p>
+            <div className="relative">
+               <div className="absolute -left-3 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 to-transparent rounded-full opacity-50" />
+               <p className="text-sm leading-relaxed text-gray-400 font-medium tracking-tight px-2 whitespace-pre-wrap break-words italic">
+                "{review.content}"
+               </p>
+            </div>
           )}
         </div>
 
         {/* Footer: Interactions */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/5">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+          <div className="flex items-center gap-6">
             <button 
               onClick={handleLike}
-              className={`flex items-center gap-1.5 group/like transition-all ${
-                review.is_liked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'
-              }`}
+              className={cn(
+                "flex items-center gap-2 group/like transition-all",
+                review.is_liked ? 'text-red-500' : 'text-gray-600 hover:text-red-400'
+              )}
             >
-              <div className={`p-1.5 rounded-full transition-colors ${
-                review.is_liked ? 'bg-red-500/10' : 'group-hover/like:bg-red-500/10'
-              }`}>
-                <Heart className={`size-4 ${review.is_liked ? 'fill-current' : ''}`} />
+              <div className={cn(
+                "size-10 rounded-2xl flex items-center justify-center transition-all",
+                review.is_liked ? 'bg-red-500/10 scale-110 shadow-lg' : 'bg-white/5 group-hover/like:bg-red-500/10 group-hover/like:scale-110'
+              )}>
+                <Heart className={cn("size-4 transition-transform", review.is_liked ? 'fill-current' : 'group-hover/like:scale-125')} />
               </div>
-              <span className="text-xs font-bold">{review.likes_count || 0}</span>
+              <span className="text-xs font-black italic">{review.likes_count || 0}</span>
             </button>
             
-            <button className="text-gray-500 hover:text-white transition-colors flex items-center gap-1.5 group/share">
-              <div className="p-1.5 rounded-full group-hover/share:bg-white/5">
+            <button className="flex items-center gap-2 text-gray-600 hover:text-white transition-all group/more">
+              <div className="size-10 rounded-2xl bg-white/5 flex items-center justify-center group-hover/more:bg-white/10 group-hover/more:rotate-90 transition-all">
                 <MoreVertical className="size-4" />
               </div>
-              <span className="text-xs font-bold">More</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">More Data</span>
             </button>
           </div>
 
-          <div className="text-[10px] font-bold text-gray-600 tracking-widest uppercase italic">
-            #ReviewSystemV1
+          <div className="text-[9px] font-black text-gray-700 tracking-[0.3em] uppercase italic bg-white/[0.02] px-3 py-1 rounded-[8px] border border-white/5">
+            LOG.ID // {review.id.slice(0, 8)}
           </div>
         </div>
       </div>

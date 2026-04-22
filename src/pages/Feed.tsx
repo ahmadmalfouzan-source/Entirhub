@@ -5,10 +5,12 @@ import { Heart, MessageSquare, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useStore } from '@/store/useStore';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function Feed() {
   const [activities, setActivities] = useState<any[]>([]);
+  const navigate = useNavigate();
   const [expandedComment, setExpandedComment] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, any[]>>({});
   const [commentText, setCommentText] = useState('');
@@ -87,12 +89,27 @@ export function Feed() {
     <div className="max-w-2xl mx-auto p-4 space-y-4">
       <h1 className="text-2xl font-bold text-white mb-6">Activity Feed</h1>
       {activities.map(act => (
-        <div key={act.id} className="bg-surface p-4 rounded-xl border border-white/5 space-y-4">
+        <div key={act.id} className="premium-card p-4 rounded-2xl border border-white/5 space-y-4 shadow-[var(--shadow-bento)]">
           <div className="flex gap-4">
-            <img src={act.profiles.avatar_url} className="w-10 h-10 rounded-full" alt="" />
+            <img 
+              src={act.profiles.avatar_url} 
+              className="w-10 h-10 rounded-xl cursor-pointer hover:ring-2 hover:ring-primary transition-all" 
+              alt="" 
+              onClick={() => navigate(`/user/${act.profiles.username}`)}
+            />
             <div className="flex-1">
               <p className="text-white">
-                <span className="font-bold">{act.profiles.username}</span> {act.type === 'reviewed' ? 'reviewed' : act.type} {act.media?.title} {act.metadata?.rating ? `⭐${act.metadata.rating}/10` : ''}
+                <span 
+                  className="font-bold cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => navigate(`/user/${act.profiles.username}`)}
+                >
+                  {act.profiles.username}
+                </span> {act.type === 'reviewed' ? 'reviewed' : act.type} <span 
+                  className="font-black italic cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => navigate(`/content/${act.media?.external_id || act.media_id}`)}
+                >
+                  {act.media?.title}
+                </span> {act.metadata?.rating ? `⭐${act.metadata.rating}/10` : ''}
               </p>
               <span className="text-xs text-gray-500">{formatDistanceToNow(new Date(act.created_at))} ago</span>
               
@@ -131,8 +148,8 @@ export function Feed() {
               <div className="space-y-4 max-h-60 overflow-y-auto pr-2 no-scrollbar">
                 {comments[act.id]?.map((c: any) => (
                   <div key={c.id} className="flex gap-2 group">
-                    <img src={c.profiles.avatar_url} className="w-8 h-8 rounded-full flex-shrink-0" alt="" />
-                    <div className="flex-1 bg-white/5 rounded-2xl px-4 py-2 relative">
+                    <img src={c.profiles.avatar_url} className="w-8 h-8 rounded-xl flex-shrink-0" alt="" />
+                    <div className="flex-1 premium-glass border-x-0 border-t-0 rounded-2xl px-4 py-2 relative shadow-md">
                       <div className="flex justify-between items-start">
                         <span className="font-bold text-sm text-white">{c.profiles.username}</span>
                         <span className="text-[10px] text-gray-500">{formatDistanceToNow(new Date(c.created_at))} ago</span>

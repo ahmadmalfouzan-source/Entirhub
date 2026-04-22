@@ -2,562 +2,293 @@ import React, { useEffect, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/lib/supabase';
 import { 
-  User, 
-  Film, 
-  Tv, 
-  Gamepad2, 
-  Clock, 
-  Star, 
-  TrendingUp,
-  Calendar,
+  Settings, 
   ChevronRight,
-  Share2,
+  TrendingUp,
   Globe,
   Lock,
-  Award,
-  Trophy,
   Users,
-  MessageSquare,
-  AlertTriangle
+  Trophy,
+  Award,
+  Zap,
+  Activity,
+  Target,
+  Flame,
+  ShieldCheck,
+  LayoutGrid,
+  Plus
 } from 'lucide-react';
-import { ContentCard } from '@/components/ContentCard';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { 
+  SectionHeader, 
+  PremiumButton, 
+  PremiumCard, 
+  StatWidget, 
+  ProgressCard,
+  PremiumBadge,
+  Skeleton
+} from '@/components/premium';
 import { Badges } from '@/components/Badges';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { fetchPSNProfile } from '@/services/psn';
+import { useLanguageStore } from '@/store/useLanguageStore';
 import { getFriends, Friendship } from '@/services/friendsService';
-import { Review, getUserReview } from '@/services/reviewService';
-import { fetchMediaDetails } from '@/services/api';
-
-interface Stats {
-  totalMovies: number;
-  totalSeries: number;
-  totalGames: number;
-  totalEpisodes: number;
-  estimatedHours: number;
-  topGenres: string[];
-  recentItems: any[];
-  favoriteRating: number;
-}
-
-interface PSNStats {
-  totalTrophies: number;
-  platinum: number;
-}
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '@/lib/utils';
 
 export function Profile() {
   const { t } = useTranslation();
-  const { user, watchlist, psnUsername, avatarUrl } = useStore();
+  const { language, setLanguage } = useLanguageStore();
+  const { user, watchlist, avatarUrl } = useStore();
   const navigate = useNavigate();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [psnStats, setPsnStats] = useState<PSNStats | null>(null);
   const [friends, setFriends] = useState<Friendship[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isPublic, setIsPublic] = useState(false);
   const [username, setUsername] = useState('');
-  const [activeTab, setActiveTab] = useState<'activity' | 'reviews'>('activity');
-  const [userReviews, setUserReviews] = useState<(Review & { media_details?: any })[]>([]);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('username, is_public')
-        .eq('id', user.id)
-        .single();
-      
-      if (data) {
-        setUsername(data.username || user.email?.split('@')[0] || '');
-        setIsPublic(data.is_public || false);
-      } else {
-        setUsername(user.email?.split('@')[0] || '');
-      }
-    };
-    const loadFriends = async () => {
-      const data = await getFriends();
-      setFriends(data);
-    };
-    fetchProfile();
-    loadFriends();
-  }, [user]);
-
-  useEffect(() => {
-    const fetchUserReviews = async () => {
-      if (!user) return;
-      setReviewsLoading(true);
-      try {
-        const { data: reviews, error } = await supabase
-          .from('reviews')
-          .select('*, profiles:user_id(username, avatar_url)')
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        // Fetch media details for each review
-        const reviewsWithDetails = await Promise.all((reviews || []).map(async (review) => {
-          const type = review.media_id.includes('_game_') ? 'game' : 
-                       review.media_id.includes('_series_') ? 'series' : 'movie';
-          const details = await fetchMediaDetails(review.media_id, type as any);
-          return { ...review, media_details: details };
-        }));
-
-        setUserReviews(reviewsWithDetails);
-      } catch (err) {
-        console.error('Error fetching user reviews:', err);
-      } finally {
-        setReviewsLoading(false);
-      }
-    };
-
-    if (activeTab === 'reviews') {
-      fetchUserReviews();
-    }
-  }, [user, activeTab]);
-
-  useEffect(() => {
-    const fetchPSN = async () => {
-      if (!psnUsername) return;
-      try {
-        const data = await fetchPSNProfile(psnUsername);
-        if (data && (data as any).stats) {
-          setPsnStats({
-            totalTrophies: (data as any).stats.totalTrophies || 0,
-            platinum: (data as any).stats.platinum || 0
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching PSN stats:', err);
-      }
-    };
-    fetchPSN();
-  }, [psnUsername]);
-
-  const handleShare = async () => {
-    if (!user) return;
-    
-    try {
-      const newStatus = !isPublic;
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ 
-          id: user.id, 
-          is_public: newStatus,
-          username: username // Ensure username is saved
-        });
-
-      if (error) throw error;
-      
-      setIsPublic(newStatus);
-      
-      if (newStatus) {
-        const displayUsername = username.includes('@') ? username.split('@')[0] : username;
-        const shareUrl = `${window.location.origin}/user/${displayUsername}`;
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success(t('libraryNowPublic'), {
-          description: t('shareLinkCopied')
-        });
-      } else {
-        toast.info(t('libraryNowPrivate'));
-      }
-    } catch (error: any) {
-      console.error('Error sharing library:', error);
-      if (error.message?.includes("is_public")) {
-        toast.error('Database schema update required', {
-          description: 'Please run the SQL migration to add the "is_public" column to your profiles table.'
-        });
-      } else {
-        toast.error('Failed to update sharing settings');
-      }
-    }
+  const toggleLanguage = () => {
+    const newLang = language === 'en' ? 'ar' : 'en';
+    setLanguage(newLang);
   };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      if (!user) return;
-      setLoading(true);
-
+    const init = async () => {
       try {
-        // 1. Basic counts from watchlist
-        const movies = watchlist.filter(i => i.media?.media_type === 'movie' && i.status === 'completed');
-        const series = watchlist.filter(i => i.media?.media_type === 'series' && i.status === 'completed');
-        const games = watchlist.filter(i => i.media?.media_type === 'game');
+        setLoading(true);
+        if (!user) return;
+        
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('username, is_public')
+          .eq('id', user.id)
+          .single();
+        
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+        }
 
-        // 2. Episode count
-        const { count: episodeCount } = await supabase
-          .from('episode_progress')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        // 3. Estimated hours
-        // Movies: 2h, Episodes: 45min (0.75h)
-        const movieHours = movies.length * 2;
-        const episodeHours = (episodeCount || 0) * 0.75;
-        const totalHours = Math.round(movieHours + episodeHours);
-
-        // 4. Top Genres
-        const genreCounts: Record<string, number> = {};
-        watchlist.forEach(item => {
-          item.media?.genres?.forEach((g: string) => {
-            genreCounts[g] = (genreCounts[g] || 0) + 1;
-          });
-        });
-        const topGenres = Object.entries(genreCounts)
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, 3)
-          .map(([name]) => name);
-
-        // 5. Recent Items (last 5 added)
-        const recent = [...watchlist]
-          .sort((a, b) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime())
-          .slice(0, 5);
-
-        // 6. Favorite Rating (most common)
-        const ratingCounts: Record<number, number> = {};
-        watchlist.forEach(item => {
-          if (item.rating) {
-            ratingCounts[item.rating] = (ratingCounts[item.rating] || 0) + 1;
-          }
-        });
-        const favoriteRating = Object.entries(ratingCounts)
-          .sort(([, a], [, b]) => b - a)[0]?.[0];
-
-        setStats({
-          totalMovies: movies.length,
-          totalSeries: series.length,
-          totalGames: games.length,
-          totalEpisodes: episodeCount || 0,
-          estimatedHours: totalHours,
-          topGenres,
-          recentItems: recent,
-          favoriteRating: favoriteRating ? Number(favoriteRating) : 0
-        });
-      } catch (error) {
-        console.error('Error fetching profile stats:', error);
+        if (data) {
+          setUsername(data.username || user.email?.split('@')[0] || '');
+          setIsPublic(data.is_public || false);
+        }
+        
+        const friendData = await getFriends();
+        setFriends(friendData);
+      } catch (err) {
+        console.error('Critical profile initialization error:', err);
       } finally {
         setLoading(false);
       }
     };
+    init();
+  }, [user]);
 
-    fetchStats();
-  }, [user, watchlist]);
+  const stats = {
+    movies: watchlist.filter(i => i.media?.media_type === 'movie').length,
+    series: watchlist.filter(i => i.media?.media_type === 'series').length,
+    games: watchlist.filter(i => i.media?.media_type === 'game').length,
+    total: watchlist.length,
+    level: Math.floor(watchlist.length / 5) + 1,
+    progress: (watchlist.length % 5) / 5
+  };
 
-  if (loading || !stats) {
+  if (loading) {
     return (
-      <div className="p-8 space-y-8 animate-pulse">
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 rounded-full bg-white/5" />
-          <div className="space-y-2">
-            <div className="h-8 w-48 bg-white/5 rounded" />
-            <div className="h-4 w-32 bg-white/5 rounded" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-white/5 rounded-2xl" />
-          ))}
+      <div className="p-6 pt-24 space-y-12 bg-[#030308] min-h-screen">
+        <Skeleton variant="circle" className="w-32 h-32 mx-auto rounded-[44px]" />
+        <Skeleton variant="text" className="w-48 h-8 mx-auto" />
+        <div className="grid grid-cols-3 gap-3">
+           <Skeleton variant="card" className="h-24" />
+           <Skeleton variant="card" className="h-24" />
+           <Skeleton variant="card" className="h-24" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
-      {/* Profile Header */}
-      <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 bg-gradient-to-br from-blue-600/20 to-purple-600/20 p-6 md:p-8 rounded-2xl md:rounded-3xl border border-white/5">
-        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-3xl md:text-4xl font-bold text-white shadow-2xl">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-          ) : (
-            user?.email?.[0].toUpperCase()
-          )}
-        </div>
-        <div className="text-center md:text-left space-y-2 w-full md:w-auto">
-          <h1 className="text-2xl md:text-4xl font-bold text-white truncate">{user?.email?.split('@')[0]}</h1>
-          
-          <div className="flex flex-col md:flex-row items-center gap-4 text-sm md:text-base text-gray-400">
-            <p className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              {t('memberSince')} {new Date(user?.created_at || '').toLocaleDateString()}
-            </p>
-            <div className="flex items-center gap-2 cursor-pointer hover:text-white" onClick={() => navigate('/friends')}>
-              <Users className="w-4 h-4" />
-              {friends.length} {t('friends')}
-            </div>
-            <div className="flex -space-x-2">
-              {friends.slice(0, 4).map(f => {
-                const friendProfile = f.sender.id === user?.id ? f.receiver : f.sender;
-                return (
-                  <img key={f.id} src={friendProfile.avatar_url} alt="" className="w-8 h-8 rounded-full border-2 border-background" />
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-            {stats.topGenres.map(genre => (
-              <span key={genre} className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-blue-300 border border-white/10">
-                {genre}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="md:ml-auto flex flex-col gap-3 w-full md:w-auto mt-4 md:mt-0">
-          <Button 
-            onClick={() => navigate('/wrapped')}
-            className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white border-0 shadow-lg w-full md:w-auto"
-          >
-            <Star className="w-4 h-4 mr-2" />
-            {t('myYearInReview')}
-          </Button>
-          <Button 
-            onClick={handleShare}
-            variant={isPublic ? "default" : "outline"}
-            className={`w-full md:w-auto ${isPublic ? "bg-green-600 hover:bg-green-700" : "bg-white/20 text-white border border-white/30 hover:bg-white/30"}`}
-          >
-            {isPublic ? <Globe className="w-4 h-4 mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
-            {isPublic ? t('publicLibrary') : t('privateLibrary')}
-          </Button>
-          {isPublic && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-400 hover:text-white w-full md:w-auto"
-              onClick={() => {
-                const displayUsername = username.includes('@') ? username.split('@')[0] : username;
-                const shareUrl = `${window.location.origin}/user/${displayUsername}`;
-                navigator.clipboard.writeText(shareUrl);
-                toast.success(t('linkCopied'));
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              {t('copyShareLink')}
-            </Button>
-          )}
-        </div>
+    <div className="flex flex-col min-h-screen bg-[#030308] pb-40 animate-in fade-in duration-700 overflow-x-hidden">
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-0 right-0 h-96 bg-primary/20 blur-[120px] rounded-full opacity-50" />
       </div>
 
-      {/* Badges Section */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6">
-        <div className="flex items-center gap-2 mb-4 md:mb-6">
-          <Award className="w-5 h-5 text-yellow-500" />
-          <h2 className="text-lg md:text-xl font-bold text-white">{t('achievements')}</h2>
-        </div>
-        <Badges />
-      </div>
-
-      {/* Stats Grid */}
-      <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <StatCard 
-          icon={<Film className="w-6 h-6 text-accent" />}
-          label={t('moviesWatched')}
-          value={stats.totalMovies}
-          subtext={t('completedSubtext')}
-        />
-        <StatCard 
-          icon={<Tv className="w-6 h-6 text-purple-400" />}
-          label={t('seriesCompleted')}
-          value={stats.totalSeries}
-          subtext={`${stats.totalEpisodes} ${t('episodes')}`}
-        />
-        <StatCard 
-          icon={<Gamepad2 className="w-6 h-6 text-green-400" />}
-          label={t('gamesTracked')}
-          value={stats.totalGames}
-          subtext={t('inLibrary')}
-        />
-        <StatCard 
-          icon={<Clock className="w-6 h-6 text-orange-400" />}
-          label={t('timeSpent')}
-          value={`${stats.estimatedHours}h`}
-          subtext={t('estimated')}
-        />
-        
-        {psnStats && (
-          <>
-            <StatCard 
-              icon={<Trophy className="w-6 h-6 text-accent" />}
-              label={t('psnTrophies')}
-              value={psnStats.totalTrophies}
-              subtext={t('totalEarned')}
-            />
-            <StatCard 
-              icon={<Trophy className="w-6 h-6 text-cyan-400" />}
-              label={t('platinumTrophies')}
-              value={psnStats.platinum}
-              subtext={t('hundredPercentCompleted')}
-            />
-          </>
-        )}
-      </div>
-
-      <div className="flex border-b border-white/5 mb-8 overflow-x-auto no-scrollbar">
-        <button
-          onClick={() => setActiveTab('activity')}
-          className={`px-6 py-4 text-sm font-bold tracking-widest uppercase transition-all border-b-2 ${
-            activeTab === 'activity' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-white'
-          }`}
-        >
-          {t('recentActivity')}
-        </button>
-        <button
-          onClick={() => setActiveTab('reviews')}
-          className={`px-6 py-4 text-sm font-bold tracking-widest uppercase transition-all border-b-2 ${
-            activeTab === 'reviews' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-white'
-          }`}
-        >
-          {t('myReviews')}
-        </button>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {activeTab === 'activity' ? (
+      {/* Immersive Profile Header */}
+      <div className="relative pt-24 pb-24 px-6">
+        <div className="relative z-10 flex flex-col items-center text-center space-y-8">
+          {/* Avatar with Status Ring */}
           <motion.div 
-            key="activity"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-12"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="relative"
           >
-            {/* Recent Activity */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {stats.recentItems.map(item => (
-                  <Link key={item.id} to={`/content/${item.media?.external_id || item.media_id}`} className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-white/10 transition-colors group">
-                    <div className="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                      <img src={item.media?.poster_url} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate">{item.media?.title}</h3>
-                      <p className="text-xs text-gray-400 capitalize mb-2">{item.media?.media_type}</p>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                          item.status === 'watching' ? 'bg-blue-500/20 text-accent' :
-                          'bg-gray-500/20 text-gray-400'
-                        }`}>
-                          {t(item.status as any)}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Insights */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                <Star className="w-6 h-6 text-yellow-400" />
-                {t('insights')}
-              </h2>
-              <div className="bg-surface border border-white/5 rounded-3xl p-8 space-y-8">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-end">
-                    <span className="text-gray-400 text-sm">{t('favoriteRating')}</span>
-                    <span className="text-3xl font-bold text-white flex items-center gap-2">
-                      {stats.favoriteRating}
-                      <Star className="w-6 h-6 text-yellow-400 fill-current" />
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 italic">
-                    {t('favoriteRatingDesc')}
-                  </p>
+             <div className="w-36 h-36 rounded-[48px] bg-gradient-to-br from-primary via-[#030308] to-accent p-1 shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
+                <div className="w-full h-full rounded-[44px] bg-[#030308] overflow-hidden border-4 border-[#030308]">
+                   <img src={avatarUrl || user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80'} className="w-full h-full object-cover" alt="" />
                 </div>
+             </div>
+             <motion.div 
+               animate={{ rotate: 360 }}
+               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+               className="absolute -inset-2 border-2 border-dashed border-primary/20 rounded-[56px] pointer-events-none" 
+             />
+             <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-2xl border-4 border-[#030308]">
+                <span className="text-[14px] font-black italic">LV.{stats.level}</span>
+             </div>
+          </motion.div>
 
-                <div className="space-y-4">
-                  <h4 className="text-sm font-medium text-gray-300">{t('genreDistribution')}</h4>
-                  <div className="space-y-3">
-                    {stats.topGenres.map((genre, i) => (
-                      <div key={genre} className="space-y-1">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">{genre}</span>
-                          <span className="text-white">{100 - (i * 20)}%</span>
-                        </div>
-                        <Progress value={100 - (i * 20)} className="h-1.5" />
-                      </div>
-                    ))}
-                  </div>
+          <div className="space-y-2">
+             <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase">{username}</h1>
+             <div className="flex items-center justify-center gap-3">
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{user?.email}</span>
+                <div className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 italic">
+                   {isPublic ? <Globe className="w-3 h-3 shrink-0" /> : <Lock className="w-3 h-3 shrink-0 text-gray-500" />}
+                   {isPublic ? 'Visible' : 'Encrypted'}
+                </span>
+             </div>
+          </div>
+
+          <div className="flex gap-4">
+             <PremiumButton variant="glass" size="lg" className="rounded-full px-10 h-14 bg-white/5 border-white/10 hover:bg-white/10" onClick={() => navigate('/settings')}>
+                <Settings className="w-5 h-5 mr-3" /> {t('settings')}
+             </PremiumButton>
+             <PremiumButton 
+               variant="glass" 
+               size="icon" 
+               className="rounded-full w-14 h-14 border-white/10 relative overflow-visible"
+               onClick={toggleLanguage}
+             >
+                <Globe className={cn("w-6 h-6 transition-all duration-500", language === 'ar' ? "text-primary scale-110 rotate-12" : "text-gray-400")} />
+                <div className="absolute -bottom-1 -right-1 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter shadow-lg">
+                  {language}
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="reviews"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            {reviewsLoading ? (
-              <div className="col-span-full py-20 flex justify-center">
-                <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-              </div>
-            ) : userReviews.length > 0 ? (
-              userReviews.map((review) => (
-                <Link 
-                  key={review.id} 
-                  to={`/content/${review.media_id}`}
-                  className="bg-surface border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all group"
-                >
-                  <div className="flex p-4 gap-4">
-                    <div className="w-20 h-28 rounded-xl overflow-hidden flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
-                      <img src={review.media_details?.poster_url} className="w-full h-full object-cover" alt="" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-bold text-white truncate pr-2">{review.media_details?.title}</h3>
-                        <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded text-[10px] font-black">
-                          <Star className="size-2.5 fill-current" />
-                          {review.rating}
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-500 mb-3 line-clamp-3 leading-relaxed italic">
-                        "{review.content}"
-                      </p>
-                      <div className="flex justify-between items-center text-[10px] text-gray-600 font-bold uppercase tracking-wider">
-                        <span>{new Date(review.created_at).toLocaleDateString()}</span>
-                        {review.contains_spoilers && (
-                          <span className="text-yellow-600 flex items-center gap-1">
-                            <AlertTriangle className="size-2.5" /> Spoilers
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white/5 rounded-3xl border border-dashed border-white/10 text-center">
-                <MessageSquare className="size-10 text-gray-700 mb-4" />
-                <p className="text-gray-400 font-bold">No reviews yet</p>
-                <p className="text-sm text-gray-600 mt-1">Start reviewing your favorite media to see them here.</p>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function StatCard({ icon, label, value, subtext }: { icon: React.ReactNode, label: string, value: string | number, subtext: string }) {
-  return (
-    <div className="bg-surface border border-white/5 p-6 rounded-2xl hover:border-white/10 transition-all group">
-      <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-        {icon}
+             </PremiumButton>
+          </div>
+        </div>
       </div>
-      <div className="space-y-1">
-        <p className="text-sm text-gray-400 font-medium">{label}</p>
-        <p className="text-3xl font-bold text-white">{value}</p>
-        <p className="text-xs text-gray-500">{subtext}</p>
+
+      <div className="relative z-10 -mt-10 px-8 space-y-14">
+         {/* Level Progress Dashboard */}
+         <section className="space-y-6">
+            <div className="flex items-center justify-between">
+               <SectionHeader title="Experience" subtitle="SYNC PROGRESS TO NEXT TIER" />
+               <span className="text-[10px] font-black text-primary italic uppercase tracking-widest">{stats.total} TOTAL UNITS</span>
+            </div>
+            <PremiumCard className="p-8 border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent">
+               <div className="space-y-6">
+                  <div className="flex justify-between items-end">
+                     <div>
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Rank Progress</p>
+                        <h4 className="text-xl font-black text-white italic tracking-tighter uppercase">Master Recon Tier</h4>
+                     </div>
+                     <span className="text-primary font-black italic">{(stats.progress * 100).toFixed(0)}%</span>
+                  </div>
+                  <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden p-0.5">
+                     <motion.div 
+                       initial={{ width: 0 }}
+                       animate={{ width: `${stats.progress * 100}%` }}
+                       className="h-full bg-primary rounded-full shadow-[0_0_20px_rgba(var(--color-primary-rgb),1)]" 
+                     />
+                  </div>
+               </div>
+            </PremiumCard>
+         </section>
+
+         {/* Bento Stats Grid */}
+         <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 grid grid-cols-3 gap-4">
+               <div className="premium-glass p-6 rounded-[32px] border border-white/5 flex flex-col items-center justify-center space-y-2 group hover:bg-white/[0.03] transition-all">
+                  <StatWidget label="MOVIES" value={stats.movies} color="text-primary" className="bg-transparent border-0 p-0 items-center justify-center" />
+               </div>
+               <div className="premium-glass p-6 rounded-[32px] border border-white/5 flex flex-col items-center justify-center space-y-2 group hover:bg-white/[0.03] transition-all">
+                  <StatWidget label="SERIES" value={stats.series} color="text-accent" className="bg-transparent border-0 p-0 items-center justify-center" />
+               </div>
+               <div className="premium-glass p-6 rounded-[32px] border border-white/5 flex flex-col items-center justify-center space-y-2 group hover:bg-white/[0.03] transition-all">
+                  <StatWidget label="GAMES" value={stats.games} color="text-purple-400" className="bg-transparent border-0 p-0 items-center justify-center" />
+               </div>
+            </div>
+         </div>
+
+         {/* Identity Badges - Technical Editorial Look */}
+         <section className="space-y-8">
+            <SectionHeader 
+              title="Intelligence" 
+              subtitle="EARNED DEPLOYMENT BADGES" 
+              action={<Link to="/achievements" className="text-[10px] font-black text-primary uppercase tracking-widest italic group overflow-hidden">View Dossier <ChevronRight className="w-3 h-3 inline group-hover:translate-x-1 transition-transform" /></Link>}
+            />
+            <PremiumCard className="p-10 border-white/5 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
+                  <ShieldCheck className="w-48 h-48" />
+               </div>
+               <div className="relative z-10">
+                  <Badges />
+               </div>
+            </PremiumCard>
+         </section>
+
+         {/* Friends Sync - Immersive List */}
+         <section className="space-y-8">
+            <SectionHeader title="Neural Net" subtitle="NETWORK CONNECTIONS" />
+            <div className="premium-glass p-8 rounded-[48px] border border-white/5">
+               <div className="flex items-center justify-between">
+                  <div className="flex -space-x-5">
+                     {friends.length > 0 ? (
+                       friends.slice(0, 6).map(f => {
+                         const friendProfile = f.sender_id === user?.id ? f.receiver : f.sender;
+                         return (
+                           <div key={f.id} className="relative group" onClick={() => navigate(`/user/${friendProfile?.username}`)}>
+                              <motion.img 
+                                whileHover={{ y: -8, zIndex: 50, scale: 1.1 }}
+                                src={friendProfile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'} 
+                                className="w-16 h-16 rounded-[24px] border-4 border-[#030308] bg-[#030308] grayscale hover:grayscale-0 transition-all cursor-pointer shadow-xl object-cover" 
+                                alt="" 
+                              />
+                              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-primary w-2 h-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                           </div>
+                         );
+                       })
+                     ) : (
+                       <div className="flex items-center gap-3 text-gray-700">
+                          <Users className="w-6 h-6" />
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Zero Connections Detect</span>
+                       </div>
+                     )}
+                     {friends.length > 6 && (
+                       <div className="w-16 h-16 rounded-[24px] border-4 border-[#030308] bg-white/5 flex items-center justify-center text-[11px] font-black text-gray-500 backdrop-blur-xl">
+                          +{friends.length - 6}
+                       </div>
+                     )}
+                  </div>
+                  <PremiumButton variant="glass" size="icon" className="rounded-2xl h-14 w-14 border-white/10 active:scale-90" onClick={() => navigate('/friends')}>
+                     <Plus className="w-6 h-6 text-primary" />
+                  </PremiumButton>
+               </div>
+            </div>
+         </section>
+
+         {/* Insights CTA - Refined Visual */}
+         <motion.section 
+           whileHover={{ y: -4 }}
+           className="premium-glass p-12 rounded-[56px] border border-primary/20 relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all bg-gradient-to-br from-primary/10 via-transparent to-transparent shadow-2xl"
+           onClick={() => navigate('/wrapped')}
+         >
+            <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12 group-hover:rotate-0 transition-transform duration-1000">
+               <TrendingUp className="w-48 h-48 text-primary" />
+            </div>
+            <div className="relative z-10 space-y-6">
+               <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-primary/20 rounded-full border border-primary/30">
+                  <Flame className="w-4 h-4 text-primary animate-pulse" />
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Seasonal Analysis</span>
+               </div>
+               <h3 className="text-4xl font-black text-white italic leading-tight uppercase tracking-tighter">Transmission:<br /><span className="text-primary italic-none">Wrapped.</span></h3>
+               <p className="text-base font-medium text-gray-500 max-w-[280px] leading-relaxed">
+                 Access a high-fidelity data visualization of your media consumption footprint.
+               </p>
+               <div className="pt-4 flex items-center gap-4 text-white font-black text-sm uppercase tracking-widest group">
+                  INITIALIZE RECAP <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform text-primary" />
+               </div>
+            </div>
+         </motion.section>
       </div>
     </div>
   );

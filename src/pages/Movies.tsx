@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
-import { ContentCard } from '@/components/ContentCard';
+import { 
+  GameCard, 
+  SectionHeader, 
+  PremiumButton,
+  Skeleton 
+} from '@/components/premium';
 import { Film, Filter, Smile } from 'lucide-react';
 import { fetchTrendingMovies, fetchPopularMovies, fetchMoviesByGenre, MediaItem } from '@/services/api';
-import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguageStore } from '@/store/useLanguageStore';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '@/lib/utils';
 
 const MOVIE_GENRES = [
   { id: '28', nameKey: 'action' },
@@ -18,16 +25,17 @@ const MOVIE_GENRES = [
 ];
 
 const MOODS = [
-  { id: 'happy', nameKey: 'happy', genres: ['35', '16', '10751'] }, // Comedy, Animation, Family
-  { id: 'sad', nameKey: 'sad', genres: ['18', '10749'] }, // Drama, Romance
-  { id: 'excited', nameKey: 'excited', genres: ['28', '12', '878'] }, // Action, Adventure, Sci-Fi
-  { id: 'scared', nameKey: 'scared', genres: ['27', '53'] }, // Horror, Thriller
-  { id: 'relaxed', nameKey: 'relaxed', genres: ['99', '36', '10402'] }, // Documentary, History, Music
+  { id: 'happy', nameKey: 'happy', genres: ['35', '16', '10751'] },
+  { id: 'sad', nameKey: 'sad', genres: ['18', '10749'] },
+  { id: 'excited', nameKey: 'excited', genres: ['28', '12', '878'] },
+  { id: 'scared', nameKey: 'scared', genres: ['27', '53'] },
+  { id: 'relaxed', nameKey: 'relaxed', genres: ['99', '36', '10402'] },
 ];
 
 export default function Movies() {
   const { t } = useTranslation();
   const { language } = useLanguageStore();
+  const navigate = useNavigate();
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [popular, setPopular] = useState<MediaItem[]>([]);
   const [genreMovies, setGenreMovies] = useState<MediaItem[]>([]);
@@ -82,124 +90,167 @@ export default function Movies() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-            <Film className="w-5 h-5 md:w-6 md:h-6 text-white" />
+    <div className="flex flex-col min-h-screen bg-[#030308] pb-40 animate-in fade-in duration-700">
+      {/* Immersive Hero Header */}
+      <div className="pt-24 px-6 space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-[22px] bg-gradient-to-br from-primary to-accent p-0.5 shadow-2xl">
+              <div className="w-full h-full rounded-[20px] bg-[#030308] flex items-center justify-center">
+                <Film className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase">{t('movies')}</h1>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mt-1">CINEMATIC COLLECTIONS</p>
+            </div>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('movies')}</h1>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Genre Selection */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-primary" />
+              <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{t('browseByGenre')}</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button 
+                onClick={() => handleGenreSelect(null)}
+                className={cn(
+                  "px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95",
+                  selectedGenre === null && selectedMood === null
+                    ? "bg-primary border-primary text-white shadow-lg"
+                    : "bg-white/5 border-white/5 text-gray-500 hover:text-white"
+                )}
+              >
+                {t('all')}
+              </button>
+              {MOVIE_GENRES.map(genre => (
+                <button 
+                  key={genre.id}
+                  onClick={() => handleGenreSelect(genre.id)}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95",
+                    selectedGenre === genre.id
+                      ? "bg-primary border-primary text-white shadow-lg"
+                      : "bg-white/5 border-white/5 text-gray-500 hover:text-white"
+                  )}
+                >
+                  {t(genre.nameKey as any)}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Mood Selection */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Smile className="w-4 h-4 text-accent" />
+              <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{t('whatsYourMood')}</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {MOODS.map(mood => (
+                <button 
+                  key={mood.id}
+                  onClick={() => handleMoodSelect(mood.id)}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95",
+                    selectedMood === mood.id
+                      ? "bg-accent border-accent text-white shadow-lg"
+                      : "bg-white/5 border-white/5 text-gray-500 hover:text-white"
+                  )}
+                >
+                  {t(mood.nameKey as any)}
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-        {/* Genre Filter */}
-        <section>
-          <div className="flex items-center gap-2 mb-4 md:mb-6">
-            <Filter className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('browseByGenre')}</h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button 
-              variant={selectedGenre === null && selectedMood === null ? "default" : "outline"}
-              onClick={() => handleGenreSelect(null)}
-              className="rounded-full text-xs md:text-sm h-8 md:h-10"
+      <div className="px-6 py-12 space-y-16">
+        <AnimatePresence mode="wait">
+          {selectedGenre || selectedMood ? (
+            <motion.section 
+              key="filtered"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
             >
-              {t('all')}
-            </Button>
-            {MOVIE_GENRES.map(genre => (
-              <Button 
-                key={genre.id}
-                variant={selectedGenre === genre.id ? "default" : "outline"}
-                onClick={() => handleGenreSelect(genre.id)}
-                className="rounded-full text-xs md:text-sm h-8 md:h-10"
-              >
-                {t(genre.nameKey as any)}
-              </Button>
-            ))}
-          </div>
-        </section>
-
-        {/* Mood Filter */}
-        <section>
-          <div className="flex items-center gap-2 mb-4 md:mb-6">
-            <Smile className="w-4 h-4 md:w-5 md:h-5 text-secondary" />
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('whatsYourMood')}</h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {MOODS.map(mood => (
-              <Button 
-                key={mood.id}
-                variant={selectedMood === mood.id ? "secondary" : "outline"}
-                onClick={() => handleMoodSelect(mood.id)}
-                className="rounded-full text-xs md:text-sm h-8 md:h-10"
-              >
-                {t(mood.nameKey as any)}
-              </Button>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {selectedGenre || selectedMood ? (
-        <section>
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">
-            {selectedGenre 
-              ? `${t(MOVIE_GENRES.find(g => g.id === selectedGenre)?.nameKey as any)} ${t('movies')}`
-              : `${t(MOODS.find(m => m.id === selectedMood)?.nameKey as any)} ${t('moodRecommendations')}`
-            }
-          </h2>
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {[...Array(10)].map((_, i) => (
-                <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
-              ))}
-            </div>
+              <SectionHeader 
+                title={selectedGenre 
+                  ? t(MOVIE_GENRES.find(g => g.id === selectedGenre)?.nameKey as any)
+                  : t(MOODS.find(m => m.id === selectedMood)?.nameKey as any)
+                }
+                subtitle={selectedGenre ? t('movies').toUpperCase() : "MOOD MATCHED"} 
+              />
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                   {[...Array(10)].map((_, i) => <Skeleton key={i} variant="card" className="h-[280px]" />)}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                  {genreMovies.map(item => (
+                    <GameCard 
+                      key={item.external_id} 
+                      title={item.title} 
+                      poster={item.poster_url} 
+                      rating={item.rating}
+                      onClick={() => navigate(`/content/${item.external_id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </motion.section>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {genreMovies.map(item => (
-                <ContentCard key={item.external_id} item={item} />
-              ))}
+            <div className="space-y-16">
+              <section className="space-y-8">
+                <SectionHeader title={t('trending')} subtitle="SITUATION REPORT" />
+                {loading ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} variant="card" className="h-[280px]" />)}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {trending.map(item => (
+                      <GameCard 
+                        key={item.external_id} 
+                        title={item.title} 
+                        poster={item.poster_url} 
+                        rating={item.rating}
+                        onClick={() => navigate(`/content/${item.external_id}`)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-8">
+                <SectionHeader title={t('popularMovies')} subtitle="COMMUNITY FAVORITES" />
+                {loading ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} variant="card" className="h-[280px]" />)}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {popular.map(item => (
+                      <GameCard 
+                        key={item.external_id} 
+                        title={item.title} 
+                        poster={item.poster_url} 
+                        rating={item.rating}
+                        onClick={() => navigate(`/content/${item.external_id}`)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
           )}
-        </section>
-      ) : (
-        <>
-          <section>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">{t('trending')}</h2>
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {trending.map(item => (
-                  <ContentCard key={item.external_id} item={item} />
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">{t('popularMovies')}</h2>
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-card rounded-xl animate-pulse border border-border"></div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {popular.map(item => (
-                  <ContentCard key={item.external_id} item={item} />
-                ))}
-              </div>
-            )}
-          </section>
-        </>
-      )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -28,7 +28,7 @@ async function startServer() {
       res.json(data);
     } catch (error) {
       console.error('Steam API Proxy Error:', error);
-      res.status(500).json({ error: 'Failed to fetch from Steam' });
+      res.status(500).json({ error: 'Proxy request to Steam failed' });
     }
   });
 
@@ -38,7 +38,10 @@ async function startServer() {
   if (!isProduction) {
     console.log("Starting server in development mode with Vite middleware...");
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { 
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);

@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useStore, WatchlistItem } from '@/store/useStore';
 import { fetchMediaDetails, MediaItem } from '@/services/api';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
-import { format, differenceInSeconds, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth } from 'date-fns';
-import { CalendarDays, List } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import { format, differenceInSeconds, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { CalendarDays, List, Timer, Bell, Play } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
 interface EpisodeItem {
   series: MediaItem;
@@ -17,63 +15,29 @@ interface EpisodeItem {
 }
 
 export function Countdown() {
-  const { watchlist, updateWatchlistItem } = useStore();
+  const { watchlist } = useStore();
   const [upcoming, setUpcoming] = useState<EpisodeItem[]>([]);
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkNotifications = async (episodes: EpisodeItem[]) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const now = new Date();
-      for (const item of episodes) {
-        if (item.airDate && item.airDate > now && differenceInSeconds(item.airDate, now) < 86400) {
-          try {
-            const { error } = await supabase.from('notifications').insert({
-              user_id: user.id,
-              message: `New episode of ${item.series.title} airs soon!`,
-              type: 'countdown'
-            });
-            if (error) {
-              console.error('Error inserting notification:', error);
-            } else {
-              toast.info(`New episode of ${item.series.title} airs soon!`);
-            }
-          } catch (e) {
-            console.error('Unexpected error checking notifications:', e);
-          }
-        }
-      }
-    };
-
     const loadData = async () => {
       setLoading(true);
-      console.log('Starting data fetch, watchlist:', watchlist);
-      
       const seriesItems = watchlist.filter(
         (item) => item.media?.media_type === 'series' && 
                  (item.status === 'watching' || item.status === 'planned')
       );
-      console.log('Filtering seriesItems:', seriesItems);
 
       const episodes = await Promise.all(
         seriesItems.map(async (item) => {
           const rawExternalId = item.media?.external_id || '';
           const tmdbId = rawExternalId.replace('tmdb_series_', '').replace('tmdb_movie_', '').replace('tmdb_', '');
-          console.log(`[Countdown Debug] Raw External ID: ${rawExternalId}, Stripped TMDB ID: ${tmdbId}`);
           
-          if (!tmdbId || tmdbId.startsWith('rawg_')) {
-            console.log(`[Countdown Debug] Skipping non-TMDB item: ${item.media?.title}`);
-            return null;
-          }
+          if (!tmdbId || tmdbId.startsWith('rawg_')) return null;
 
           const details = await fetchMediaDetails(rawExternalId, 'series');
-          console.log(`[Countdown Debug] Fetched details for ${item.media?.title}:`, details);
-          
           if (details?.next_episode_to_air) {
-            console.log(`[Countdown Debug] Found next episode for ${details.title}:`, details.next_episode_to_air);
             return {
               series: details,
               libraryItem: item,
@@ -85,9 +49,7 @@ export function Countdown() {
             const airDate = new Date(details.last_episode_to_air.air_date);
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
             if (airDate >= thirtyDaysAgo) {
-              console.log(`Found recently aired episode for ${details.title}`);
               return {
                 series: details,
                 libraryItem: item,
@@ -97,191 +59,122 @@ export function Countdown() {
               };
             }
           }
-          
-          if (details?.status === 'Returning Series' && !details?.next_episode_to_air) {
-            return {
-              series: details,
-              libraryItem: item,
-              episode: null,
-              airDate: null,
-              type: 'tba' as const
-            };
-          }
-          
-          console.log(`No applicable episode for ${details?.title || item.media?.title}`);
-          return null;
+          return {
+            series: details as MediaItem,
+            libraryItem: item,
+            episode: null,
+            airDate: null,
+            type: 'tba' as const
+          };
         })
       );
 
-      const validEpisodes = episodes.filter((i): i is EpisodeItem => i !== null);
-      setUpcoming(validEpisodes);
-      console.log('Filtered valid episodes:', validEpisodes);
-      checkNotifications(validEpisodes);
+      const validEpisodes = episodes.filter((e): e is EpisodeItem => e !== null);
+      setUpcoming(validEpisodes.sort((a, b) => {
+        if (!a.airDate) return 1;
+        if (!b.airDate) return -1;
+        return a.airDate.getTime() - b.airDate.getTime();
+      }));
       setLoading(false);
     };
 
     loadData();
   }, [watchlist]);
 
-  if (loading) return <div className="text-white p-8">Loading countdown...</div>;
-
-  if (upcoming.length === 0) {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center mt-20 p-8 space-y-4">
-        <p className="text-gray-500 text-lg">All caught up! 🎉</p>
-        <p className="text-gray-600 text-sm">No upcoming episodes for your current series.</p>
+      <div className="min-h-screen bg-[#030308] p-6 pt-20 space-y-6">
+        <div className="h-10 w-48 bg-white/5 rounded-full animate-pulse" />
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-48 rounded-[32px] bg-white/5 animate-pulse" />
+        ))}
       </div>
     );
   }
 
-  const today = upcoming.filter(i => i.airDate && format(i.airDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'));
-  const others = upcoming.filter(i => !today.includes(i));
-
   return (
-    <div className="p-4 md:p-8 text-white max-w-4xl mx-auto space-y-8">
-      <div className="flex justify-between items-center gap-4">
-        <h1 className="text-2xl md:text-3xl font-bold">Upcoming Episodes</h1>
-        <div className="flex bg-gray-800 rounded-lg p-1">
-          <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('list')}><List className="w-4 h-4 mr-2" /> List</Button>
-          <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('calendar')}><CalendarDays className="w-4 h-4 mr-2" /> Calendar</Button>
+    <div className="flex flex-col min-h-screen bg-[#030308] pb-24 animate-in fade-in duration-500">
+      <div className="sticky top-0 z-[80] bg-[#030308]/80 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex items-center justify-between">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-black text-primary tracking-[0.2em] uppercase">AUTO-TRACKED</span>
+          <h1 className="text-2xl font-black text-white italic">UPCOMING<span className="text-primary italic-none">.</span></h1>
+        </div>
+        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
+          <button 
+            onClick={() => setView('list')}
+            className={`p-2 rounded-xl transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg' : 'text-gray-500'}`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => setView('calendar')}
+            className={`p-2 rounded-xl transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg' : 'text-gray-500'}`}
+          >
+            <CalendarDays className="w-4 h-4" />
+          </button>
         </div>
       </div>
-      
-      {view === 'list' ? (
-        <>
-          {today.length > 0 && <HeroSection episode={today[0]} />}
-          
-          <section>
-            <h2 className="text-xl font-bold mb-4">Airing Today</h2>
-            <div className="grid gap-4">
-              {today.map((ep, i) => <EpisodeCard key={i} ep={ep} updateWatchlistItem={updateWatchlistItem} />)}
-            </div>
-          </section>
 
-          <section>
-            <h2 className="text-xl font-bold mb-4">Coming Soon / Ongoing</h2>
-            <div className="grid gap-4">
-              {others.map((ep, i) => <EpisodeCard key={i} ep={ep} updateWatchlistItem={updateWatchlistItem} />)}
-            </div>
-          </section>
-        </>
-      ) : (
-        <CalendarView episodes={upcoming.filter(i => i.airDate)} />
+      <div className="px-6 py-8 space-y-8">
+        <AnimatePresence>
+          {upcoming.map((item, idx) => (
+            <motion.div 
+              key={`${item.series.external_id}-${item.episode?.id || idx}`}
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              onClick={() => navigate(`/content/${item.series.external_id}`)}
+              className="premium-glass p-6 rounded-[32px] border border-white/5 flex gap-5 items-center group active:scale-[0.98] transition-all relative overflow-hidden"
+            >
+              {item.type === 'upcoming' && (
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] rounded-full translate-x-1/2 -translate-y-1/2" />
+              )}
+              
+              <div className="relative shrink-0">
+                <img src={item.series.poster_url} className="w-20 h-28 rounded-2xl object-cover shadow-xl border border-white/5" alt="" />
+                {item.type === 'upcoming' && (
+                  <div className="absolute -top-2 -right-2 w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg border-2 border-[#030308]">
+                    <Bell className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${item.type === 'upcoming' ? 'text-primary' : 'text-gray-500'}`}>
+                    {item.type === 'upcoming' ? 'Airing Soon' : item.type === 'recent' ? 'Recently Aired' : 'TBA'}
+                  </span>
+                </div>
+                <h2 className="text-lg font-black text-white leading-tight truncate">{item.series.title}</h2>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-gray-400 group-hover:text-primary transition-colors truncate">
+                    {item.episode ? `S${item.episode.season_number} E${item.episode.episode_number}: ${item.episode.name}` : 'Next Episode Date Unset'}
+                  </p>
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+                    {item.airDate ? format(item.airDate, 'EEEE, MMM do, yyyy') : 'No Date Linked'}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {upcoming.length === 0 && (
+        <div className="py-20 flex flex-col items-center justify-center text-center px-12 space-y-6 opacity-40">
+          <Timer className="w-16 h-16 text-gray-600" />
+          <div className="space-y-2">
+            <h3 className="text-lg font-black text-white italic">Nothing is Airing Soon</h3>
+            <p className="text-sm text-gray-500 font-medium">Add more series to your "Currently Watching" list to track upcoming episodes.</p>
+          </div>
+          <button 
+            onClick={() => navigate('/home')}
+            className="px-8 h-12 bg-white/5 border border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest text-white active:scale-95 transition-all"
+          >
+            Discover Content
+          </button>
+        </div>
       )}
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status?: string }) {
-  if (!status) return null;
-  const colors: Record<string, string> = {
-    'Returning Series': 'bg-green-500/10 text-green-400 border-green-500/20',
-    'Ended': 'bg-gray-500/10 text-gray-400 border-gray-500/20',
-    'Canceled': 'bg-red-500/10 text-red-400 border-red-500/20',
-    'In Production': 'bg-blue-500/10 text-accent border-blue-500/20',
-  };
-  return <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${colors[status] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>{status}</span>;
-}
-
-function CalendarView({ episodes }: { episodes: any[] }) {
-  const [currentDate] = useState(new Date());
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(monthStart);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  
-  return (
-    <div className="bg-gray-900 p-6 rounded-xl">
-        <div className="grid grid-cols-7 gap-2">
-            {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d} className="text-center font-bold text-gray-500">{d}</div>)}
-            {[...Array(monthStart.getDay())].map((_, i) => <div key={i} />)}
-            {days.map((date) => {
-                const dayEpisodes = episodes.filter(e => format(e.airDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'));
-                return (
-                    <div key={date.toString()} className="h-20 border border-white/10 p-2 relative">
-                        {date.getDate()}
-                        {dayEpisodes.length > 0 && <div className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-blue-500" />}
-                    </div>
-                )
-            })}
-        </div>
-    </div>
-  );
-}
-
-function HeroSection({ episode }: { episode: EpisodeItem }) {
-  const [timeLeft, setTimeLeft] = useState('');
-  
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      const diff = differenceInSeconds(episode.airDate, now);
-      if (diff <= 0) {
-        setTimeLeft('AIRING NOW');
-        clearInterval(timer);
-      } else {
-        const h = Math.floor(diff / 3600);
-        const m = Math.floor((diff % 3600) / 60);
-        const s = diff % 60;
-        setTimeLeft(`${h}h ${m}m ${s}s`);
-      }
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [episode.airDate]);
-
-  return (
-    <div className="bg-gradient-to-r from-blue-900 to-purple-900 p-8 rounded-2xl">
-      <h2 className="text-sm font-uppercase text-blue-300">Next Episode</h2>
-      <p className="text-4xl font-bold">{episode.series.title}</p>
-      <p className="text-xl">{episode.episode.name}</p>
-      <p className="text-6xl font-mono mt-4">{timeLeft}</p>
-    </div>
-  );
-}
-
-function EpisodeCard({ ep, updateWatchlistItem }: { ep: EpisodeItem, updateWatchlistItem: (id: string, updates: any) => Promise<void>, key?: any }) {
-  const progress = 50; // Placeholder progress
-
-  const handleMarkWatched = () => {
-    updateWatchlistItem(ep.libraryItem.id, { status: 'completed' });
-    toast.success(`Marked ${ep.series.title} as watched`);
-  };
-
-  return (
-    <div className="bg-gray-900 p-4 rounded-xl flex items-center gap-4 border border-white/10 flex-wrap relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-2">
-        <StatusBadge status={ep.series.status} />
-      </div>
-      
-      <img src={ep.series.poster_url} className="w-16 h-24 object-cover rounded shadow-lg" alt="" />
-      
-      <div className="flex-1 min-w-[200px] space-y-1">
-        <div className="flex items-center gap-2">
-          <p className="font-bold text-lg">{ep.series.title}</p>
-          {ep.type === 'recent' && <span className="text-[10px] bg-gray-600 px-1 rounded text-white uppercase font-bold">Recently Aired</span>}
-          {ep.type === 'tba' && <span className="text-[10px] bg-orange-600/20 border border-orange-500/30 text-orange-400 px-1 rounded uppercase font-bold">TBA</span>}
-        </div>
-        
-        {ep.type === 'tba' ? (
-          <p className="text-sm text-orange-400 font-medium italic">Season ongoing — Next episode TBA</p>
-        ) : (
-          <>
-            <p className="text-sm text-gray-400 font-medium">S{ep.episode.season_number} E{ep.episode.episode_number} — {ep.episode.name}</p>
-            {ep.airDate && (
-              <p className="text-xs text-accent">{format(ep.airDate, 'EEEE, MMM d, yyyy')}</p>
-            )}
-          </>
-        )}
-        
-        <div className="w-full mt-2 pt-2">
-            <div className="flex justify-between text-[10px] mb-1">
-                <span className="text-gray-500">Progress</span>
-                <span className="text-gray-400">{progress}%</span>
-            </div>
-            <Progress value={progress} className="h-1.5" />
-        </div>
-      </div>
-      
-      <Button variant="outline" size="sm" onClick={handleMarkWatched} className="md:ml-auto">Mark Series Finished</Button>
     </div>
   );
 }

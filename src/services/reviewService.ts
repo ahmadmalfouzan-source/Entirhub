@@ -33,7 +33,7 @@ export const createReview = async (
   const type = mediaId.includes('_game_') ? 'game' : 
                mediaId.includes('_series_') ? 'series' : 'movie';
   const details = await fetchMediaDetails(mediaId, type as any);
-  if (!details) throw new Error('Failed to fetch media details');
+  if (!details) throw new Error('Could not resolve media details for review');
 
   const uuidMediaId = await ensureMediaExists({
     external_id: mediaId,

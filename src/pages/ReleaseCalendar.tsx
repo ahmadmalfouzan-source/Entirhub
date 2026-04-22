@@ -62,7 +62,7 @@ export function ReleaseCalendar() {
         const data = await fetchCalendarReleases(start, end);
         setReleases(data);
       } catch (error) {
-        console.error('Failed to fetch calendar data:', error);
+        console.error('Error fetching calendar data:', error);
       } finally {
         setLoading(false);
       }
@@ -148,10 +148,10 @@ export function ReleaseCalendar() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="bg-white/5 rounded-3xl border border-white/10 overflow-hidden">
+        <div className="premium-glass rounded-3xl border border-white/10 overflow-hidden shadow-[var(--shadow-bento)]">
           <div className="grid grid-cols-7 border-b border-white/10 bg-white/5">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-              <div key={d} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <div key={d} className="py-3 text-center text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">
                 {d}
               </div>
             ))}
@@ -205,14 +205,14 @@ export function ReleaseCalendar() {
         {/* Day Panel */}
         <motion.div 
           layout
-          className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-6"
+          className="premium-glass rounded-3xl border border-white/10 p-6 space-y-6 shadow-[var(--shadow-bento)]"
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <span className="text-accent">●</span>
+            <h2 className="text-xl font-black flex items-center gap-2 drop-shadow-md">
+              <span className="text-accent drop-shadow-[0_0_8px_var(--color-accent-glow)]">●</span>
               Releases for {format(selectedDate, 'EEEE, MMM do')}
             </h2>
-            <Badge variant="outline" className="text-gray-400">
+            <Badge variant="outline" className="text-gray-400 border-white/20">
               {selectedDayReleases.length} {selectedDayReleases.length === 1 ? 'Release' : 'Releases'}
             </Badge>
           </div>

@@ -1,0 +1,19 @@
+import { Season, WatchedEpisode } from '@/services/episodes';
+import { WatchlistItem } from '@/store/useStore';
+
+export function calculateMediaProgress(
+  item: WatchlistItem | undefined,
+  watchedEpisodes: WatchedEpisode[],
+  seasons: Season[]
+): number {
+  if (!item) return 0;
+
+  if (item.media?.media_type === 'series') {
+    const totalEpisodes = seasons.reduce((acc, s) => acc + s.episode_count, 0);
+    if (totalEpisodes === 0) return 0;
+    return (watchedEpisodes.length / totalEpisodes);
+  }
+
+  // Games and others: Use hours_played if available, normalized to 100 hours or just a percentage
+  return (item.hours_played || 0) / 100;
+}

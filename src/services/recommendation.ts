@@ -178,7 +178,7 @@ export async function getRecommendations(): Promise<RecommendationItem[]> {
           }
         }
       } catch (err) {
-        console.error(`Failed to fetch details for ${rec.title}:`, err);
+        console.error(`Error resolving details for ${rec.title}:`, err);
       }
     }));
 

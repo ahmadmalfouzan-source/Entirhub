@@ -37,6 +37,30 @@ export interface SeasonRating {
 }
 
 /**
+ * Helper to resolve internal media UUID from external ID if needed
+ */
+async function resolveMediaId(mediaId: string): Promise<string> {
+  // If it already looks like a UUID, return it
+  if (mediaId.length === 36 && mediaId.includes('-')) {
+    return mediaId;
+  }
+
+  // Try to find it in media table by external_id
+  const { data, error } = await supabase
+    .from('media')
+    .select('id')
+    .eq('external_id', mediaId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error resolving media ID:', error);
+    return mediaId;
+  }
+
+  return data?.id || mediaId;
+}
+
+/**
  * Fetches all season ratings for a media item for the current user.
  */
 export async function getSeasonRatings(mediaId: string): Promise<SeasonRating[]> {
@@ -45,11 +69,13 @@ export async function getSeasonRatings(mediaId: string): Promise<SeasonRating[]>
     const user = session?.user;
     if (!user) return [];
 
+    const resolvedId = await resolveMediaId(mediaId);
+
     const { data, error } = await supabase
       .from('season_ratings')
       .select('media_id, season_number, rating')
       .eq('user_id', user.id)
-      .eq('media_id', mediaId);
+      .eq('media_id', resolvedId);
 
     if (error) throw error;
     return data || [];
@@ -68,17 +94,19 @@ export async function saveSeasonRating(mediaId: string, seasonNumber: number, ra
     const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
-    // Ensure mediaId is a valid UUID format (basic check)
-    if (!mediaId || mediaId.length < 30) {
-      console.error('Invalid mediaId for season rating:', mediaId);
-      throw new Error('Invalid media ID');
+    const resolvedId = await resolveMediaId(mediaId);
+    
+    // Final check - table requires UUID
+    if (resolvedId.length < 30) {
+      console.error('Final mediaId still invalid for season rating:', resolvedId);
+      throw new Error('This item must be added to your library before rating seasons.');
     }
 
     const { error } = await supabase
       .from('season_ratings')
       .upsert({
         user_id: user.id,
-        media_id: mediaId,
+        media_id: resolvedId,
         season_number: seasonNumber,
         rating: rating,
         updated_at: new Date().toISOString()
@@ -140,11 +168,13 @@ export async function getWatchedEpisodes(mediaId: string): Promise<WatchedEpisod
     const user = session?.user;
     if (!user) return [];
 
+    const resolvedId = await resolveMediaId(mediaId);
+
     const { data, error } = await supabase
       .from('episode_progress')
       .select('*')
       .eq('user_id', user.id)
-      .eq('media_id', mediaId);
+      .eq('media_id', resolvedId);
 
     if (error) throw error;
     return data || [];
@@ -163,11 +193,13 @@ export async function markEpisodeWatched(mediaId: string, season: number, episod
     const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
+    const resolvedId = await resolveMediaId(mediaId);
+
     const { error } = await supabase
       .from('episode_progress')
       .upsert({
         user_id: user.id,
-        media_id: mediaId,
+        media_id: resolvedId,
         season_number: season,
         episode_number: episode
       }, { onConflict: 'user_id,media_id,season_number,episode_number' });
@@ -188,11 +220,13 @@ export async function unmarkEpisodeWatched(mediaId: string, season: number, epis
     const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
+    const resolvedId = await resolveMediaId(mediaId);
+
     const { error } = await supabase
       .from('episode_progress')
       .delete()
       .eq('user_id', user.id)
-      .eq('media_id', mediaId)
+      .eq('media_id', resolvedId)
       .eq('season_number', season)
       .eq('episode_number', episode);
 
@@ -212,9 +246,11 @@ export async function markSeasonWatched(mediaId: string, season: number, episode
     const user = session?.user;
     if (!user) throw new Error('User not authenticated');
 
+    const resolvedId = await resolveMediaId(mediaId);
+
     const episodes = Array.from({ length: episodeCount }, (_, i) => ({
       user_id: user.id,
-      media_id: mediaId,
+      media_id: resolvedId,
       season_number: season,
       episode_number: i + 1
     }));

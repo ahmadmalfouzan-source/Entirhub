@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
-import { ContentCard } from '@/components/ContentCard';
+import { 
+  GameCard, 
+  SectionHeader, 
+  PremiumButton,
+  Skeleton 
+} from '@/components/premium';
 import { Tv, Filter } from 'lucide-react';
 import { fetchTrendingSeries, fetchPopularSeries, fetchSeriesByGenre, MediaItem } from '@/services/api';
-import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguageStore } from '@/store/useLanguageStore';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '@/lib/utils';
 
 const SERIES_GENRES = [
   { id: '10759', nameKey: 'actionAdventure' },
@@ -20,6 +27,7 @@ const SERIES_GENRES = [
 export default function Series() {
   const { t } = useTranslation();
   const { language } = useLanguageStore();
+  const navigate = useNavigate();
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [popular, setPopular] = useState<MediaItem[]>([]);
   const [genreSeries, setGenreSeries] = useState<MediaItem[]>([]);
@@ -54,107 +62,138 @@ export default function Series() {
   }, [selectedGenre, language]);
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300 ease-in-out">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-            <Tv className="w-5 h-5 md:w-6 md:h-6 text-white" />
+    <div className="flex flex-col min-h-screen bg-[#030308] pb-40 animate-in fade-in duration-700">
+      {/* Immersive Hero Header */}
+      <div className="pt-24 px-6 space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-[22px] bg-gradient-to-br from-primary to-accent p-0.5 shadow-2xl">
+              <div className="w-full h-full rounded-[20px] bg-[#030308] flex items-center justify-center">
+                <Tv className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase">{t('series')}</h1>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mt-1">EPISODIC TRANSMISSIONS</p>
+            </div>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">{t('series')}</h1>
         </div>
+
+        {/* Genre Filter */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-primary" />
+            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{t('browseByGenre')}</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button 
+              onClick={() => setSelectedGenre(null)}
+              className={cn(
+                "px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95",
+                selectedGenre === null
+                  ? "bg-primary border-primary text-white shadow-lg"
+                  : "bg-white/5 border-white/5 text-gray-500 hover:text-white"
+              )}
+            >
+              {t('all')}
+            </button>
+            {SERIES_GENRES.map(genre => (
+              <button 
+                key={genre.id}
+                onClick={() => setSelectedGenre(genre.id)}
+                className={cn(
+                  "px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95",
+                  selectedGenre === genre.id
+                    ? "bg-primary border-primary text-white shadow-lg"
+                    : "bg-white/5 border-white/5 text-gray-500 hover:text-white"
+                )}
+              >
+                {t(genre.nameKey as any)}
+              </button>
+            ))}
+          </div>
+        </section>
       </div>
 
-      {/* Genre Filter */}
-      <section>
-        <div className="flex items-center gap-2 mb-4 md:mb-6">
-          <Filter className="w-4 h-4 md:w-5 md:h-5 text-accent" />
-          <h2 className="text-lg md:text-xl font-semibold text-white">{t('browseByGenre')}</h2>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant={selectedGenre === null ? "default" : "outline"}
-            onClick={() => setSelectedGenre(null)}
-            className={`rounded-full text-xs md:text-sm h-8 md:h-10 ${
-              selectedGenre === null 
-                ? "bg-primary text-white" 
-                : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
-            }`}
-          >
-            {t('all')}
-          </Button>
-          {SERIES_GENRES.map(genre => (
-            <Button 
-              key={genre.id}
-              variant={selectedGenre === genre.id ? "default" : "outline"}
-              onClick={() => setSelectedGenre(genre.id)}
-              className={`rounded-full text-xs md:text-sm h-8 md:h-10 ${
-                selectedGenre === genre.id 
-                  ? "bg-primary text-white" 
-                  : "bg-[#1f2937] text-white border-transparent hover:bg-[#374151]"
-              }`}
+      <div className="px-6 py-12 space-y-16">
+        <AnimatePresence mode="wait">
+          {selectedGenre ? (
+            <motion.section 
+              key="filtered"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
             >
-              {t(genre.nameKey as any)}
-            </Button>
-          ))}
-        </div>
-      </section>
-
-      {selectedGenre ? (
-        <section>
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
-            {t(SERIES_GENRES.find(g => g.id === selectedGenre)?.nameKey as any)} {t('series')}
-          </h2>
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {[...Array(10)].map((_, i) => (
-                <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
-              ))}
-            </div>
+              <SectionHeader 
+                title={t(SERIES_GENRES.find(g => g.id === selectedGenre)?.nameKey as any)}
+                subtitle={t('series').toUpperCase()} 
+              />
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                   {[...Array(10)].map((_, i) => <Skeleton key={i} variant="card" className="h-[280px]" />)}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                  {genreSeries.map(item => (
+                    <GameCard 
+                      key={item.external_id} 
+                      title={item.title} 
+                      poster={item.poster_url} 
+                      rating={item.rating}
+                      onClick={() => navigate(`/content/${item.external_id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </motion.section>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {genreSeries.map(item => (
-                <ContentCard key={item.external_id} item={item} />
-              ))}
+            <div className="space-y-16">
+              <section className="space-y-8">
+                <SectionHeader title={t('trending')} subtitle="SITUATION REPORT" />
+                {loading ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} variant="card" className="h-[280px]" />)}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {trending.map(item => (
+                      <GameCard 
+                        key={item.external_id} 
+                        title={item.title} 
+                        poster={item.poster_url} 
+                        rating={item.rating}
+                        onClick={() => navigate(`/content/${item.external_id}`)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-8">
+                <SectionHeader title={t('popularSeries')} subtitle="COMMUNITY FAVORITES" />
+                {loading ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} variant="card" className="h-[280px]" />)}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                    {popular.map(item => (
+                      <GameCard 
+                        key={item.external_id} 
+                        title={item.title} 
+                        poster={item.poster_url} 
+                        rating={item.rating}
+                        onClick={() => navigate(`/content/${item.external_id}`)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
           )}
-        </section>
-      ) : (
-        <>
-          <section>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{t('trending')}</h2>
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {trending.map(item => (
-                  <ContentCard key={item.external_id} item={item} />
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{t('popularSeries')}</h2>
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-36 sm:h-auto sm:aspect-[2/3] bg-surface rounded-xl animate-pulse border border-white/5"></div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {popular.map(item => (
-                  <ContentCard key={item.external_id} item={item} />
-                ))}
-              </div>
-            )}
-          </section>
-        </>
-      )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

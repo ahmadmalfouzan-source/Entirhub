@@ -40,7 +40,7 @@ export const fetchTrendingMovies = async (lang = 'en-US'): Promise<MediaItem[]> 
   
   return getCacheOrFetch(cacheKey, async () => {
     const res = await fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=${lang}`).catch(() => null);
-    if (!res || !res.ok) throw new Error('Failed to fetch trending movies');
+    if (!res || !res.ok) return [];
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_movie_${item.id}`,
@@ -62,7 +62,7 @@ export const fetchTrendingSeries = async (lang = 'en-US'): Promise<MediaItem[]> 
   
   return getCacheOrFetch(cacheKey, async () => {
     const res = await fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&language=${lang}`).catch(() => null);
-    if (!res || !res.ok) throw new Error('Failed to fetch trending series');
+    if (!res || !res.ok) return [];
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_series_${item.id}`,
@@ -208,7 +208,7 @@ export const fetchPopularMovies = async (lang = 'en-US'): Promise<MediaItem[]> =
   
   return getCacheOrFetch(cacheKey, async () => {
     const res = await fetch(`${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=${lang}`).catch(() => null);
-    if (!res || !res.ok) throw new Error('Failed to fetch popular movies');
+    if (!res || !res.ok) return [];
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_movie_${item.id}`,
@@ -230,7 +230,7 @@ export const fetchMoviesByGenre = async (genreId: string, lang = 'en-US'): Promi
   
   return getCacheOrFetch(cacheKey, async () => {
     const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`).catch(() => null);
-    if (!res || !res.ok) throw new Error('Failed to fetch movies by genre');
+    if (!res || !res.ok) return [];
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_movie_${item.id}`,
@@ -252,7 +252,7 @@ export const fetchPopularSeries = async (lang = 'en-US'): Promise<MediaItem[]> =
   
   return getCacheOrFetch(cacheKey, async () => {
     const res = await fetch(`${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}&language=${lang}`).catch(() => null);
-    if (!res || !res.ok) throw new Error('Failed to fetch popular series');
+    if (!res || !res.ok) return [];
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_series_${item.id}`,
@@ -274,7 +274,7 @@ export const fetchSeriesByGenre = async (genreId: string, lang = 'en-US'): Promi
   
   return getCacheOrFetch(cacheKey, async () => {
     const res = await fetch(`${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}&language=${lang}`).catch(() => null);
-    if (!res || !res.ok) throw new Error('Failed to fetch series by genre');
+    if (!res || !res.ok) return [];
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `tmdb_series_${item.id}`,
@@ -296,7 +296,7 @@ export const fetchTopRatedGames = async (): Promise<MediaItem[]> => {
   
   return getCacheOrFetch(cacheKey, async () => {
     const res = await fetch(`${RAWG_BASE_URL}/games?key=${RAWG_API_KEY}&ordering=-metacritic&page_size=20`).catch(() => null);
-    if (!res || !res.ok) throw new Error('Failed to fetch top rated games');
+    if (!res || !res.ok) return [];
     const data = await res.json();
     return data.results.map((item: any) => ({
       external_id: `rawg_game_${item.id}`,
