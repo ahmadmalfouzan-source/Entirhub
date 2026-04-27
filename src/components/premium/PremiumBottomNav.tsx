@@ -32,31 +32,24 @@ export const PremiumBottomNav: React.FC<PremiumBottomNavProps> = ({ items }) => 
               )}
             >
               <div className={cn(
-                "p-2.5 rounded-2xl transition-all duration-500",
-                isActive ? "bg-primary/10 shadow-[0_0_30px_rgba(var(--color-primary-rgb),0.2)]" : "bg-transparent"
+                "p-2.5 rounded-2xl transition-all duration-500 relative",
+                isActive ? "bg-primary/20 shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.4)]" : "bg-transparent"
               )}>
-                <item.icon className={cn("w-6 h-6 transition-transform duration-500", isActive ? "scale-110" : "scale-100")} />
+                <item.icon className={cn("w-5 h-5 transition-transform duration-500", isActive ? "scale-110" : "scale-100")} />
+                {isActive && (
+                  <motion.div 
+                    layoutId="nav-indicator"
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full shadow-[0_0_10px_var(--color-primary)] border-2 border-[#030308]"
+                  />
+                )}
               </div>
               
-              <AnimatePresence>
-                {isActive && (
-                  <motion.span 
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    className="text-[9px] mt-1 font-black uppercase tracking-[0.2em] italic"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-
-              {isActive && (
-                <motion.div 
-                  layoutId="nav-indicator"
-                  className="absolute -top-[10px] w-12 h-[3px] bg-primary rounded-full shadow-[0_0_12px_var(--color-primary)]"
-                />
-              )}
+              <span className={cn(
+                  "text-[9px] mt-1 font-black uppercase tracking-[0.1em] italic transition-opacity duration-300",
+                  isActive ? "opacity-100" : "opacity-40"
+              )}>
+                {item.label}
+              </span>
             </Link>
           );
         })}

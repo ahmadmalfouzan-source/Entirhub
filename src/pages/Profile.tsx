@@ -60,10 +60,10 @@ export function Profile() {
           .from('profiles')
           .select('username, is_public')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.warn('Profile fetch warning:', profileError);
         }
 
         if (data) {
@@ -82,13 +82,18 @@ export function Profile() {
     init();
   }, [user]);
 
+  const totalXP = watchlist.length * 150 + friends.length * 500;
+  const currentTierXP = Math.floor(totalXP / 1000) * 1000;
+  const nextTierXP = currentTierXP + 1000;
+  const rankProgress = (totalXP - currentTierXP) / 1000;
+
   const stats = {
     movies: watchlist.filter(i => i.media?.media_type === 'movie').length,
     series: watchlist.filter(i => i.media?.media_type === 'series').length,
     games: watchlist.filter(i => i.media?.media_type === 'game').length,
     total: watchlist.length,
     level: Math.floor(watchlist.length / 5) + 1,
-    progress: (watchlist.length % 5) / 5
+    progress: rankProgress
   };
 
   if (loading) {
@@ -250,7 +255,7 @@ export function Profile() {
                      ) : (
                        <div className="flex items-center gap-3 text-gray-700">
                           <Users className="w-6 h-6" />
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Zero Connections Detect</span>
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em]">NO CONNECTIONS DETECTED</span>
                        </div>
                      )}
                      {friends.length > 6 && (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getFeedActivities, toggleLike, addComment, getComments, deleteComment } from '@/services/activityService';
 import { formatDistanceToNow } from 'date-fns';
-import { Heart, MessageSquare, Send, Trash2 } from 'lucide-react';
+import { Heart, MessageSquare, Send, Trash2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useStore } from '@/store/useStore';
@@ -82,7 +82,22 @@ export function Feed() {
   };
 
   if (activities.length === 0) {
-    return <div className="text-center text-gray-500 mt-20">Add friends to see their activity.</div>;
+    return (
+      <div className="flex flex-col min-h-[80vh] items-center justify-center p-6 text-center animate-in fade-in duration-700">
+         <div className="w-24 h-24 rounded-[40px] bg-gradient-to-br from-primary/20 to-accent/20 border border-white/5 flex items-center justify-center mb-6 shadow-2xl">
+           <Users className="w-10 h-10 text-primary opacity-80" />
+         </div>
+         <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase leading-tight mb-3">
+           NO ACTIVITY DETECTED<span className="text-primary">.</span>
+         </h2>
+         <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] max-w-[280px] leading-relaxed mx-auto mb-8">
+           Your network is silent. Add friends to synchronize your feeds and discover what they are experiencing.
+         </p>
+         <Button variant="outline" className="rounded-3xl border-white/10 hover:bg-white/5 px-8 h-12 text-xs font-black tracking-widest uppercase" onClick={() => navigate('/friends')}>
+           FIND CONNECTIONS
+         </Button>
+      </div>
+    );
   }
 
   return (

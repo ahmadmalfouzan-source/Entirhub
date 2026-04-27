@@ -93,17 +93,44 @@ export function Home() {
 
   if (loading) {
     return (
-      <div className="p-6 pt-24 space-y-12 bg-[#030308] min-h-screen">
-        <Skeleton variant="text" className="w-48 h-8" />
-        <Skeleton variant="card" className="w-full aspect-[16/9] rounded-[48px]" />
-        <div className="grid grid-cols-2 gap-4">
-           <Skeleton variant="card" className="h-44 rounded-[32px]" />
-           <Skeleton variant="card" className="h-44 rounded-[32px]" />
+      <div className="p-6 pt-24 space-y-12 bg-[#030308] min-h-screen animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center mb-8">
+           <div className="space-y-2">
+              <Skeleton variant="text" className="w-24 h-3 bg-white/5" />
+              <Skeleton variant="text" className="w-16 h-6 bg-white/5" />
+           </div>
+           <div className="flex gap-3">
+              <Skeleton variant="circle" className="w-12 h-12 rounded-2xl bg-white/5" />
+              <Skeleton variant="circle" className="w-12 h-12 rounded-2xl bg-white/5" />
+           </div>
         </div>
-        <div className="space-y-4">
-           <Skeleton variant="text" className="w-32" />
-           <div className="flex gap-4 overflow-hidden">
-              {[1, 2, 3].map(i => <Skeleton key={i} variant="card" className="min-w-[150px] h-56 rounded-[32px] shrink-0" />)}
+
+        {/* Mood Chips */}
+        <div className="flex gap-3 overflow-hidden">
+           {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="card" className="w-28 h-12 rounded-[24px] shrink-0 bg-white/5" />)}
+        </div>
+
+        {/* Hero Card */}
+        <Skeleton variant="card" className="w-full aspect-[4/5] md:aspect-[16/9] rounded-[48px] bg-white/5" />
+
+        {/* Stats Strip */}
+        <div className="grid grid-cols-2 gap-4">
+           <Skeleton variant="card" className="h-32 rounded-[32px] bg-white/5" />
+           <Skeleton variant="card" className="h-32 rounded-[32px] bg-white/5" />
+        </div>
+
+        {/* Trending Section */}
+        <div className="space-y-6">
+           <div className="flex justify-between items-center">
+              <div className="space-y-2">
+                 <Skeleton variant="text" className="w-32 h-6 bg-white/5" />
+                 <Skeleton variant="text" className="w-24 h-3 bg-white/5" />
+              </div>
+              <Skeleton variant="text" className="w-16 h-4 bg-white/5" />
+           </div>
+           <div className="flex gap-5 overflow-hidden -mx-6 px-6">
+              {[1, 2, 3].map(i => <Skeleton key={i} variant="card" className="w-[140px] md:w-[160px] aspect-[2/3] rounded-3xl shrink-0 bg-white/5" />)}
            </div>
         </div>
       </div>
@@ -123,7 +150,7 @@ export function Home() {
         <div className="flex items-center justify-between">
           <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex flex-col">
             <span className="text-[10px] font-black text-primary tracking-[0.4em] uppercase mb-0.5">{format(new Date(), 'EEEE, MMM do')}</span>
-            <h1 className="text-2xl font-black text-white italic leading-none tracking-tighter">HUB<span className="text-primary italic-none">.</span></h1>
+            <h1 className="text-2xl font-black text-white italic leading-none tracking-tighter">ENTERTAIN<span className="text-primary italic-none">HUB.</span></h1>
           </motion.div>
           <div className="flex items-center gap-3">
              <PremiumButton variant="glass" size="icon" className="rounded-2xl h-12 w-12 border-white/5 active:scale-90" onClick={() => navigate('/library')}>
@@ -164,24 +191,30 @@ export function Home() {
           </div>
         </section>
 
-        {/* Featured Smart Pick - Refined Visual */}
-        <motion.div 
-          initial={{ y: 30, opacity: 0 }} 
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          {recommended[0] && (
-            <RecommendationCard 
-              title={recommended[0].title}
-              poster={recommended[0].poster_url}
-              reason={`MATCHES YOUR ${activeMood.toUpperCase()} VIBE`}
-              mediaType={recommended[0].media_type.toUpperCase()}
-              rating={recommended[0].rating}
-              onExplore={() => navigate(`/content/${recommended[0].external_id || recommended[0].id}`)}
-              onAdd={() => navigate(`/content/${recommended[0].external_id || recommended[0].id}`)}
-            />
-          )}
-        </motion.div>
+        {/* Featured Smart Picks - Swipeable Carousel */}
+        <section>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-6 pt-2">
+            {recommended.slice(0, 5).map((rec, idx) => (
+              <motion.div 
+                key={rec.external_id || rec.id}
+                initial={{ y: 30, opacity: 0 }} 
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: idx * 0.1 }}
+                className="w-full min-w-full snap-center"
+              >
+                <RecommendationCard 
+                  title={rec.title}
+                  poster={rec.poster_url}
+                  reason={`MATCHES YOUR ${activeMood.toUpperCase()} VIBE`}
+                  mediaType={rec.media_type.toUpperCase()}
+                  rating={rec.rating}
+                  onExplore={() => navigate(`/content/${rec.media_type}_${rec.external_id || rec.id}`)}
+                  onAdd={() => navigate(`/content/${rec.media_type}_${rec.external_id || rec.id}`)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </section>
 
         {/* Continue Watching / Progress */}
         {ongoing && (
@@ -193,7 +226,7 @@ export function Home() {
           >
             <SectionHeader title="Resume" subtitle="PICK UP WHERE YOU LEFT OFF" />
             <ProgressCard 
-              title={ongoing.media?.title || 'Unknown Content'}
+              title={(ongoing.media as any)?.title_english || ongoing.media?.title || 'Unknown Content'}
               status={ongoing.media?.media_type.toUpperCase() || 'MEDIA'}
               progress={ongoingProgress}
               rating={ongoing.rating}
@@ -215,7 +248,7 @@ export function Home() {
             subtitle="GLOBAL HOT TITLES"
             action={<button onClick={() => navigate('/library')} className="text-[10px] font-black text-primary uppercase tracking-widest active:scale-95 transition-transform">{t('seeAll')}</button>}
           />
-          <div className="flex gap-5 overflow-x-auto no-scrollbar snap-x -mx-6 px-6 py-2">
+          <div className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 py-2 after:content-[''] after:w-1 after:pr-6 after:shrink-0">
              {trending.map((item, idx) => (
                <motion.div 
                  key={item.external_id || item.id} 
@@ -223,7 +256,7 @@ export function Home() {
                  whileInView={{ opacity: 1, scale: 1 }}
                  viewport={{ once: true }}
                  transition={{ delay: idx * 0.05 }}
-                 className="min-w-[180px] snap-start"
+                 className="min-w-[140px] md:min-w-[180px] snap-center"
                >
                  <GameCard 
                    title={item.title}
@@ -246,7 +279,8 @@ export function Home() {
                   initial={{ x: 20, opacity: 0 }}
                   whileInView={{ x: 0, opacity: 1 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="flex gap-5 items-center premium-glass p-6 rounded-[32px] border border-white/5 hover:bg-white/10 transition-all group"
+                  className="flex gap-5 items-center premium-glass p-6 rounded-[32px] border border-white/5 hover:bg-white/10 transition-all group cursor-pointer"
+                  onClick={() => navigate(`/user/${act.profiles?.username}`)}
                 >
                    <div className="relative">
                      <img src={act.profiles?.avatar_url} className="w-14 h-14 rounded-[22px] ring-2 ring-white/5 object-cover" alt="" />
@@ -257,23 +291,26 @@ export function Home() {
                    <div className="flex-1 min-w-0">
                       <p className="text-sm text-white font-bold leading-snug">
                         <span className="text-primary italic">{act.profiles?.username}</span>
-                        <span className="text-gray-500 font-medium lowercase ml-1.5">just started</span> 
+                        <span className="text-gray-500 font-medium lowercase ml-1.5">{act.type === 'reviewed' ? 'reviewed' : 'just added'}</span> 
                         <br />
-                        <span className="text-[13px] font-black uppercase tracking-tight">{act.media?.title}</span>
+                        <span className="text-[13px] font-black uppercase tracking-tight truncate block">{act.media?.title}</span>
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                          <div className="h-1 w-8 bg-primary rounded-full" />
                          <p className="text-[9px] text-gray-600 font-black uppercase tracking-[0.2em]">{format(new Date(act.created_at), 'HH:mm')} • Activity</p>
                       </div>
                    </div>
-                   <PremiumButton variant="glass" size="icon" className="h-12 w-12 rounded-2xl group-hover:bg-primary group-hover:text-white transition-all">
-                      <Activity className="w-5 h-5" />
-                   </PremiumButton>
                 </motion.div>
              )) : (
-                <div className="p-12 text-center opacity-20 border-2 border-dashed border-white/10 rounded-[40px]">
-                   <Users className="w-12 h-12 mx-auto mb-4" />
-                   <p className="text-xs font-black uppercase tracking-widest">No social activity</p>
+                <div className="p-8 text-center border-2 border-dashed border-white/10 rounded-[32px] flex flex-col items-center justify-center bg-white/[0.02]">
+                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                     <Users className="w-8 h-8 text-primary opacity-80" />
+                   </div>
+                   <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">No Social Activity</h3>
+                   <p className="text-[10px] text-gray-500 font-bold max-w-[240px] mb-6 uppercase tracking-wider leading-relaxed">Your network is silent. Find friends to see what they are watching and playing.</p>
+                   <PremiumButton variant="glass" size="sm" onClick={() => navigate('/friends')} className="rounded-2xl border-white/10 px-8 py-3 h-auto active:scale-95">
+                     <Users className="w-4 h-4 mr-2" /> DISCOVER
+                   </PremiumButton>
                 </div>
              )}
           </div>

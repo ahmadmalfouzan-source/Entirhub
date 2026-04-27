@@ -14,6 +14,11 @@ export function calculateMediaProgress(
     return (watchedEpisodes.length / totalEpisodes);
   }
 
-  // Games and others: Use hours_played if available, normalized to 100 hours or just a percentage
-  return (item.hours_played || 0) / 100;
+  if (item.media?.media_type === 'game') {
+    const targetPlaytime = item.media?.playtime || 100;
+    return Math.min(1, (item.hours_played || 0) / targetPlaytime);
+  }
+
+  // Fallback
+  return Math.min(1, (item.hours_played || 0) / 100);
 }

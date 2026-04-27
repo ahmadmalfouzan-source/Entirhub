@@ -34,6 +34,47 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import { Home as HomeIcon, Library as LibraryIcon, Sparkles, User, Activity } from 'lucide-react';
 import { fetchTrendingMovies, fetchTrendingSeries, fetchTopRatedGames } from '@/services/api';
+import { useLocation } from 'react-router-dom';
+
+function DocumentTitleUpdater() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const paths: Record<string, string> = {
+      '/': 'Home',
+      '/feed': 'Feed',
+      '/for-you': 'For You',
+      '/library': 'Library',
+      '/profile': 'Profile',
+      '/settings': 'Settings',
+      '/friends': 'Connections',
+      '/achievements': 'Achievements',
+      '/games': 'Games',
+      '/movies': 'Movies',
+      '/series': 'Series',
+      '/calendar': 'Calendar',
+      '/countdown': 'Countdown',
+      '/wrapped': 'Wrapped',
+      '/admin': 'Admin',
+    };
+
+    let title = 'EntertainHub';
+    
+    if (paths[location.pathname]) {
+      title = `${paths[location.pathname]} — EntertainHub`;
+    } else if (location.pathname.startsWith('/content/')) {
+      title = 'Content — EntertainHub';
+    } else if (location.pathname.startsWith('/wiki/')) {
+      title = 'Wiki — EntertainHub';
+    } else if (location.pathname.startsWith('/user/')) {
+      title = 'User — EntertainHub';
+    }
+
+    document.title = title;
+  }, [location]);
+
+  return null;
+}
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { session } = useStore();
@@ -68,6 +109,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
       
       {/* Floating Elements / Ambient Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.03] via-transparent to-transparent" />
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-accent/10 blur-[120px] rounded-full" />
       </div>
@@ -89,6 +131,14 @@ export default function App() {
   useEffect(() => {
     console.log('App component mounting...');
     
+    // Check initial session for invalid refresh token and clear it
+    supabase.auth.getSession().catch(error => {
+      if (error?.message?.includes('Refresh Token Not Found') || error?.message?.includes('Invalid Refresh Token')) {
+        console.warn('Clearing invalid session due to token error');
+        localStorage.removeItem('entertain-hub-auth-v1');
+      }
+    });
+
     // Safety timeout to prevent stuck loading screen
     const timeoutId = setTimeout(() => {
       if (loading) {
@@ -158,6 +208,7 @@ export default function App() {
   return (
     <div dir={language === 'ar' ? 'rtl' : 'ltr'} lang={language} className={language === 'ar' ? 'font-tajawal' : ''}>
       <Router>
+        <DocumentTitleUpdater />
         <Routes>
           <Route path="/onboarding" element={session ? <Navigate to="/" replace /> : <Onboarding />} />
           <Route path="/" element={<ProtectedLayout><Home /></ProtectedLayout>} />

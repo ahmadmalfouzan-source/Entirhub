@@ -88,8 +88,8 @@ export function ForYou() {
       {/* Immersive Sticky Header */}
       <div className="sticky top-0 z-[100] bg-[#030308]/60 backdrop-blur-3xl border-b border-white/5 px-6 py-5 flex items-center justify-between">
          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-primary tracking-[0.4em] uppercase mb-0.5 leading-none">Intelligence</span>
-            <h1 className="text-2xl font-black text-white italic tracking-tighter uppercase leading-none">Personal<span className="text-primary italic-none">.</span></h1>
+            <span className="text-[10px] font-black text-primary tracking-[0.4em] uppercase mb-0.5 leading-none">Personal Picks</span>
+            <h1 className="text-2xl font-black text-white italic tracking-tighter uppercase leading-none">FOR YOU<span className="text-primary italic-none">.</span></h1>
          </div>
          <div className="flex gap-2">
             <PremiumButton 
@@ -136,28 +136,34 @@ export function ForYou() {
 
         {/* Discovery Feed */}
         <div className="grid grid-cols-1 gap-12">
-          <AnimatePresence mode="popLayout">
-            {recommendations.map((item, idx) => (
-              <motion.div 
-                key={`${item.external_id}-${idx}`}
-                initial={{ y: 50, opacity: 0, scale: 0.95 }}
-                whileInView={{ y: 0, opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="group perspective-1000"
-              >
-                <RecommendationCard 
-                  title={item.title}
-                  poster={item.poster_url}
-                  reason={`SYNCED TO ${activeMood.toUpperCase()} ENGINE`}
-                  mediaType={item.media_type.toUpperCase()}
-                  rating={item.rating}
-                  onExplore={() => navigate(`/content/${item.media_type}_${item.external_id || item.id}`)}
-                  onAdd={() => handleAddToList(item)}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          {loading ? (
+             [0, 1].map(x => (
+               <Skeleton key={x} variant="card" className="aspect-[4/5] rounded-[48px] shadow-2xl" />
+             ))
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {recommendations.map((item, idx) => (
+                <motion.div 
+                  key={`${item.external_id}-${idx}`}
+                  initial={{ y: 50, opacity: 0, scale: 0.95 }}
+                  whileInView={{ y: 0, opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className="group perspective-1000"
+                >
+                  <RecommendationCard 
+                    title={item.title}
+                    poster={item.poster_url}
+                    reason={item.reason || `MATCHES YOUR ${activeMood.toUpperCase()} VIBE`}
+                    mediaType={item.media_type.toUpperCase()}
+                    rating={item.rating}
+                    onExplore={() => navigate(`/content/${item.media_type}_${item.external_id || item.id}`)}
+                    onAdd={() => handleAddToList(item)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
         </div>
 
         {/* End of Line Marker */}
