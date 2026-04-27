@@ -74,23 +74,33 @@ export function ContentDetail() {
     if (fetchedId.current === id) return;
     
     const loadData = async () => {
-      if (!id) return;
+      if (!id) {
+        setLoading(false);
+        return;
+      }
       fetchedId.current = id;
       setLoading(true);
       
       let fetchedType: 'movie' | 'series' | 'game' = 'movie';
       let cleanId = id;
       
-      if (id.startsWith('game_') || id.includes('_game_')) {
+      if (id.includes('game_')) {
         fetchedType = 'game';
-        cleanId = id.replace(/.*game_/, '');
-      } else if (id.startsWith('series_') || id.includes('_series_')) {
+      } else if (id.includes('series_')) {
         fetchedType = 'series';
-        cleanId = id.replace(/.*series_/, '');
-      } else if (id.startsWith('movie_') || id.includes('_movie_')) {
+      } else if (id.includes('movie_')) {
         fetchedType = 'movie';
-        cleanId = id.replace(/.*movie_/, '');
       }
+      
+      cleanId = cleanId
+        .replace(/^movie_/, '')
+        .replace(/^series_/, '')
+        .replace(/^game_/, '')
+        .replace(/^tmdb_movie_/, '')
+        .replace(/^tmdb_series_/, '')
+        .replace(/^tmdb_/, '')
+        .replace(/^rawg_game_/, '')
+        .replace(/^rawg_/, '');
 
       try {
         const lang = language === 'ar' ? 'ar-SA' : 'en-US';

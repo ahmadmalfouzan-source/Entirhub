@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
   SectionHeader, 
   GameCard, 
@@ -28,6 +28,7 @@ const MOODS = [
 ];
 
 export function Home() {
+  const carouselRef = useRef<HTMLDivElement>(null);
   const [trending, setTrending] = useState<MediaItem[]>([]);
   const [recommended, setRecommended] = useState<MediaItem[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
@@ -40,6 +41,30 @@ export function Home() {
   const navigate = useNavigate();
 
   const ongoing = watchlist.find(item => item.status === 'watching');
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    
+    let isDown = false;
+    let startX: number;
+    let scrollLeft: number;
+
+    const handleWheel = (e: WheelEvent) => {
+      // If horizontal swiping is more pronounced than vertical
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaX;
+      }
+      // Otherwise do nothing and let it scroll the page naturally!
+    };
+    
+    // Add non passive event listener so preventDefault works smoothly.
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   useEffect(() => {
     const calculate = async () => {
@@ -195,17 +220,8 @@ export function Home() {
         {/* Featured Smart Picks - Swipeable Carousel */}
         <section>
           <div 
+            ref={carouselRef}
             className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-6 pt-2"
-            onWheel={(e) => {
-              // Only intercept if we are scrolling horizontally 
-              // to prevent the container from trapping vertical mouse wheel
-              if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                // Let the window handle vertical scrolling
-                return;
-              }
-              // If it's a horizontal scroll (e.g. trackpad), we can scroll the container
-              e.currentTarget.scrollLeft += e.deltaX;
-            }}
           >
             {recommended.slice(0, 5).map((rec, idx) => (
               <motion.div 
