@@ -154,7 +154,7 @@ export function Home() {
             <h1 className="text-2xl font-black text-white italic leading-none tracking-tighter">ENTERTAIN<span className="text-primary italic-none">HUB.</span></h1>
           </motion.div>
           <div className="flex items-center gap-3">
-             <PremiumButton variant="glass" size="icon" className="rounded-2xl h-12 w-12 border-white/5 active:scale-90" onClick={() => navigate('/library')}>
+             <PremiumButton variant="glass" size="icon" className="rounded-2xl h-12 w-12 border-white/5 active:scale-90" onClick={() => navigate('/search')}>
                <Search className="w-5 h-5 text-gray-400" />
              </PremiumButton>
              <Link to="/profile" className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary via-primary/80 to-accent active:scale-90 transition-all overflow-hidden border border-white/10 p-0.5 shadow-lg">
@@ -249,7 +249,7 @@ export function Home() {
             subtitle="GLOBAL HOT TITLES"
             action={<button onClick={() => navigate('/library')} className="text-[10px] font-black text-primary uppercase tracking-widest active:scale-95 transition-transform">{t('seeAll')}</button>}
           />
-          <div className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 py-2 after:content-[''] after:w-1 after:pr-6 after:shrink-0">
+           <div className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 py-4 after:content-[''] after:w-1 after:pr-6 after:shrink-0">
              {trending.map((item, idx) => (
                <motion.div 
                  key={item.external_id || item.id} 
@@ -257,13 +257,13 @@ export function Home() {
                  whileInView={{ opacity: 1, scale: 1 }}
                  viewport={{ once: true }}
                  transition={{ delay: idx * 0.05 }}
-                 className="min-w-[140px] md:min-w-[180px] snap-center"
+                 className="min-w-[160px] md:min-w-[220px] snap-center group hover:scale-105 transition-transform duration-500 hover:shadow-[0_0_30px_rgba(0,0,0,0.5)]"
                >
                  <GameCard 
                    title={getDisplayTitle(item)}
                    poster={item.poster_url}
                    rating={getDisplayRating(item, item.rating)}
-                   onClick={() => navigate(`/content/${item.external_id || item.id}`)}
+                   onClick={() => navigate(`/content/${item.media_type ? item.media_type + '_' : ''}${item.external_id || item.id}`)}
                  />
                </motion.div>
              ))}

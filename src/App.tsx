@@ -26,6 +26,7 @@ import Movies from '@/pages/Movies';
 import Series from '@/pages/Series';
 import Games from '@/pages/Games';
 import { Admin } from '@/pages/Admin';
+import { SearchPage } from '@/pages/SearchPage';
 import { useStore } from '@/store/useStore';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { usePWAStore } from '@/store/usePWAStore';
@@ -98,8 +99,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile-First App Shell */}
       
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 pb-[84px] safe-bottom">
-        <div className="flex-1 w-full max-w-md mx-auto px-0 md:max-w-2xl lg:max-w-4xl relative">
+      <main className="flex-1 flex flex-col min-w-0 pb-[84px] safe-bottom px-0 md:px-4 lg:px-8">
+        <div className="flex-1 w-full max-w-md mx-auto lg:max-w-6xl xl:max-w-7xl relative">
           {children}
         </div>
       </main>
@@ -209,7 +210,13 @@ export default function App() {
   }, [setSession, fetchWatchlist, setLoading, setDeferredPrompt, clearDeferredPrompt, loading]);
 
   if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center text-white">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-[#030308] text-white flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent aspect-square rounded-full animate-spin"></div>
+        <h1 className="mt-8 text-2xl font-black tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">EntertainHub</h1>
+        <p className="mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Waking up the neural net...</p>
+      </div>
+    );
   }
 
   return (
@@ -225,6 +232,7 @@ export default function App() {
           <Route path="/games" element={<ProtectedLayout><Games /></ProtectedLayout>} />
           <Route path="/movies" element={<ProtectedLayout><Movies /></ProtectedLayout>} />
           <Route path="/series" element={<ProtectedLayout><Series /></ProtectedLayout>} />
+          <Route path="/search" element={<ProtectedLayout><SearchPage /></ProtectedLayout>} />
           <Route path="/content/:id" element={<ProtectedLayout><ContentDetail /></ProtectedLayout>} />
           <Route path="/wiki/:id" element={<ProtectedLayout><GameWiki /></ProtectedLayout>} />
           <Route path="/for-you" element={<ProtectedLayout><ForYou /></ProtectedLayout>} />

@@ -21,9 +21,15 @@ export function Friends() {
   }, []);
 
   const loadData = async () => {
-    const [f, p] = await Promise.all([getFriends(), getPendingRequests()]);
-    setFriends(f);
-    setPending(p);
+    try {
+      const [f, p] = await Promise.all([getFriends(), getPendingRequests()]);
+      setFriends(f || []);
+      setPending(p || []);
+    } catch (err: any) {
+      console.warn('Silent fallback for friends fetch:', err);
+      setFriends([]);
+      setPending([]);
+    }
   };
 
   const handleSendRequest = async () => {

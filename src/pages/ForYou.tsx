@@ -46,15 +46,13 @@ export function ForYou() {
         reason: item.reason
       })));
     } catch (e) {
-      toast.error('AI picks temporarily unavailable — showing fallbacks');
-      
+      // Silently cache error and fallback to local/trending items to prevent annoying toasts    
       let fallbackItems: any[] = [];
       const watchlist = useStore.getState().watchlist;
       
       if (watchlist && watchlist.length > 0) {
         fallbackItems = [...watchlist]
           .sort(() => Math.random() - 0.5)
-          .slice(0, 8)
           .map(item => ({
             external_id: item.media?.external_id || item.id,
             media_type: item.media?.media_type || 'movie',
@@ -247,13 +245,12 @@ export function ForYou() {
             className="py-16 mt-8 border-t border-white/5 text-center flex flex-col items-center"
           >
              <div className="w-12 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full mb-8" />
-             <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.4em] mb-6 italic opacity-50">Signal Horizon Reached</p>
              <PremiumButton 
                variant="neon" 
                className="h-16 px-12 rounded-[28px] shadow-[0_20px_40px_rgba(var(--color-primary-rgb),0.3)] bg-primary text-white" 
                onClick={fetchRecommendations}
              >
-                <RefreshCw className="w-5 h-5 mr-3" /> RECALIBRATE FEED
+                <RefreshCw className="w-5 h-5 mr-3" /> LOAD MORE INTELLIGENCE
              </PremiumButton>
           </motion.div>
         )}

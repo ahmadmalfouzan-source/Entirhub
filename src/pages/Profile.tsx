@@ -168,7 +168,7 @@ export function Profile() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#030308] pb-40 animate-in fade-in duration-700 overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-[#030308] pb-64 animate-in fade-in duration-700 overflow-x-hidden">
       {/* Dynamic Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-0 left-0 right-0 h-96 bg-primary/20 blur-[120px] rounded-full opacity-50" />

@@ -35,7 +35,15 @@ import { EpisodeTracker } from '@/components/EpisodeTracker';
 import { GameAchievementTracker } from '@/components/GameAchievementTracker';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguageStore } from '@/store/useLanguageStore';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { ReviewSection } from '@/components/ReviewSection';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
@@ -133,6 +141,7 @@ export function ContentDetail() {
       title: item.title,
       cover_url: item.poster_url,
     });
+    toast.success('Deployed to Library!');
   };
 
   if (loading) {
@@ -399,15 +408,31 @@ export function ContentDetail() {
                   <span className="font-black italic">DEPLOY TO LIBRARY</span>
                </PremiumButton>
              ) : (
-               <PremiumButton 
-                 variant="glass" 
-                 fullWidth 
-                 size="xl" 
-                 className="rounded-[32px] h-20 border-white/10 backdrop-blur-3xl text-primary font-black italic text-lg"
-               >
-                  <Activity className="w-6 h-6 mr-3" /> 
-                  IN RECONNAISSANCE
-               </PremiumButton>
+                <div className="flex-1">
+                 <Select 
+                   value={watchlistItem.status} 
+                   onValueChange={(val: any) => {
+                     updateWatchlistItem(watchlistItem.id, { status: val });
+                     toast.info('Status updated');
+                   }}
+                 >
+                   <SelectTrigger className="w-full rounded-[32px] h-20 border-white/10 backdrop-blur-3xl text-primary font-black italic text-lg shadow-[0_20px_60px_rgba(var(--color-primary-rgb),0.2)] bg-[#030308]/60 focus:ring-0 focus:ring-offset-0 flex justify-center items-center">
+                      <Activity className="w-6 h-6 mr-3 text-primary" /> 
+                      <span className="truncate flex-1 text-center pr-4">
+                        {watchlistItem.status === 'watching' ? 'IN PROGRESS' : 
+                         watchlistItem.status === 'completed' ? 'COMPLETED' : 
+                         watchlistItem.status === 'planned' ? 'PLANNED' : 
+                         watchlistItem.status === 'dropped' ? 'DROPPED' : watchlistItem.status}
+                      </span>
+                   </SelectTrigger>
+                   <SelectContent className="bg-[#030308] border-white/10 text-white rounded-2xl shadow-2xl">
+                     <SelectItem value="planned" className="font-bold tracking-widest text-[10px] uppercase focus:bg-white/10 focus:text-white py-3">Planned</SelectItem>
+                     <SelectItem value="watching" className="font-bold tracking-widest text-[10px] uppercase focus:bg-white/10 focus:text-primary py-3">In Progress</SelectItem>
+                     <SelectItem value="completed" className="font-bold tracking-widest text-[10px] uppercase focus:bg-white/10 focus:text-accent py-3">Completed</SelectItem>
+                     <SelectItem value="dropped" className="font-bold tracking-widest text-[10px] uppercase focus:bg-white/10 focus:text-red-400 py-3">Dropped</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
              )}
              {trailerKey && (
                <motion.button

@@ -141,7 +141,7 @@ export default function Series() {
                       title={item.title} 
                       poster={item.poster_url} 
                       rating={item.rating}
-                      onClick={() => navigate(`/content/${item.external_id}`)}
+                      onClick={() => navigate(`/content/series_${item.external_id}`)}
                     />
                   ))}
                 </div>
@@ -163,7 +163,7 @@ export default function Series() {
                         title={item.title} 
                         poster={item.poster_url} 
                         rating={item.rating}
-                        onClick={() => navigate(`/content/${item.external_id}`)}
+                        onClick={() => navigate(`/content/series_${item.external_id}`)}
                       />
                     ))}
                   </div>
@@ -184,7 +184,7 @@ export default function Series() {
                         title={item.title} 
                         poster={item.poster_url} 
                         rating={item.rating}
-                        onClick={() => navigate(`/content/${item.external_id}`)}
+                        onClick={() => navigate(`/content/series_${item.external_id}`)}
                       />
                     ))}
                   </div>

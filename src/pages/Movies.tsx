@@ -198,7 +198,7 @@ export default function Movies() {
                       title={item.title} 
                       poster={item.poster_url} 
                       rating={item.rating}
-                      onClick={() => navigate(`/content/${item.external_id}`)}
+                      onClick={() => navigate(`/content/movie_${item.external_id}`)}
                     />
                   ))}
                 </div>
@@ -220,7 +220,7 @@ export default function Movies() {
                         title={item.title} 
                         poster={item.poster_url} 
                         rating={item.rating}
-                        onClick={() => navigate(`/content/${item.external_id}`)}
+                        onClick={() => navigate(`/content/movie_${item.external_id}`)}
                       />
                     ))}
                   </div>
@@ -241,7 +241,7 @@ export default function Movies() {
                         title={item.title} 
                         poster={item.poster_url} 
                         rating={item.rating}
-                        onClick={() => navigate(`/content/${item.external_id}`)}
+                        onClick={() => navigate(`/content/movie_${item.external_id}`)}
                       />
                     ))}
                   </div>

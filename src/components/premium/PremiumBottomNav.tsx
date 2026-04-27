@@ -45,8 +45,8 @@ export const PremiumBottomNav: React.FC<PremiumBottomNavProps> = ({ items }) => 
               </div>
               
               <span className={cn(
-                  "text-[9px] mt-1 font-black uppercase tracking-[0.1em] italic transition-opacity duration-300",
-                  isActive ? "opacity-100" : "opacity-40"
+                  "text-[10px] sm:text-[11px] mt-1.5 font-black uppercase tracking-[0.1em] transition-all duration-300",
+                  isActive ? "opacity-100 text-primary drop-shadow-[0_0_8px_rgba(var(--color-primary-rgb),0.5)]" : "opacity-40"
               )}>
                 {item.label}
               </span>

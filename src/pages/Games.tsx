@@ -110,7 +110,7 @@ export default function Games() {
                       title={item.title} 
                       poster={item.poster_url} 
                       rating={item.rating}
-                      onClick={() => navigate(`/content/${item.external_id}`)}
+                      onClick={() => navigate(`/content/game_${item.external_id}`)}
                     />
                   ))}
                 </div>
@@ -135,7 +135,7 @@ export default function Games() {
                           title={item.media.title} 
                           poster={item.media.poster_url} 
                           rating={item.rating || 0}
-                          onClick={() => navigate(`/content/${item.media.external_id}`)}
+                          onClick={() => navigate(`/content/game_${item.media.external_id}`)}
                         />
                         <div className="absolute inset-x-4 bottom-4 z-20 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                           <PremiumButton 
@@ -166,7 +166,7 @@ export default function Games() {
                         title={item.title} 
                         poster={item.poster_url} 
                         rating={item.rating}
-                        onClick={() => navigate(`/content/${item.external_id}`)}
+                        onClick={() => navigate(`/content/game_${item.external_id}`)}
                       />
                     ))}
                   </div>
