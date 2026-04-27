@@ -32,7 +32,10 @@ export function ForYou() {
   const fetchRecommendations = async () => {
     setLoading(true);
     try {
-      const data = await getRecommendations();
+      const data = await Promise.race([
+        getRecommendations(),
+        new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
+      ]);
       setRecommendations(data.map(item => ({
         external_id: item.external_id,
         media_type: item.media_type,
@@ -42,7 +45,54 @@ export function ForYou() {
         reason: item.reason
       })));
     } catch (e) {
-      toast.error('Failed to update picks');
+      toast.error('AI picks temporarily unavailable — showing fallbacks');
+      
+      let fallbackItems: any[] = [];
+      const watchlist = useStore.getState().watchlist;
+      
+      if (watchlist && watchlist.length > 0) {
+        fallbackItems = watchlist
+          .slice(0, 10)
+          .sort(() => Math.random() - 0.5)
+          .map(item => ({
+            external_id: item.media?.external_id || item.id,
+            media_type: item.media?.media_type || 'movie',
+            title: item.media?.title || 'Title',
+            poster_url: item.cover_url || item.media?.poster_url,
+            rating: item.rating || 5.0,
+            reason: item.status === 'watching' ? 'CONTINUE EXPLORING' : 'FROM YOUR LIBRARY'
+          }));
+      }
+
+      if (fallbackItems.length < 5) {
+        try {
+          const { fetchTrendingMovies, fetchTrendingSeries } = await import('@/services/api');
+          const [movies, series] = await Promise.all([
+            fetchTrendingMovies('en-US').catch(() => []),
+            fetchTrendingSeries('en-US').catch(() => [])
+          ]);
+          const mixed = [...movies.slice(0, 10), ...series.slice(0, 10)].sort(() => Math.random() - 0.5);
+          const trendingFallbacks = mixed.map((item: any) => ({
+            external_id: item.external_id,
+            media_type: item.media_type,
+            title: item.title,
+            poster_url: item.poster_url,
+            rating: item.rating || 0,
+            reason: 'TRENDING PICK - SYSTEM FALLBACK'
+          }));
+          fallbackItems = [...fallbackItems, ...trendingFallbacks];
+        } catch (apiError) {}
+      }
+      
+      const unique = [];
+      const seen = new Set();
+      for (const item of fallbackItems) {
+        if (!seen.has(item.external_id)) {
+          seen.add(item.external_id);
+          unique.push(item);
+        }
+      }
+      setRecommendations(unique.slice(0, 10));
     } finally {
       setLoading(false);
     }

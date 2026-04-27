@@ -56,23 +56,51 @@ export function Profile() {
         setLoading(true);
         if (!user) return;
         
-        const { data, error: profileError } = await supabase
-          .from('profiles')
-          .select('username, is_public')
-          .eq('id', user.id)
-          .maybeSingle();
+        // Wrap profile fetching in its own try/catch to ensure UI doesn't break
+        try {
+          const { data, error: profileError } = await supabase
+            .from('profiles')
+            .select('username, is_public')
+            .eq('id', user.id)
+            .maybeSingle();
+          
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.warn('Profile fetch warning:', profileError);
+          }
+
+          if (data) {
+            setUsername(data.username || user.email?.split('@')[0] || '');
+            setIsPublic(data.is_public || false);
+          } else {
+            // No profile found, create default fallback or try to insert
+            setUsername(user.email?.split('@')[0] || 'User');
+            setIsPublic(false);
+            
+            // Try inserting default so next time it exists
+            supabase.from('profiles').insert({
+              id: user.id,
+              username: user.email?.split('@')[0] || 'User',
+              is_public: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }).then(({error}) => {
+              if (error) console.log('Silently failed to create new profile row:', error);
+            });
+          }
+        } catch (profileErr) {
+          console.warn('Silent fallback for profile fetch:', profileErr);
+          setUsername(user.email?.split('@')[0] || 'User');
+          setIsPublic(false);
+        }
         
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.warn('Profile fetch warning:', profileError);
+        try {
+          const friendData = await getFriends();
+          setFriends(friendData || []);
+        } catch (friendErr) {
+          console.warn('Silent fallback for friends fetch:', friendErr);
+          setFriends([]);
         }
 
-        if (data) {
-          setUsername(data.username || user.email?.split('@')[0] || '');
-          setIsPublic(data.is_public || false);
-        }
-        
-        const friendData = await getFriends();
-        setFriends(friendData);
       } catch (err) {
         console.error('Critical profile initialization error:', err);
       } finally {
