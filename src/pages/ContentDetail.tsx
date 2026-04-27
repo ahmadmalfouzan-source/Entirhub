@@ -79,13 +79,22 @@ export function ContentDetail() {
       setLoading(true);
       
       let fetchedType: 'movie' | 'series' | 'game' = 'movie';
-      if (id.includes('_game_')) fetchedType = 'game';
-      else if (id.includes('_series_')) fetchedType = 'series';
-      else if (id.includes('_movie_')) fetchedType = 'movie';
+      let cleanId = id;
+      
+      if (id.startsWith('game_') || id.includes('_game_')) {
+        fetchedType = 'game';
+        cleanId = id.replace(/.*game_/, '');
+      } else if (id.startsWith('series_') || id.includes('_series_')) {
+        fetchedType = 'series';
+        cleanId = id.replace(/.*series_/, '');
+      } else if (id.startsWith('movie_') || id.includes('_movie_')) {
+        fetchedType = 'movie';
+        cleanId = id.replace(/.*movie_/, '');
+      }
 
       try {
         const lang = language === 'ar' ? 'ar-SA' : 'en-US';
-        const data = await fetchMediaDetails(id, fetchedType, lang);
+        const data = await fetchMediaDetails(cleanId, fetchedType, lang);
         setItem(data);
 
         if (data) {
@@ -156,7 +165,18 @@ export function ContentDetail() {
     );
   }
 
-  if (!item) return null;
+  if (!item) {
+    return (
+      <div className="min-h-screen bg-[#030308] flex flex-col items-center justify-center p-6 text-center">
+        <X className="w-16 h-16 text-destructive mb-4 opacity-50" />
+        <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-2">Content Not Found</h2>
+        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest max-w-[280px]">The neural net could not locate this entry. It may be classified or scrubbed.</p>
+        <PremiumButton variant="glass" className="mt-8 rounded-3xl h-12 px-8" onClick={() => navigate(-1)}>
+          RETURN TO BASE
+        </PremiumButton>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#030308] pb-40 animate-in fade-in duration-700 overflow-x-hidden">

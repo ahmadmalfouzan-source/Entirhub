@@ -194,7 +194,19 @@ export function Home() {
 
         {/* Featured Smart Picks - Swipeable Carousel */}
         <section>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-6 pt-2 touch-pan-y overscroll-x-contain">
+          <div 
+            className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-6 pt-2"
+            onWheel={(e) => {
+              // Only intercept if we are scrolling horizontally 
+              // to prevent the container from trapping vertical mouse wheel
+              if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                // Let the window handle vertical scrolling
+                return;
+              }
+              // If it's a horizontal scroll (e.g. trackpad), we can scroll the container
+              e.currentTarget.scrollLeft += e.deltaX;
+            }}
+          >
             {recommended.slice(0, 5).map((rec, idx) => (
               <motion.div 
                 key={rec.external_id || rec.id}
