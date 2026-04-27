@@ -90,7 +90,11 @@ export const GameCard: React.FC<GameCardProps> = ({
         </div>
 
         <div className="absolute bottom-4 left-4 right-4 space-y-2 transform transition-transform duration-500 group-hover:translate-y-[-4px]">
-          <h4 className="text-white text-xs md:text-[13px] font-black tracking-tight leading-tight line-clamp-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]" title={title.toUpperCase()}>
+          <h4 
+            className="text-white text-xs md:text-[13px] font-black tracking-tight leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]" 
+            title={title.toUpperCase()}
+            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
             {title.toUpperCase()}
           </h4>
           <div className="flex items-center justify-between opacity-80 group-hover:opacity-100 transition-opacity">

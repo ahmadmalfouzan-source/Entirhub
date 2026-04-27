@@ -91,9 +91,19 @@ export function ForYou() {
             title: getDisplayTitle(item),
             poster_url: item.poster_url,
             rating: getDisplayRating(item, item.rating),
-            reason: 'TRENDING PICK - SYSTEM FALLBACK'
+            reason: 'TRENDING NOW'
           }));
-          fallbackItems = [...fallbackItems, ...trendingFallbacks];
+          
+          const supplementaryFallbacks = hardcodedPopular.map((item: any) => ({
+            external_id: item.external_id || item.id,
+            media_type: item.media_type,
+            title: item.title,
+            poster_url: item.poster_url,
+            rating: item.rating,
+            reason: 'TOP RATED'
+          }));
+          
+          fallbackItems = [...fallbackItems, ...trendingFallbacks, ...supplementaryFallbacks];
         } catch (apiError) {}
       }
       
@@ -105,7 +115,7 @@ export function ForYou() {
           unique.push(item);
         }
       }
-      setRecommendations(unique.slice(0, 10));
+      setRecommendations(unique.slice(0, 8));
     } finally {
       setLoading(false);
     }

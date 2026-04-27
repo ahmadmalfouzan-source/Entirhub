@@ -94,12 +94,12 @@ export function Feed() {
                animation: 'pulse-grid 4s infinite alternate'
              }} />
              <div className="absolute inset-0 bg-gradient-to-t from-[#030308] to-transparent" />
-             <style>{`
+             <style dangerouslySetInnerHTML={{ __html: `
                @keyframes pulse-grid {
                  0% { opacity: 0.1; transform: scale(1); }
                  100% { opacity: 0.4; transform: scale(1.05); }
                }
-             `}</style>
+             `}} />
            </div>
 
            <div className="relative z-10 w-24 h-24 rounded-[40px] bg-gradient-to-br from-primary/20 to-accent/20 border border-white/5 flex items-center justify-center mb-6 shadow-2xl">

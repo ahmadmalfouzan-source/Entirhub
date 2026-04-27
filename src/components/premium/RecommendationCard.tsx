@@ -25,7 +25,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
   return (
     <PremiumCard className="relative overflow-hidden aspect-[4/5] md:aspect-[16/9] max-h-[70vh] rounded-[48px] border-white/5 group shadow-2xl shrink-0">
       <img src={poster} className="absolute inset-0 z-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#030308] via-[#030308]/25 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
       
       <div className="absolute z-20 bottom-8 left-6 right-6 md:bottom-10 md:left-8 md:right-8 space-y-4 md:space-y-6">
         <div className="space-y-2">

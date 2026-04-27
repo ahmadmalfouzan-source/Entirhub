@@ -194,7 +194,7 @@ export function Home() {
 
         {/* Featured Smart Picks - Swipeable Carousel */}
         <section>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-6 pt-2">
+          <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-6 pt-2 touch-pan-y overscroll-x-contain">
             {recommended.slice(0, 5).map((rec, idx) => (
               <motion.div 
                 key={rec.external_id || rec.id}
@@ -313,12 +313,12 @@ export function Home() {
                        animation: 'pulse-grid 4s infinite alternate'
                      }} />
                      <div className="absolute inset-0 bg-gradient-to-t from-[#030308] to-transparent" />
-                     <style>{`
+                     <style dangerouslySetInnerHTML={{ __html: `
                        @keyframes pulse-grid {
                          0% { opacity: 0.1; transform: scale(1); }
                          100% { opacity: 0.4; transform: scale(1.05); }
                        }
-                     `}</style>
+                     `}} />
                    </div>
 
                    <div className="relative z-10 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
