@@ -13,6 +13,7 @@ import { useStore } from '@/store/useStore';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import { getDisplayTitle, getDisplayRating } from '@/lib/display';
 
 const MOODS = [
   { id: 'hyped', icon: Zap, label: 'HYPED', color: 'text-yellow-400' },
@@ -39,9 +40,9 @@ export function ForYou() {
       setRecommendations(data.map(item => ({
         external_id: item.external_id,
         media_type: item.media_type,
-        title: item.title,
+        title: getDisplayTitle(item),
         poster_url: item.poster_url,
-        rating: item.rating_global || 0,
+        rating: getDisplayRating(item, item.rating_global),
         reason: item.reason
       })));
     } catch (e) {
@@ -51,33 +52,45 @@ export function ForYou() {
       const watchlist = useStore.getState().watchlist;
       
       if (watchlist && watchlist.length > 0) {
-        fallbackItems = watchlist
-          .slice(0, 10)
+        fallbackItems = [...watchlist]
           .sort(() => Math.random() - 0.5)
+          .slice(0, 8)
           .map(item => ({
             external_id: item.media?.external_id || item.id,
             media_type: item.media?.media_type || 'movie',
-            title: item.media?.title || 'Title',
+            title: getDisplayTitle(item.media || item),
             poster_url: item.cover_url || item.media?.poster_url,
-            rating: item.rating || 5.0,
+            rating: getDisplayRating(item, item.rating),
             reason: item.status === 'watching' ? 'CONTINUE EXPLORING' : 'FROM YOUR LIBRARY'
           }));
       }
 
-      if (fallbackItems.length < 5) {
+      if (fallbackItems.length < 8) {
         try {
           const { fetchTrendingMovies, fetchTrendingSeries } = await import('@/services/api');
           const [movies, series] = await Promise.all([
             fetchTrendingMovies('en-US').catch(() => []),
             fetchTrendingSeries('en-US').catch(() => [])
           ]);
-          const mixed = [...movies.slice(0, 10), ...series.slice(0, 10)].sort(() => Math.random() - 0.5);
+          
+          const hardcodedPopular = [
+             { title: 'The Boys', external_id: '76479', media_type: 'series', poster_url: 'https://image.tmdb.org/t/p/w500/utw5D6SADLIfE6Qk5h0B8K3sF25.jpg', rating: 8.5 },
+             { title: 'Invincible', external_id: '95557', media_type: 'series', poster_url: 'https://image.tmdb.org/t/p/w500/dMOp0hE7DpeYEQWp5n2i9L1RzEn.jpg', rating: 8.7 },
+             { title: 'Elden Ring', external_id: '326243', media_type: 'game', poster_url: 'https://media.rawg.io/media/games/5ec/5ecac5cb026ec26a56efcc546364e348.jpg', rating: 4.8 },
+             { title: 'Breaking Bad', external_id: '1396', media_type: 'series', poster_url: 'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg', rating: 8.9 },
+             { title: 'Inception', external_id: '27205', media_type: 'movie', poster_url: 'https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg', rating: 8.4 },
+             { title: 'The Last of Us', external_id: '100088', media_type: 'series', poster_url: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: 8.6 },
+             { title: 'God of War', external_id: '11973', media_type: 'game', poster_url: 'https://media.rawg.io/media/games/4be/4be6a6ad0364751a96229c56bf69be59.jpg', rating: 4.9 },
+             { title: 'Dune: Part Two', external_id: '693134', media_type: 'movie', poster_url: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2JGjjcNs3.jpg', rating: 8.3 }
+          ];
+
+          const mixed = [...movies.slice(0, 10), ...series.slice(0, 10), ...hardcodedPopular].sort(() => Math.random() - 0.5);
           const trendingFallbacks = mixed.map((item: any) => ({
-            external_id: item.external_id,
+            external_id: item.external_id || item.id,
             media_type: item.media_type,
-            title: item.title,
+            title: getDisplayTitle(item),
             poster_url: item.poster_url,
-            rating: item.rating || 0,
+            rating: getDisplayRating(item, item.rating),
             reason: 'TRENDING PICK - SYSTEM FALLBACK'
           }));
           fallbackItems = [...fallbackItems, ...trendingFallbacks];
@@ -87,7 +100,7 @@ export function ForYou() {
       const unique = [];
       const seen = new Set();
       for (const item of fallbackItems) {
-        if (!seen.has(item.external_id)) {
+        if (!seen.has(item.external_id) && item.external_id) {
           seen.add(item.external_id);
           unique.push(item);
         }

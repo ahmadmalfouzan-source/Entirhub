@@ -84,18 +84,37 @@ export function Feed() {
   if (activities.length === 0) {
     return (
       <div className="flex flex-col min-h-[80vh] items-center justify-center p-6 text-center animate-in fade-in duration-700">
-         <div className="w-24 h-24 rounded-[40px] bg-gradient-to-br from-primary/20 to-accent/20 border border-white/5 flex items-center justify-center mb-6 shadow-2xl">
-           <Users className="w-10 h-10 text-primary opacity-80" />
+         <div className="relative p-12 max-w-sm w-full text-center border-2 border-dashed border-white/10 rounded-[32px] flex flex-col items-center justify-center bg-white/[0.02] overflow-hidden group">
+           
+           {/* Animated Background Grid for Empty State */}
+           <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+             <div className="absolute inset-0" style={{
+               backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+               backgroundSize: '24px 24px',
+               animation: 'pulse-grid 4s infinite alternate'
+             }} />
+             <div className="absolute inset-0 bg-gradient-to-t from-[#030308] to-transparent" />
+             <style>{`
+               @keyframes pulse-grid {
+                 0% { opacity: 0.1; transform: scale(1); }
+                 100% { opacity: 0.4; transform: scale(1.05); }
+               }
+             `}</style>
+           </div>
+
+           <div className="relative z-10 w-24 h-24 rounded-[40px] bg-gradient-to-br from-primary/20 to-accent/20 border border-white/5 flex items-center justify-center mb-6 shadow-2xl">
+             <Users className="w-10 h-10 text-primary opacity-80" />
+           </div>
+           <h2 className="relative z-10 text-2xl font-black text-white italic tracking-tighter uppercase leading-tight mb-3">
+             NO ACTIVITY DETECTED<span className="text-primary">.</span>
+           </h2>
+           <p className="relative z-10 text-xs font-bold text-gray-500 uppercase tracking-[0.2em] max-w-[280px] leading-relaxed mx-auto mb-8">
+             Your network is silent. Add friends to synchronize your feeds and discover what they are experiencing.
+           </p>
+           <Button variant="outline" className="relative z-10 rounded-3xl border-white/10 hover:bg-white/5 px-8 h-12 text-xs font-black tracking-widest uppercase" onClick={() => navigate('/friends')}>
+             FIND CONNECTIONS
+           </Button>
          </div>
-         <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase leading-tight mb-3">
-           NO ACTIVITY DETECTED<span className="text-primary">.</span>
-         </h2>
-         <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] max-w-[280px] leading-relaxed mx-auto mb-8">
-           Your network is silent. Add friends to synchronize your feeds and discover what they are experiencing.
-         </p>
-         <Button variant="outline" className="rounded-3xl border-white/10 hover:bg-white/5 px-8 h-12 text-xs font-black tracking-widest uppercase" onClick={() => navigate('/friends')}>
-           FIND CONNECTIONS
-         </Button>
       </div>
     );
   }

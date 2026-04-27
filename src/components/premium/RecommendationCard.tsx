@@ -33,10 +33,12 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
             <Sparkles className="w-4 h-4 text-primary fill-primary drop-shadow-md" />
             <span className="text-[10px] font-black text-primary uppercase tracking-[0.25em] drop-shadow-md">{reason}</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-black text-white leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] italic line-clamp-2">{title}</h2>
+          <h2 className="text-3xl md:text-4xl font-black text-white leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">{title}</h2>
           <div className="flex items-center gap-3 mt-2">
              <span className="text-[10px] font-black text-white uppercase tracking-widest border border-white/20 px-2 py-0.5 rounded-sm bg-black/60 backdrop-blur-md shadow-lg">{mediaType}</span>
-             <span className="text-[10px] font-black text-yellow-400 bg-black/60 px-2 py-0.5 rounded-sm backdrop-blur-md shadow-lg">★ {rating.toFixed(1)}</span>
+             {rating && rating > 0 ? (
+               <span className="text-[10px] font-black text-yellow-400 bg-black/60 px-2 py-0.5 rounded-sm backdrop-blur-md shadow-lg">★ {rating.toFixed(1)}</span>
+             ) : null}
           </div>
         </div>
 

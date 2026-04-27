@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { importTitlesFromImage } from '@/services/importService';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import { getDisplayTitle, getDisplayRating } from '@/lib/display';
 
 type SortOption = 'date_added' | 'rating' | 'name' | 'year';
 
@@ -216,9 +217,10 @@ export function Library() {
                  >
                     <div onClick={() => isDeleting ? toggleSelection(item.id) : null} className="h-full">
                        <GameCard 
-                         title={item.media?.title || 'Unknown'} 
+                         title={getDisplayTitle(item.media || item)} 
                          poster={item.media?.poster_url || ''} 
-                         rating={item.rating}
+                         rating={getDisplayRating(item, item.rating)}
+                         status={item.status}
                          onClick={() => handleNavigate(item)}
                        />
                     </div>
@@ -263,9 +265,10 @@ export function Library() {
                  >
                     <div onClick={() => isDeleting ? toggleSelection(item.id) : null} className="h-full">
                        <GameCard 
-                         title={item.media?.title || 'Unknown'} 
+                         title={getDisplayTitle(item.media || item)} 
                          poster={item.media?.poster_url || ''} 
-                         rating={item.rating}
+                         rating={getDisplayRating(item, item.rating)}
+                         status={item.status}
                          onClick={() => handleNavigate(item)}
                        />
                     </div>

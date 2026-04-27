@@ -9,19 +9,35 @@ import { motion } from 'motion/react';
 interface GameCardProps {
   title: string;
   poster: string;
-  rating?: number;
+  rating?: number | null;
   playtime?: number;
   platform?: string;
+  status?: string;
   onClick?: () => void;
   variant?: 'compact' | 'featured';
 }
+
+const statusColors: Record<string, string> = {
+  watching: 'bg-blue-500',
+  completed: 'bg-green-500',
+  plan_to_watch: 'bg-amber-500',
+  dropped: 'bg-red-500'
+};
+
+const statusLabels: Record<string, string> = {
+  watching: 'WATCHING',
+  completed: 'COMPLETED',
+  plan_to_watch: 'PLAN TO WATCH',
+  dropped: 'DROPPED'
+};
 
 export const GameCard: React.FC<GameCardProps> = ({ 
   title, 
   poster, 
   rating, 
   playtime, 
-  platform, 
+  platform,
+  status,
   onClick,
   variant = 'compact' 
 }) => {
@@ -46,6 +62,18 @@ export const GameCard: React.FC<GameCardProps> = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#030308]/90 via-[#030308]/20 to-transparent group-hover:via-[#030308]/50 transition-all opacity-80 group-hover:opacity-100" />
         
+        {/* Status Badge */}
+        {status && statusLabels[status] && (
+          <div className="absolute top-2 left-2 z-20">
+            <span className={cn(
+              "px-1.5 py-0.5 text-[8px] font-black tracking-widest text-white rounded-sm shadow-md",
+              statusColors[status] || 'bg-gray-500'
+            )}>
+              {statusLabels[status]}
+            </span>
+          </div>
+        )}
+
         {/* Quick Action Overlay on Hover */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="w-12 h-12 rounded-full bg-primary/80 backdrop-blur-md flex items-center justify-center text-white scale-75 group-hover:scale-100 transition-transform duration-500 shadow-xl">
@@ -53,7 +81,7 @@ export const GameCard: React.FC<GameCardProps> = ({
           </div>
         </div>
 
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
           {platform && (
             <Badge className="bg-primary backdrop-blur-md text-[8px] font-black uppercase tracking-widest border-white/10 shadow-lg">
               {platform}

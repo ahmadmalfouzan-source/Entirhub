@@ -110,10 +110,39 @@ export function Profile() {
     init();
   }, [user]);
 
-  const totalXP = watchlist.length * 150 + friends.length * 500;
-  const currentTierXP = Math.floor(totalXP / 1000) * 1000;
-  const nextTierXP = currentTierXP + 1000;
-  const rankProgress = (totalXP - currentTierXP) / 1000;
+  let badgesCount = 0;
+  if (watchlist.some(w => w.media?.media_type === 'movie')) badgesCount++;
+  if (watchlist.some(w => w.media?.media_type === 'game')) badgesCount++;
+  if (watchlist.some(w => w.media?.media_type === 'game' && w.is_completed_100)) badgesCount++;
+  if (watchlist.length >= 20) badgesCount++;
+  if (watchlist.filter(w => w.rating && w.rating > 0).length >= 10) badgesCount++;
+
+  const completedItems = watchlist.filter(i => i.status === 'completed').length;
+  const totalXP = (watchlist.length * 10) + (completedItems * 25) + (badgesCount * 50);
+
+  let tierName = "Rookie Tier";
+  let currentTierMin = 0;
+  let nextTierXP = 100;
+
+  if (totalXP >= 1000) {
+    tierName = "Elite Tier";
+    currentTierMin = 1000;
+    nextTierXP = 1000; // maxed
+  } else if (totalXP >= 600) {
+    tierName = "Master Recon Tier";
+    currentTierMin = 600;
+    nextTierXP = 1000;
+  } else if (totalXP >= 300) {
+    tierName = "Agent Tier";
+    currentTierMin = 300;
+    nextTierXP = 600;
+  } else if (totalXP >= 100) {
+    tierName = "Scout Tier";
+    currentTierMin = 100;
+    nextTierXP = 300;
+  }
+
+  const rankProgress = totalXP >= 1000 ? 1 : ((totalXP - currentTierMin) / (nextTierXP - currentTierMin));
 
   const stats = {
     movies: watchlist.filter(i => i.media?.media_type === 'movie').length,
@@ -211,8 +240,8 @@ export function Profile() {
                <div className="space-y-6">
                   <div className="flex justify-between items-end">
                      <div>
-                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Rank Progress</p>
-                        <h4 className="text-xl font-black text-white italic tracking-tighter uppercase">Master Recon Tier</h4>
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Rank Progress ({totalXP} XP)</p>
+                        <h4 className="text-xl font-black text-white italic tracking-tighter uppercase">{tierName}</h4>
                      </div>
                      <span className="text-primary font-black italic">{(stats.progress * 100).toFixed(0)}%</span>
                   </div>

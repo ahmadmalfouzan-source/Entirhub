@@ -167,6 +167,13 @@ export default function App() {
       
       if (!mounted) return;
 
+      if (event === 'TOKEN_REFRESH_FAILED') {
+        supabase.auth.signOut();
+        setSession(null);
+        setLoading(false);
+        return;
+      }
+
       if (session) {
         setSession(session);
         

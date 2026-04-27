@@ -9,6 +9,7 @@ import {
   Skeleton
 } from '@/components/premium';
 import { Search, Activity, Sparkles, TrendingUp, Filter, Heart, Zap, Coffee, Ghost, Users } from 'lucide-react';
+import { getDisplayTitle, getDisplayRating } from '@/lib/display';
 import { fetchTrendingMovies, fetchTrendingSeries, MediaItem } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -193,21 +194,21 @@ export function Home() {
 
         {/* Featured Smart Picks - Swipeable Carousel */}
         <section>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-6 pt-2">
+          <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-6 pt-2">
             {recommended.slice(0, 5).map((rec, idx) => (
               <motion.div 
                 key={rec.external_id || rec.id}
                 initial={{ y: 30, opacity: 0 }} 
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: idx * 0.1 }}
-                className="w-full min-w-full snap-center"
+                className="w-full min-w-[280px] md:min-w-[400px] shrink-0 pointer-events-auto"
               >
                 <RecommendationCard 
-                  title={rec.title}
+                  title={getDisplayTitle(rec)}
                   poster={rec.poster_url}
                   reason={`MATCHES YOUR ${activeMood.toUpperCase()} VIBE`}
                   mediaType={rec.media_type.toUpperCase()}
-                  rating={rec.rating}
+                  rating={getDisplayRating(rec, rec.rating)}
                   onExplore={() => navigate(`/content/${rec.media_type}_${rec.external_id || rec.id}`)}
                   onAdd={() => navigate(`/content/${rec.media_type}_${rec.external_id || rec.id}`)}
                 />
@@ -226,10 +227,10 @@ export function Home() {
           >
             <SectionHeader title="Resume" subtitle="PICK UP WHERE YOU LEFT OFF" />
             <ProgressCard 
-              title={(ongoing.media as any)?.title_english || ongoing.media?.title || 'Unknown Content'}
+              title={getDisplayTitle(ongoing.media || ongoing)}
               status={ongoing.media?.media_type.toUpperCase() || 'MEDIA'}
               progress={ongoingProgress}
-              rating={ongoing.rating}
+              rating={getDisplayRating(ongoing, ongoing.rating)}
               label={ongoing.media?.media_type === 'game' ? 'STORY PROGRESS' : 'WATCH PROGRESS'}
             />
           </motion.section>
@@ -259,9 +260,9 @@ export function Home() {
                  className="min-w-[140px] md:min-w-[180px] snap-center"
                >
                  <GameCard 
-                   title={item.title}
+                   title={getDisplayTitle(item)}
                    poster={item.poster_url}
-                   rating={item.rating}
+                   rating={getDisplayRating(item, item.rating)}
                    onClick={() => navigate(`/content/${item.external_id || item.id}`)}
                  />
                </motion.div>
@@ -302,13 +303,30 @@ export function Home() {
                    </div>
                 </motion.div>
              )) : (
-                <div className="p-8 text-center border-2 border-dashed border-white/10 rounded-[32px] flex flex-col items-center justify-center bg-white/[0.02]">
-                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="relative p-8 text-center border-2 border-dashed border-white/10 rounded-[32px] flex flex-col items-center justify-center bg-white/[0.02] overflow-hidden group">
+                   
+                   {/* Animated Background Grid for Empty State */}
+                   <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                     <div className="absolute inset-0" style={{
+                       backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+                       backgroundSize: '24px 24px',
+                       animation: 'pulse-grid 4s infinite alternate'
+                     }} />
+                     <div className="absolute inset-0 bg-gradient-to-t from-[#030308] to-transparent" />
+                     <style>{`
+                       @keyframes pulse-grid {
+                         0% { opacity: 0.1; transform: scale(1); }
+                         100% { opacity: 0.4; transform: scale(1.05); }
+                       }
+                     `}</style>
+                   </div>
+
+                   <div className="relative z-10 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                      <Users className="w-8 h-8 text-primary opacity-80" />
                    </div>
-                   <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">No Social Activity</h3>
-                   <p className="text-[10px] text-gray-500 font-bold max-w-[240px] mb-6 uppercase tracking-wider leading-relaxed">Your network is silent. Find friends to see what they are watching and playing.</p>
-                   <PremiumButton variant="glass" size="sm" onClick={() => navigate('/friends')} className="rounded-2xl border-white/10 px-8 py-3 h-auto active:scale-95">
+                   <h3 className="relative z-10 text-sm font-black text-white uppercase tracking-widest mb-2">No Social Activity</h3>
+                   <p className="relative z-10 text-[10px] text-gray-500 font-bold max-w-[240px] mb-6 uppercase tracking-wider leading-relaxed">Your network is silent. Find friends to see what they are watching and playing.</p>
+                   <PremiumButton variant="glass" size="sm" onClick={() => navigate('/friends')} className="relative z-10 rounded-2xl border-white/10 px-8 py-3 h-auto active:scale-95">
                      <Users className="w-4 h-4 mr-2" /> DISCOVER
                    </PremiumButton>
                 </div>
